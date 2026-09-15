@@ -50,6 +50,21 @@
     box-sizing: border-box;
 }
 
+/* Anti-overflow guards: chart canvases must never exceed their container,
+   and flex/grid children must be allowed to shrink below content size.
+   This prevents mobile browsers from widening the viewport (zoomed look). */
+canvas {
+    max-width: 100%;
+}
+
+.bento-panel,
+.metric-strip,
+.metric-cell,
+.main-container,
+.row > [class*="col"] {
+    min-width: 0;
+}
+
 body, html {
     margin: 0;
     padding: 0;
@@ -232,6 +247,8 @@ a:hover {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 1rem;
     margin-bottom: 2rem;
     padding-bottom: 1.25rem;
     border-bottom: 1px solid var(--border-hairline);
@@ -484,7 +501,8 @@ a:hover {
 .data-meta {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
     font-size: 0.78rem;
     color: var(--text-muted);
     margin-top: 2px;
