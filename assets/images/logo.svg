@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#f5f5f5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Outer hexagon boundary -->
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+    <!-- Inner Y-lines to form a cube -->
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+    <!-- Right face (RPG Violet) -->
+    <polygon points="12 12 12 22.08 20.73 17.04 20.73 6.96 12 12" fill="#8b5cf6" opacity="0.6" stroke="none"></polygon>
+    <!-- Left face (Growth Emerald) -->
+    <polygon points="12 12 3.27 6.96 3.27 17.04 12 22.08 12 12" fill="#10b981" opacity="0.6" stroke="none"></polygon>
+</svg>

@@ -1,0 +1,81 @@
+<?php
+// config/database.php
+
+// Load environment variables from .env file
+$envFile = __DIR__ . '/../.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (str_starts_with(trim($line), '#')) continue;
+        if (strpos($line, '=') === false) continue;
+        [$key, $value] = explode('=', $line, 2);
+        $_ENV[trim($key)] = trim($value);
+    }
+}
+
+$host = $_ENV['DB_HOST'] ?? 'localhost';
+$dbname = $_ENV['DB_NAME'] ?? 'habit_tracker_rpg';
+$username = $_ENV['DB_USERNAME'] ?? 'root';
+$password = $_ENV['DB_PASSWORD'] ?? '';
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+} catch(PDOException $e) {
+    error_log("Database connection failed: " . $e->getMessage());
+    die("Database connection failed. Please check your configuration.");
+}
+
+if (!function_exists('calculateLevel')) {
+    function calculateLevel($exp) {
+        return floor($exp / 1000) + 1;
+    }
+}
+
+if (!function_exists('calculateRank')) {
+    function calculateRank($level) {
+        if ($level >= 30) return 'S-Rank Sovereign';
+        if ($level >= 25) return 'A-Rank Master';
+        if ($level >= 20) return 'B-Rank Elite';
+        if ($level >= 15) return 'C-Rank Vanguard';
+        if ($level >= 10) return 'D-Rank Explorer';
+        if ($level >= 5) return 'E-Rank Rookie';
+        return 'F-Rank Novice';
+    }
+}
+
+// --- CSRF Protection Helpers ---
+if (!function_exists('csrf_token')) {
+    function csrf_token() {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        if (empty($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['csrf_token'];
+    }
+}
+
+if (!function_exists('csrf_field')) {
+    function csrf_field() {
+        return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(csrf_token()) . '">';
+    }
+}
+
+if (!function_exists('validate_csrf')) {
+    function validate_csrf() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+            $token = $_POST['csrf_token'] ?? '';
+            if (empty($token) || !hash_equals($_SESSION['csrf_token'] ?? '', $token)) {
+                error_log("CSRF token validation failed.");
+                die("Security verification failed (Invalid CSRF Token). Please refresh the page and try again.");
+            }
+        }
+    }
+}
+

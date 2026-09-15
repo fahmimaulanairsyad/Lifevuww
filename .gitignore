@@ -1,0 +1,21 @@
+# Environment
+.env
+
+# User-uploaded content (keep app assets)
+assets/images/*
+!assets/images/avatar.jpg
+!assets/images/logo.svg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temp
+*.tmp
+*~
