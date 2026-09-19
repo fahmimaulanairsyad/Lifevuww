@@ -191,6 +191,10 @@ require_once __DIR__ . '/../config/database.php';
                 <a href="profile.php" class="nav-item d-md-none <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
                     <i class="fas fa-user-circle"></i> <span>Profile</span>
                 </a>
+                <!-- Mobile only logout (sidebar footer is hidden on mobile) -->
+                <a href="../logout.php" class="nav-item d-md-none">
+                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
