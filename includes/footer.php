@@ -247,14 +247,28 @@
             }, { once: true });
         }
 
-        function fireNagNotification(incomplete, streak) {
+        async function fireNagNotification(incomplete, streak) {
             if (!('Notification' in window) || Notification.permission !== 'granted') return;
+            const title = 'Streak at risk!';
+            const options = {
+                body: nagMessage(incomplete, streak),
+                icon: '../assets/icons/icon-192.png',
+                tag: 'lv-nag'
+            };
+            // Android (Chrome/Brave) does NOT support `new Notification()` from a
+            // page at all — it must go through the service worker. Desktop
+            // supports both, so try SW first, fall back to constructor.
             try {
-                new Notification('Streak at risk!', {
-                    body: nagMessage(incomplete, streak),
-                    icon: '../assets/icons/icon-192.png',
-                    tag: 'lv-nag'
-                });
+                if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.ready;
+                    if (reg && reg.showNotification) {
+                        await reg.showNotification(title, options);
+                        return;
+                    }
+                }
+            } catch (e) { /* fall through to constructor */ }
+            try {
+                new Notification(title, options);
             } catch (e) { /* ignore */ }
         }
 
