@@ -42,6 +42,20 @@ try {
     // Calculate EXP for next level
     $expToNextLevel = ($level * 1000) - $totalExp;
 
+    // Handle reminder time setting
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_reminder'])) {
+        validate_csrf();
+        $reminderInput = $_POST['reminder_time'] ?? '20:00';
+        if (preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $reminderInput)) {
+            $pdo->prepare("UPDATE users SET reminder_time = ? WHERE user_id = ?")
+                ->execute([$reminderInput . ':00', $_SESSION['user_id']]);
+            $user['reminder_time'] = $reminderInput . ':00';
+            $reminderSaved = true;
+        } else {
+            $reminderError = "Invalid time format.";
+        }
+    }
+
     // Handle profile picture upload and delete
     $uploadDir = "../assets/images/";
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -183,6 +197,53 @@ try {
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="bento-panel mt-3 p-4">
+    <div class="panel-header">
+        <h3 class="panel-title"><i class="fas fa-bell text-accent"></i> Reminders & App</h3>
+    </div>
+
+    <?php if (!empty($reminderSaved)): ?>
+        <div class="p-2 mb-3 text-center" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.8rem;">
+            Reminder time saved.
+        </div>
+    <?php endif; ?>
+    <?php if (!empty($reminderError)): ?>
+        <div class="p-2 mb-3 text-center" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
+            <?php echo htmlspecialchars($reminderError); ?>
+        </div>
+    <?php endif; ?>
+
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <form method="POST" action="profile.php">
+                <?php echo csrf_field(); ?>
+                <label class="form-label" for="reminder_time">Daily streak warning at</label>
+                <div class="d-flex gap-2">
+                    <input type="time" class="form-control font-mono" id="reminder_time" name="reminder_time"
+                           value="<?php echo htmlspecialchars(substr($user['reminder_time'] ?? '20:00:00', 0, 5)); ?>" required>
+                    <button type="submit" name="save_reminder" value="1" class="btn-core btn-primary">Save</button>
+                </div>
+                <div class="text-muted mt-1" style="font-size: 0.72rem;">If routines are still open past this hour, the system nags you.</div>
+            </form>
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Browser notifications</label>
+            <div class="d-flex flex-wrap gap-2">
+                <button type="button" class="btn-core btn-outline" id="btn-enable-notif">
+                    <i class="fas fa-bell"></i> <span id="notif-label">Enable notifications</span>
+                </button>
+                <button type="button" class="btn-core btn-ghost" id="btn-test-notif">
+                    <i class="fas fa-flask"></i> Send test
+                </button>
+                <button type="button" class="btn-core btn-ghost" id="btn-install-app" style="display: none;">
+                    <i class="fas fa-download"></i> Install app
+                </button>
+            </div>
+            <div class="text-muted mt-1" style="font-size: 0.72rem;">Works best after installing Lifevuww to your home screen.</div>
         </div>
     </div>
 </div>

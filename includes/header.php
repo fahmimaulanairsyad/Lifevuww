@@ -12,7 +12,15 @@ require_once __DIR__ . '/../config/database.php';
     <title>Lifevuww</title>
     <!-- Favicon -->
     <link rel="icon" href="../assets/images/logo.svg" type="image/svg+xml">
-    
+    <!-- PWA -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#09090b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Lifevuww">
+    <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="../assets/css/style.css" rel="stylesheet">
@@ -23,7 +31,7 @@ require_once __DIR__ . '/../config/database.php';
     <div class="app-layout">
         <?php 
         if(isset($_SESSION['user_id'])): 
-            $stmt = $pdo->prepare("SELECT hp, max_hp, gold, exp, streak_freeze, last_daily_check FROM users WHERE user_id = ?");
+            $stmt = $pdo->prepare("SELECT hp, max_hp, gold, exp, streak_freeze, last_daily_check, reminder_time FROM users WHERE user_id = ?");
             $stmt->execute([$_SESSION['user_id']]);
             $navUser = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -109,6 +117,37 @@ require_once __DIR__ . '/../config/database.php';
                 $navUser['hp'] = $navUser['max_hp'] ?? 100;
                 $navUser['exp'] = $newExp;
             }
+
+            // ==========================================
+            // STREAK NAG ENGINE (Duolingo-style reminder)
+            // Dihitung sekali per request. Dirender sebagai banner
+            // + browser Notification di footer.php.
+            // ==========================================
+            $nagIncomplete = 0;
+            $nagMaxStreak = 0;
+            try {
+                $stmtNag = $pdo->prepare("SELECT COUNT(*) FROM habits WHERE user_id = ? AND completed_today = 0");
+                $stmtNag->execute([$_SESSION['user_id']]);
+                $nagIncomplete = (int) $stmtNag->fetchColumn();
+
+                $stmtStreak = $pdo->prepare("SELECT COALESCE(MAX(streak), 0) FROM habits WHERE user_id = ?");
+                $stmtStreak->execute([$_SESSION['user_id']]);
+                $nagMaxStreak = (int) $stmtStreak->fetchColumn();
+            } catch (Exception $e) {
+                error_log("Nag engine error: " . $e->getMessage());
+            }
+
+            $reminderTime = $navUser['reminder_time'] ?? '20:00:00';
+            $reminderShort = substr($reminderTime, 0, 5); // HH:MM
+            $nowShort = date('H:i');
+            // Tampilkan nag hanya jika jam pengingat sudah lewat DAN masih ada habit belum selesai
+            if ($nagIncomplete > 0 && $nowShort >= $reminderShort) {
+                $_SESSION['streak_nag'] = [
+                    'incomplete' => $nagIncomplete,
+                    'max_streak' => $nagMaxStreak,
+                    'reminder' => $reminderShort
+                ];
+            }
         ?>
         <aside class="app-sidebar">
             <div class="sidebar-header">
@@ -158,6 +197,9 @@ require_once __DIR__ . '/../config/database.php';
                 <a href="profile.php" class="nav-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
                     <i class="fas fa-user-circle"></i> <span>Profile</span>
                 </a>
+                <button type="button" id="btn-sound" class="nav-item" style="background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; text-align: left;">
+                    <i class="fas fa-volume-up"></i> <span>Sound on</span>
+                </button>
                 <a href="../logout.php" class="nav-item" style="color: var(--text-tertiary);">
                     <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
                 </a>

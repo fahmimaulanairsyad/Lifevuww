@@ -594,6 +594,24 @@ a:hover {
     font-size: 0.95rem;
 }
 
+/* Streak nag banner (Duolingo-style warning strip) */
+.nag-banner {
+    position: fixed;
+    top: 0;
+    left: var(--sidebar-width);
+    right: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    background-color: rgba(24, 24, 28, 0.97);
+    border-bottom: 1px solid var(--accent-border);
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
     .app-sidebar {
@@ -634,6 +652,12 @@ a:hover {
         margin-left: 0;
         margin-bottom: 56px;
         padding: 1.5rem 1rem;
+    }
+
+    .nag-banner {
+        left: 0;
+        flex-wrap: wrap;
+        row-gap: 0.4rem;
     }
 
     .metric-strip {

@@ -179,6 +179,7 @@ CREATE TABLE `users` (
   `gold` int(11) DEFAULT 0,
   `streak_freeze` int(11) DEFAULT 0,
   `last_daily_check` date DEFAULT NULL,
+  `reminder_time` time DEFAULT '20:00:00',
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
