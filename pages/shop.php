@@ -121,7 +121,7 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="page-header d-flex justify-content-between align-items-end">
     <div>
-        <h1 class="page-title">Toko Suplai</h1>
+        <h1 class="page-title">Toko Hadiah</h1>
         <p class="page-subtitle">Tukarkan gold untuk pemulihan vital, perisai streak, dan hadiah pribadi.</p>
     </div>
     <div class="text-end">
@@ -157,7 +157,7 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="mb-5">
     <div class="panel-header" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem; margin-bottom: 1rem;">
         <h3 class="panel-title" style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
-            <i class="fas fa-prescription-bottle text-danger"></i> Konsumsi Sistem
+            <i class="fas fa-prescription-bottle text-danger"></i> Item Sistem
         </h3>
     </div>
     
@@ -192,7 +192,7 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-flask"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Elixir Kehidupan Penuh</div>
+                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Elixir HP Penuh</div>
                         <div class="text-muted" style="font-size: 0.75rem;">Memulihkan 100% HP penuh</div>
                     </div>
                 </div>

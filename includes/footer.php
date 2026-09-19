@@ -184,17 +184,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        /* ============ Sound toggle (sidebar) ============ */
+        /* ============ Sound toggles (sidebar + profile) ============ */
         (function () {
-            const btn = document.getElementById('btn-sound');
-            if (!btn) return;
-            const render = () => {
+            const render = (btn) => {
                 const on = LVSound.isOn();
                 btn.querySelector('i').className = on ? 'fas fa-volume-up' : 'fas fa-volume-mute';
                 btn.querySelector('span').textContent = on ? 'Suara nyala' : 'Senyap';
             };
-            render();
-            btn.addEventListener('click', () => { LVSound.toggle(); render(); });
+            document.querySelectorAll('.btn-sound-toggle').forEach((btn) => {
+                render(btn);
+                btn.addEventListener('click', () => {
+                    LVSound.toggle();
+                    document.querySelectorAll('.btn-sound-toggle').forEach(render);
+                });
+            });
         })();
 
         /* ============ PWA: service worker + install prompt ============ */

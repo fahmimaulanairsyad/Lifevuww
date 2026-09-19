@@ -85,7 +85,7 @@ arsort($stat_data);
                         </div>
                         <div class="data-actions">
                             <span class="badge-status accent font-mono">
-                                LVL <?php echo $value; ?>
+                                Lv <?php echo $value; ?>
                             </span>
                         </div>
                     </div>

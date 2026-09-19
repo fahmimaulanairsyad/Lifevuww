@@ -184,7 +184,7 @@ try {
                     <div class="vitals-fill" style="width: <?php echo $expPercentage; ?>%; background-color: var(--accent);"></div>
                 </div>
                 <div class="text-end text-muted mt-1 font-mono" style="font-size: 0.7rem;">
-                    SISA <?php echo number_format(max(0, $expToNextLevel)); ?> EXP KE TINGKAT BERIKUTNYA
+                    SISA <?php echo number_format(max(0, $expToNextLevel)); ?> EXP
                 </div>
             </div>
 
@@ -249,6 +249,18 @@ try {
                 </button>
             </div>
             <div class="text-muted mt-1" style="font-size: 0.72rem;">Paling baik setelah Lifevuww dipasang ke layar utama.</div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-md-4">
+            <label class="form-label">Suara efek</label>
+            <div>
+                <button type="button" class="btn-core btn-outline btn-sound-toggle">
+                    <i class="fas fa-volume-up"></i> <span>Suara nyala</span>
+                </button>
+            </div>
+            <div class="text-muted mt-1" style="font-size: 0.72rem;">Bunyi perayaan saat tugas selesai.</div>
         </div>
     </div>
 </div>

@@ -221,7 +221,7 @@ require_once '../includes/header.php';
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="habitName" class="form-label">Nama habit</label>
+                        <label for="habitName" class="form-label">Nama kebiasaan</label>
                         <input type="text" class="form-control" id="habitName" name="habit_name" placeholder="mis., Baca 15 halaman, 20 pushup" required>
                     </div>
                     
@@ -270,7 +270,7 @@ require_once '../includes/header.php';
         <p class="page-subtitle">Lacak, jaga, dan lipatgandakan disiplin harianmu.</p>
     </div>
     <button class="btn-core btn-primary" data-bs-toggle="modal" data-bs-target="#addHabitModal">
-        <i class="fas fa-plus"></i> Habit Baru
+        <i class="fas fa-plus"></i> Kebiasaan Baru
     </button>
 </div>
 
@@ -361,7 +361,7 @@ require_once '../includes/header.php';
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Nama habit</label>
+                                        <label class="form-label">Nama kebiasaan</label>
                                         <input type="text" class="form-control" name="habit_name" value="<?php echo htmlspecialchars($habit['habit_name']); ?>" required>
                                     </div>
                                     <div class="mb-3">

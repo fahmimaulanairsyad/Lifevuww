@@ -216,22 +216,22 @@ GROUP BY u.user_id
 <!-- Unified Metric Strip (Anti-slop connected grid) -->
 <div class="metric-strip mb-4">
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-check-square text-accent"></i> Kebiasaan Tuntas</div>
+        <div class="metric-label"><i class="fas fa-check-square text-accent"></i> Kebiasaan</div>
         <div class="metric-value"><?php echo $completedHabits; ?> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalHabits; ?></span></div>
-        <div class="metric-sub">Capaian hari ini</div>
+        <div class="metric-sub">Tuntas hari ini</div>
     </div>
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-scroll text-accent"></i> Misi Tuntas</div>
+        <div class="metric-label"><i class="fas fa-scroll text-accent"></i> Misi</div>
         <div class="metric-value"><?php echo $completedQuests; ?> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalQuests; ?></span></div>
-        <div class="metric-sub">Total pencapaian</div>
+        <div class="metric-sub">Total tuntas</div>
     </div>
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-fire text-warning"></i> Streak Maks.</div>
+        <div class="metric-label"><i class="fas fa-fire text-warning"></i> Streak</div>
         <div class="metric-value text-warning"><?php echo $maxStreak; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">HARI</span></div>
-        <div class="metric-sub">Momentum tak terputus</div>
+        <div class="metric-sub">Rekor beruntun</div>
     </div>
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Perisai Aktif</div>
+        <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Perisai</div>
         <div class="metric-value" style="color: var(--status-info);"><?php echo $user['streak_freeze'] ?? 0; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SLOT</span></div>
         <div class="metric-sub">Hari terlindungi</div>
     </div>

@@ -197,7 +197,7 @@ require_once __DIR__ . '/../config/database.php';
                 <a href="profile.php" class="nav-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
                     <i class="fas fa-user-circle"></i> <span>Profil</span>
                 </a>
-                <button type="button" id="btn-sound" class="nav-item" style="background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; text-align: left;">
+                <button type="button" id="btn-sound" class="nav-item btn-sound-toggle" style="background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; text-align: left;">
                     <i class="fas fa-volume-up"></i> <span>Suara nyala</span>
                 </button>
                 <a href="../logout.php" class="nav-item" style="color: var(--text-tertiary);">
