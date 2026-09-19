@@ -143,6 +143,11 @@ try {
             <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($user['username'] ?? 'User'); ?></h2>
             <span class="badge-status accent mb-3"><?php echo htmlspecialchars($rank); ?></span>
 
+            <!-- Mobile only logout (sidebar footer is hidden on small screens) -->
+            <a href="../logout.php" class="btn-core btn-ghost text-danger w-100 d-md-none mt-2" style="font-size: 0.8rem;">
+                <i class="fas fa-sign-out-alt"></i> Log out
+            </a>
+
             <!-- Card for profile picture edit options -->
             <div id="upload-form" style="display: none; border-top: 1px solid var(--border-hairline); padding-top: 1.25rem; margin-top: 1rem;">
                 <form action="profile.php" method="POST" enctype="multipart/form-data">
