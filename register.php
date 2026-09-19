@@ -13,18 +13,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Validasi server-side
     if (strlen($username) < 3) {
-        $error = "Username must be at least 3 characters.";
+        $error = "Nama pengguna minimal 3 karakter.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "Please provide a valid email address.";
+        $error = "Masukkan alamat email yang valid.";
     } elseif (strlen($rawPassword) < 6) {
-        $error = "Password must be at least 6 characters.";
+        $error = "Kata sandi minimal 6 karakter.";
     } else {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
         $stmt->execute([$username, $email]);
         $existing_user = $stmt->fetch();
 
         if ($existing_user) {
-            $error = "Username or email already exists.";
+            $error = "Nama pengguna atau email sudah dipakai.";
         } else {
             $password = password_hash($rawPassword, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Lifevuww</title>
+    <title>Daftar - Lifevuww</title>
     <!-- Favicon -->
     <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
     <!-- PWA -->
@@ -60,8 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div style="width: 100%; max-width: 380px;">
         <div class="text-center mb-4">
             <img src="assets/images/logo.svg" alt="Lifevuww Logo" style="width: 44px; height: 44px; margin-bottom: 1rem;">
-            <h1 style="font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em;">Initialize Character</h1>
-            <p class="text-muted" style="font-size: 0.82rem;">Create your profile in the Lifevuww progression system</p>
+            <h1 style="font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em;">Buat Karakter Baru</h1>
+            <p class="text-muted" style="font-size: 0.82rem;">Daftarkan profilmu di sistem progres Lifevuww</p>
         </div>
 
         <div class="bento-panel p-4">
@@ -74,23 +74,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <form method="POST">
                 <?php echo csrf_field(); ?>
                 <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" required autofocus placeholder="e.g., Mivuww">
+                    <label class="form-label">Nama pengguna</label>
+                    <input type="text" name="username" class="form-control" required autofocus placeholder="mis., Mivuww">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Email Address</label>
-                    <input type="email" name="email" class="form-control" required placeholder="user@domain.com">
+                    <label class="form-label">Alamat email</label>
+                    <input type="email" name="email" class="form-control" required placeholder="nama@domain.com">
                 </div>
                 <div class="mb-4">
-                    <label class="form-label">Password (min. 6 chars)</label>
+                    <label class="form-label">Kata sandi (min. 6 karakter)</label>
                     <input type="password" name="password" class="form-control" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn-core btn-primary w-100" style="padding: 0.65rem;">Create Character</button>
+                <button type="submit" class="btn-core btn-primary w-100" style="padding: 0.65rem;">Buat Akun</button>
             </form>
         </div>
 
         <p class="text-center mt-3" style="color: var(--text-muted); font-size: 0.8rem;">
-            Already registered? <a href="login.php" style="color: var(--text-primary); font-weight: 500;">Sign in here</a>
+            Sudah terdaftar? <a href="login.php" style="color: var(--text-primary); font-weight: 500;">Masuk di sini</a>
         </p>
     </div>
 

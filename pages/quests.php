@@ -209,17 +209,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form id="addQuestForm" method="POST" action="quests.php">
                 <?php echo csrf_field(); ?>
                 <div class="modal-header">
-                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-plus me-2 text-accent"></i> Create New Quest</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-plus me-2 text-accent"></i> Buat Misi Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="questName" class="form-label">Quest Objective</label>
-                        <input type="text" class="form-control" id="questName" name="quest_name" placeholder="e.g., Read full book, Run 5k, Build portfolio site" required>
+                        <label for="questName" class="form-label">Tujuan misi</label>
+                        <input type="text" class="form-control" id="questName" name="quest_name" placeholder="mis., Tamatkan satu buku, Lari 5K" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="category" class="form-label">Category / Attribute</label>
+                        <label for="category" class="form-label">Kategori / Atribut</label>
                         <select class="form-select" id="category" name="category" required>
                             <option value="Intelligence">Intelligence</option>
                             <option value="Physical">Physical</option>
@@ -231,22 +231,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="row g-2">
                         <div class="col-6">
-                            <label for="difficulty" class="form-label">Difficulty Tier</label>
+                            <label for="difficulty" class="form-label">Tingkat kesulitan</label>
                             <select class="form-select" id="difficulty" name="difficulty" required>
-                                <option value="Easy">Easy (+5 EXP)</option>
-                                <option value="Medium">Medium (+10 EXP)</option>
-                                <option value="Hard">Hard (+15 EXP)</option>
+                                <option value="Easy">Mudah (+5 EXP)</option>
+                                <option value="Medium">Sedang (+10 EXP)</option>
+                                <option value="Hard">Sulit (+15 EXP)</option>
                             </select>
                         </div>
                         <div class="col-6">
-                            <label for="startDate" class="form-label">Start Date</label>
+                            <label for="startDate" class="form-label">Tanggal mulai</label>
                             <input type="date" class="form-control" id="startDate" name="start_date" required>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn-core btn-primary">Start Quest</button>
+                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn-core btn-primary">Mulai Misi</button>
                 </div>
             </form>
         </div>
@@ -255,11 +255,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Active Quests</h1>
-        <p class="page-subtitle">Longer-horizon milestones, projects, and ambitious challenges.</p>
+        <h1 class="page-title">Misi Aktif</h1>
+        <p class="page-subtitle">Target jangka panjang, proyek, dan tantangan ambisius.</p>
     </div>
     <button type="button" class="btn-core btn-primary" data-bs-toggle="modal" data-bs-target="#addQuestModal">
-        <i class="fas fa-plus"></i> New Quest
+        <i class="fas fa-plus"></i> Misi Baru
     </button>
 </div>
 
@@ -267,7 +267,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php if (empty($quests)): ?>
         <div class="text-center py-5 text-muted">
             <i class="fas fa-map-marked-alt fa-2x mb-3" style="opacity: 0.3;"></i>
-            <p class="mb-0">No active quests in progress. Embark on a new adventure.</p>
+            <p class="mb-0">Belum ada misi berjalan. Mulai petualangan baru!</p>
         </div>
     <?php else: ?>
         <div class="data-list">
@@ -292,26 +292,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         
                         <?php if ($quest['status'] === 'Completed'): ?>
-                            <span class="badge-status accent"><i class="fas fa-check"></i> Done</span>
+                            <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
                         <?php else: ?>
                             <form method="POST" action="quests.php" style="margin: 0;">
                                 <?php echo csrf_field(); ?>
                                 <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
                                 <button type="submit" name="complete_quest" class="btn-core btn-accent" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
-                                    Complete
+                                    Selesaikan
                                 </button>
                             </form>
                         <?php endif; ?>
                         
                         <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Edit" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
+                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
                         <form method="POST" action="quests.php" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
-                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Delete">
+                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -327,16 +327,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="hidden" name="edit_quest" value="1">
                                 <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-edit me-2 text-accent"></i> Edit Quest</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-edit me-2 text-accent"></i> Ubah Misi</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Quest Objective</label>
+                                        <label class="form-label">Tujuan misi</label>
                                         <input type="text" class="form-control" name="quest_name" value="<?php echo htmlspecialchars($quest['quest_name']); ?>" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Category / Attribute</label>
+                                        <label class="form-label">Kategori / Atribut</label>
                                         <select class="form-select" name="category" required>
                                             <option value="Intelligence" <?php echo $quest['category'] == 'Intelligence' ? 'selected' : ''; ?>>Intelligence</option>
                                             <option value="Physical" <?php echo $quest['category'] == 'Physical' ? 'selected' : ''; ?>>Physical</option>
@@ -347,22 +347,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-6">
-                                            <label class="form-label">Difficulty Tier</label>
+                                            <label class="form-label">Tingkat kesulitan</label>
                                             <select class="form-select" name="difficulty" required>
-                                                <option value="Easy" <?php echo $quest['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Easy (+5 EXP)</option>
-                                                <option value="Medium" <?php echo $quest['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Medium (+10 EXP)</option>
-                                                <option value="Hard" <?php echo $quest['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Hard (+15 EXP)</option>
+                                                <option value="Easy" <?php echo $quest['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Mudah (+5 EXP)</option>
+                                                <option value="Medium" <?php echo $quest['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Sedang (+10 EXP)</option>
+                                                <option value="Hard" <?php echo $quest['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Sulit (+15 EXP)</option>
                                             </select>
                                         </div>
                                         <div class="col-6">
-                                            <label class="form-label">Start Date</label>
+                                            <label class="form-label">Tanggal mulai</label>
                                             <input type="date" class="form-control" name="start_date" value="<?php echo htmlspecialchars($quest['start_date']); ?>" required>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn-core btn-primary">Save Changes</button>
+                                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn-core btn-primary">Simpan Perubahan</button>
                                 </div>
                             </form>
                         </div>

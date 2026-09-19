@@ -123,7 +123,7 @@ GROUP BY u.user_id
     $activityData = [];
     for ($i = 6; $i >= 0; $i--) {
         $dateKey = date('Y-m-d', strtotime("-$i days"));
-        $activityLabels[] = date('D, M j', strtotime($dateKey));
+        $activityLabels[] = indo_short_date($dateKey);
         $activityData[] = (int) ($rawActivity[$dateKey] ?? 0);
     }
 
@@ -135,8 +135,8 @@ GROUP BY u.user_id
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Command Dashboard</h1>
-        <p class="page-subtitle">Real-time status of character progression, daily discipline, and vital statistics.</p>
+        <h1 class="page-title">Dasbor Komando</h1>
+        <p class="page-subtitle">Status real-time progres karakter, disiplin harian, dan statistik vital.</p>
     </div>
 </div>
 
@@ -154,7 +154,7 @@ GROUP BY u.user_id
                         <h2 style="font-size: 1.65rem; margin: 0; font-weight: 600;"><?php echo htmlspecialchars($user['username']); ?></h2>
                     </div>
                     <div class="text-end">
-                        <div class="text-muted" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Level</div>
+                        <div class="text-muted" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Tingkat</div>
                         <div style="font-size: 2.2rem; font-weight: 600; line-height: 1; font-family: var(--font-mono); color: var(--text-primary);"><?php echo $level; ?></div>
                     </div>
                 </div>
@@ -162,7 +162,7 @@ GROUP BY u.user_id
                 <!-- Health Points (HP) -->
                 <div class="mb-3">
                     <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem;">
-                        <span class="text-muted"><i class="fas fa-heart text-danger me-1"></i> Health Points</span>
+                        <span class="text-muted"><i class="fas fa-heart text-danger me-1"></i> Poin Kesehatan (HP)</span>
                         <span class="font-mono text-danger"><?php echo $user['hp'] ?? 100; ?> / <?php echo $user['max_hp'] ?? 100; ?></span>
                     </div>
                     <div class="vitals-track">
@@ -179,7 +179,7 @@ GROUP BY u.user_id
             <!-- EXP Meter -->
             <div class="pt-2">
                 <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem;">
-                    <span class="text-muted"><i class="fas fa-bolt text-accent me-1"></i> Experience (EXP)</span>
+                    <span class="text-muted"><i class="fas fa-bolt text-accent me-1"></i> Pengalaman (EXP)</span>
                     <span class="font-mono text-accent"><?php echo number_format($totalExp); ?> / <?php echo number_format($nextLevelExp); ?></span>
                 </div>
                 <div class="vitals-track">
@@ -187,8 +187,8 @@ GROUP BY u.user_id
                     <div class="vitals-fill" style="width: <?php echo $expPercentage; ?>%; background-color: var(--accent);"></div>
                 </div>
                 <div class="mt-1 d-flex justify-content-between" style="font-size: 0.7rem;">
-                    <span class="text-muted">Progress to Level <?php echo $level + 1; ?></span>
-                    <span class="font-mono text-muted"><?php echo number_format(max(0, $expToNextLevel)); ?> EXP remaining</span>
+                    <span class="text-muted">Progres ke Tingkat <?php echo $level + 1; ?></span>
+                    <span class="font-mono text-muted">Sisa <?php echo number_format(max(0, $expToNextLevel)); ?> EXP</span>
                 </div>
             </div>
         </div>
@@ -198,15 +198,15 @@ GROUP BY u.user_id
     <div class="col-md-4">
         <div class="bento-panel h-100 d-flex flex-column justify-content-between text-center py-4">
             <div>
-                <div class="text-muted mb-2" style="font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Available Gold</div>
+                <div class="text-muted mb-2" style="font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Saldo Gold</div>
                 <div style="font-family: var(--font-mono); font-size: 2.25rem; font-weight: 600; color: var(--status-warning); line-height: 1.1;">
                     <i class="fas fa-coins me-1" style="font-size: 1.6rem;"></i><?php echo number_format($user['gold'] ?? 0); ?>
                 </div>
-                <p class="text-muted mt-2 mb-0" style="font-size: 0.78rem;">Earn gold by maintaining habits and conquering quests.</p>
+                <p class="text-muted mt-2 mb-0" style="font-size: 0.78rem;">Kumpulkan gold dengan menjaga kebiasaan dan menuntaskan misi.</p>
             </div>
             <div class="mt-3">
                 <a href="shop.php" class="btn-core btn-outline w-100">
-                    <i class="fas fa-store me-1"></i> Reward Shop
+                    <i class="fas fa-store me-1"></i> Toko Hadiah
                 </a>
             </div>
         </div>
@@ -216,24 +216,24 @@ GROUP BY u.user_id
 <!-- Unified Metric Strip (Anti-slop connected grid) -->
 <div class="metric-strip mb-4">
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-check-square text-accent"></i> Habits Done</div>
+        <div class="metric-label"><i class="fas fa-check-square text-accent"></i> Kebiasaan Tuntas</div>
         <div class="metric-value"><?php echo $completedHabits; ?> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalHabits; ?></span></div>
-        <div class="metric-sub">Today's completion</div>
+        <div class="metric-sub">Capaian hari ini</div>
     </div>
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-scroll text-accent"></i> Quests Solved</div>
+        <div class="metric-label"><i class="fas fa-scroll text-accent"></i> Misi Tuntas</div>
         <div class="metric-value"><?php echo $completedQuests; ?> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalQuests; ?></span></div>
-        <div class="metric-sub">Total achievements</div>
+        <div class="metric-sub">Total pencapaian</div>
     </div>
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-fire text-warning"></i> Max Streak</div>
-        <div class="metric-value text-warning"><?php echo $maxStreak; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">DAYS</span></div>
-        <div class="metric-sub">Unbroken momentum</div>
+        <div class="metric-label"><i class="fas fa-fire text-warning"></i> Streak Maks.</div>
+        <div class="metric-value text-warning"><?php echo $maxStreak; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">HARI</span></div>
+        <div class="metric-sub">Momentum tak terputus</div>
     </div>
     <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Freezes</div>
-        <div class="metric-value" style="color: var(--status-info);"><?php echo $user['streak_freeze'] ?? 0; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SHIELDS</span></div>
-        <div class="metric-sub">Days protected</div>
+        <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Perisai Aktif</div>
+        <div class="metric-value" style="color: var(--status-info);"><?php echo $user['streak_freeze'] ?? 0; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SLOT</span></div>
+        <div class="metric-sub">Hari terlindungi</div>
     </div>
 </div>
 
@@ -241,11 +241,11 @@ GROUP BY u.user_id
 <div class="bento-panel mb-4">
     <div class="panel-header">
         <div>
-            <h3 class="panel-title"><i class="fas fa-chart-bar text-accent"></i> 7-Day Performance Velocity</h3>
-            <p class="text-muted mb-0" style="font-size: 0.78rem;">Cumulative EXP earned across routines and adventures.</p>
+            <h3 class="panel-title"><i class="fas fa-chart-bar text-accent"></i> Velocity Performa 7 Hari</h3>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Akumulasi EXP dari rutinitas dan petualangan.</p>
         </div>
         <span class="badge-status accent font-mono">
-            <?php echo number_format(array_sum($activityData)); ?> EXP EARNED
+            <?php echo number_format(array_sum($activityData)); ?> EXP TERKUMPUL
         </span>
     </div>
     <div style="height: 180px; width: 100%;">
@@ -256,7 +256,7 @@ GROUP BY u.user_id
 <!-- Recent Completions Stream -->
 <div class="bento-panel">
     <div class="panel-header">
-        <h3 class="panel-title"><i class="fas fa-history text-muted"></i> Recent Completions</h3>
+        <h3 class="panel-title"><i class="fas fa-history text-muted"></i> Penyelesaian Terakhir</h3>
     </div>
     
     <div class="data-list">
@@ -270,7 +270,7 @@ GROUP BY u.user_id
                         <div>
                             <div class="data-title"><?php echo htmlspecialchars($quest['quest_name']); ?></div>
                             <div class="data-meta font-mono">
-                                <span><?php echo date('M j, Y • H:i', strtotime($quest['completed_at'])); ?></span>
+                                <span><?php echo indo_short_date($quest['completed_at'], true); ?></span>
                             </div>
                         </div>
                     </div>
@@ -283,7 +283,7 @@ GROUP BY u.user_id
             <?php endforeach; ?>
         <?php else: ?>
             <div class="text-center py-4 text-muted" style="font-size: 0.85rem;">
-                No recent activity recorded yet.
+                Belum ada aktivitas tercatat. Saatnya bergerak!
             </div>
         <?php endif; ?>
     </div>

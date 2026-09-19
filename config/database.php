@@ -79,6 +79,21 @@ if (!function_exists('csrf_field')) {
     }
 }
 
+if (!function_exists('indo_short_date')) {
+    // Format tanggal ringkas Bahasa Indonesia: "Sab, 19 Sep" / "19 Sep 2026 • 11:08"
+    function indo_short_date($dateKey, $withYearTime = false) {
+        $ts = strtotime($dateKey);
+        if ($ts === false) return $dateKey;
+        $days = ['Sun' => 'Min', 'Mon' => 'Sen', 'Tue' => 'Sel', 'Wed' => 'Rab', 'Thu' => 'Kam', 'Fri' => 'Jum', 'Sat' => 'Sab'];
+        $months = ['Jan' => 'Jan', 'Feb' => 'Feb', 'Mar' => 'Mar', 'Apr' => 'Apr', 'May' => 'Mei', 'Jun' => 'Jun', 'Jul' => 'Jul', 'Aug' => 'Agu', 'Sep' => 'Sep', 'Oct' => 'Okt', 'Nov' => 'Nov', 'Dec' => 'Des'];
+        $out = $days[date('D', $ts)] . ', ' . date('j', $ts) . ' ' . $months[date('M', $ts)];
+        if ($withYearTime) {
+            $out .= ' ' . date('Y', $ts) . ' • ' . date('H:i', $ts);
+        }
+        return $out;
+    }
+}
+
 if (!function_exists('validate_csrf')) {
     function validate_csrf() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {

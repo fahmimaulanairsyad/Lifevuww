@@ -173,35 +173,35 @@ require_once __DIR__ . '/../config/database.php';
             <nav class="sidebar-nav">
                 <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
                 <a href="dashboard.php" class="nav-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-home"></i> <span>Dashboard</span>
+                    <i class="fas fa-home"></i> <span>Dasbor</span>
                 </a>
                 <a href="habits.php" class="nav-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-check-square"></i> <span>Habits</span>
+                    <i class="fas fa-check-square"></i> <span>Kebiasaan</span>
                 </a>
                 <a href="quests.php" class="nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-map-signs"></i> <span>Quests</span>
+                    <i class="fas fa-map-signs"></i> <span>Misi</span>
                 </a>
                 <a href="skills.php" class="nav-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-book-open"></i> <span>Skills</span>
+                    <i class="fas fa-book-open"></i> <span>Keahlian</span>
                 </a>
                 <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-store"></i> <span>Reward Shop</span>
+                    <i class="fas fa-store"></i> <span>Toko</span>
                 </a>
                 <!-- Mobile only profile link -->
                 <a href="profile.php" class="nav-item d-md-none <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-user-circle"></i> <span>Profile</span>
+                    <i class="fas fa-user-circle"></i> <span>Profil</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
                 <a href="profile.php" class="nav-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-user-circle"></i> <span>Profile</span>
+                    <i class="fas fa-user-circle"></i> <span>Profil</span>
                 </a>
                 <button type="button" id="btn-sound" class="nav-item" style="background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; text-align: left;">
-                    <i class="fas fa-volume-up"></i> <span>Sound on</span>
+                    <i class="fas fa-volume-up"></i> <span>Suara nyala</span>
                 </button>
                 <a href="../logout.php" class="nav-item" style="color: var(--text-tertiary);">
-                    <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+                    <i class="fas fa-sign-out-alt"></i> <span>Keluar</span>
                 </a>
             </div>
         </aside>

@@ -37,10 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             } catch (Exception $e) {
                 $pdo->rollBack();
-                $error = "Transaction failed.";
+                $error = "Transaksi gagal.";
             }
         } else {
-            $error = "Not enough gold for this potion!";
+            $error = "Gold tidak cukup untuk ramuan ini!";
         }
     }
 
@@ -57,10 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             } catch (Exception $e) {
                 $pdo->rollBack();
-                $error = "Transaction failed.";
+                $error = "Transaksi gagal.";
             }
         } else {
-            $error = "Not enough gold for Streak Freeze!";
+            $error = "Gold tidak cukup untuk Perisai Streak Freeze!";
         }
     }
 
@@ -96,10 +96,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             } catch (Exception $e) {
                 $pdo->rollBack();
-                $error = "Transaction failed.";
+                $error = "Transaksi gagal.";
             }
         } else {
-            $error = "Not enough gold!";
+            $error = "Gold tidak cukup!";
         }
     }
     
@@ -121,11 +121,11 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="page-header d-flex justify-content-between align-items-end">
     <div>
-        <h1 class="page-title">Supply Station</h1>
-        <p class="page-subtitle">Redeem accumulated gold for vitals recovery, streak shields, and personal rewards.</p>
+        <h1 class="page-title">Toko Suplai</h1>
+        <p class="page-subtitle">Tukarkan gold untuk pemulihan vital, perisai streak, dan hadiah pribadi.</p>
     </div>
     <div class="text-end">
-        <div class="text-muted" style="font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">Available Balance</div>
+        <div class="text-muted" style="font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">Saldo Gold</div>
         <div style="font-size: 1.8rem; font-weight: 600; color: var(--status-warning); font-family: var(--font-mono); line-height: 1;">
             <i class="fas fa-coins me-1" style="font-size: 1.3rem;"></i><?php echo number_format($userGold); ?>
         </div>
@@ -139,17 +139,17 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php endif; ?>
 <?php if (isset($_GET['success']) && $_GET['success'] == 'bought'): ?>
     <div class="p-3 mb-4 d-flex align-items-center gap-2" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.85rem;">
-        <i class="fas fa-check-circle"></i> Reward redeemed successfully! Enjoy your reward.
+        <i class="fas fa-check-circle"></i> Hadiah berhasil ditebus! Selamat menikmati.
     </div>
 <?php endif; ?>
 <?php if (isset($_GET['success']) && $_GET['success'] == 'healed'): ?>
     <div class="p-3 mb-4 d-flex align-items-center gap-2" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.85rem;">
-        <i class="fas fa-heart"></i> HP successfully restored! Your character is revitalized.
+        <i class="fas fa-heart"></i> HP berhasil dipulihkan! Karaktermu kembali bugar.
     </div>
 <?php endif; ?>
 <?php if (isset($_GET['success']) && $_GET['success'] == 'frozen'): ?>
     <div class="p-3 mb-4 d-flex align-items-center gap-2" style="background-color: var(--status-info-dim); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--status-info); border-radius: var(--radius); font-size: 0.85rem;">
-        <i class="fas fa-snowflake"></i> Streak Freeze Shield acquired! You have 1 day of protection.
+        <i class="fas fa-snowflake"></i> Perisai Streak Freeze didapat! Streak-mu aman 1 hari.
     </div>
 <?php endif; ?>
 
@@ -157,7 +157,7 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="mb-5">
     <div class="panel-header" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem; margin-bottom: 1rem;">
         <h3 class="panel-title" style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
-            <i class="fas fa-prescription-bottle text-danger"></i> System Consumables
+            <i class="fas fa-prescription-bottle text-danger"></i> Konsumsi Sistem
         </h3>
     </div>
     
@@ -170,8 +170,8 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-prescription-bottle"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Minor Health Potion</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Restores +25 HP instantly</div>
+                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Ramuan HP Minor</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Memulihkan +25 HP seketika</div>
                     </div>
                 </div>
                 <form method="POST" action="shop.php" class="m-0">
@@ -192,8 +192,8 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-flask"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Full Elixir of Life</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Restores 100% full health</div>
+                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Elixir Kehidupan Penuh</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Memulihkan 100% HP penuh</div>
                     </div>
                 </div>
                 <form method="POST" action="shop.php" class="m-0">
@@ -214,8 +214,8 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <i class="fas fa-snowflake"></i>
                     </div>
                     <div>
-                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Streak Freeze Shield</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">Protects streak for 1 day</div>
+                        <div style="font-weight: 500; font-size: 0.88rem; color: var(--text-primary);">Perisai Streak Freeze</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Melindungi streak selama 1 hari</div>
                     </div>
                 </div>
                 <form method="POST" action="shop.php" class="m-0">
@@ -233,7 +233,7 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div>
     <div class="panel-header" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem; margin-bottom: 1rem;">
         <h3 class="panel-title" style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
-            <i class="fas fa-gift text-warning"></i> Real-Life Treats & Incentives
+            <i class="fas fa-gift text-warning"></i> Hadiah Dunia Nyata & Insentif
         </h3>
     </div>
 
@@ -244,7 +244,7 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <form method="POST" action="shop.php" style="position: absolute; top: 0.75rem; right: 0.75rem;">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="reward_id" value="<?php echo $reward['reward_id']; ?>">
-                        <button type="submit" name="delete_reward" class="btn-core btn-ghost p-1" title="Delete reward">
+                        <button type="submit" name="delete_reward" class="btn-core btn-ghost p-1" title="Hapus hadiah">
                             <i class="fas fa-times" style="font-size: 0.75rem;"></i>
                         </button>
                     </form>
@@ -275,8 +275,8 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div style="width: 36px; height: 36px; border-radius: var(--radius); background-color: var(--bg-surface-hover); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-bottom: 0.75rem;">
                     <i class="fas fa-plus"></i>
                 </div>
-                <div style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary);">Create Reward</div>
-                <div class="text-muted" style="font-size: 0.72rem;">Set a custom real-life treat</div>
+                <div style="font-size: 0.85rem; font-weight: 500; color: var(--text-secondary);">Buat Hadiah</div>
+                <div class="text-muted" style="font-size: 0.72rem;">Tentukan hadiah dunia nyatamu sendiri</div>
             </div>
         </div>
     </div>
@@ -289,36 +289,36 @@ $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <form method="POST" action="shop.php">
                 <?php echo csrf_field(); ?>
                 <div class="modal-header">
-                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-gift me-2 text-warning"></i> Create Reward</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-gift me-2 text-warning"></i> Buat Hadiah</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Reward Name</label>
-                        <input type="text" class="form-control" name="reward_name" placeholder="e.g., Buy Coffee, Play Game 2 Hours" required>
+                        <label class="form-label">Nama hadiah</label>
+                        <input type="text" class="form-control" name="reward_name" placeholder="mis., Beli kopi, Main game 2 jam" required>
                     </div>
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label">Gold Cost</label>
+                            <label class="form-label">Harga (Gold)</label>
                             <input type="number" class="form-control font-mono" name="cost" min="1" placeholder="100" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label">Icon</label>
+                            <label class="form-label">Ikon</label>
                             <select class="form-select" name="icon">
-                                <option value="fa-gift">Gift</option>
-                                <option value="fa-coffee">Coffee</option>
-                                <option value="fa-gamepad">Gaming</option>
-                                <option value="fa-pizza-slice">Food</option>
-                                <option value="fa-ticket-alt">Entertainment</option>
-                                <option value="fa-shopping-cart">Shopping</option>
-                                <option value="fa-bed">Rest / Sleep</option>
+                                <option value="fa-gift">Kado</option>
+                                <option value="fa-coffee">Kopi</option>
+                                <option value="fa-gamepad">Game</option>
+                                <option value="fa-pizza-slice">Makanan</option>
+                                <option value="fa-ticket-alt">Hiburan</option>
+                                <option value="fa-shopping-cart">Belanja</option>
+                                <option value="fa-bed">Istirahat</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="add_reward" class="btn-core btn-primary">Create Reward</button>
+                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" name="add_reward" class="btn-core btn-primary">Buat Hadiah</button>
                 </div>
             </form>
         </div>

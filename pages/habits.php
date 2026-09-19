@@ -216,17 +216,17 @@ require_once '../includes/header.php';
             <form id="addHabitForm" method="POST" action="habits.php">
                 <?php echo csrf_field(); ?>
                 <div class="modal-header">
-                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-plus me-2 text-accent"></i> Create New Routine</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-plus me-2 text-accent"></i> Buat Rutinitas Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="habitName" class="form-label">Habit Name</label>
-                        <input type="text" class="form-control" id="habitName" name="habit_name" placeholder="e.g., Read 15 pages, 20 Pushups" required>
+                        <label for="habitName" class="form-label">Nama habit</label>
+                        <input type="text" class="form-control" id="habitName" name="habit_name" placeholder="mis., Baca 15 halaman, 20 pushup" required>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="category" class="form-label">Category / Attribute Area</label>
+                        <label for="category" class="form-label">Kategori / Area atribut</label>
                         <select class="form-select" id="category" name="category" required>
                             <option value="Intelligence">Intelligence</option>
                             <option value="Physical">Physical</option>
@@ -238,15 +238,15 @@ require_once '../includes/header.php';
                     
                     <div class="row g-2">
                         <div class="col-6">
-                            <label for="difficulty" class="form-label">Difficulty Tier</label>
+                            <label for="difficulty" class="form-label">Tingkat kesulitan</label>
                             <select class="form-select" id="difficulty" name="difficulty" required>
-                                <option value="Easy">Easy (+5 EXP)</option>
-                                <option value="Medium">Medium (+10 EXP)</option>
-                                <option value="Hard">Hard (+15 EXP)</option>
+                                <option value="Easy">Mudah (+5 EXP)</option>
+                                <option value="Medium">Sedang (+10 EXP)</option>
+                                <option value="Hard">Sulit (+15 EXP)</option>
                             </select>
                         </div>
                         <div class="col-6">
-                            <label for="resetPeriod" class="form-label">Reset Frequency</label>
+                            <label for="resetPeriod" class="form-label">Frekuensi reset</label>
                             <select class="form-select" id="resetPeriod" name="reset_period" required>
                                 <option value="daily">Daily</option>
                                 <option value="weekly">Weekly</option>
@@ -256,8 +256,8 @@ require_once '../includes/header.php';
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn-core btn-primary">Create Routine</button>
+                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn-core btn-primary">Buat Rutinitas</button>
                 </div>
             </form>
         </div>
@@ -266,11 +266,11 @@ require_once '../includes/header.php';
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Daily Routines</h1>
-        <p class="page-subtitle">Track, maintain, and compound your daily discipline.</p>
+        <h1 class="page-title">Rutinitas Harian</h1>
+        <p class="page-subtitle">Lacak, jaga, dan lipatgandakan disiplin harianmu.</p>
     </div>
     <button class="btn-core btn-primary" data-bs-toggle="modal" data-bs-target="#addHabitModal">
-        <i class="fas fa-plus"></i> New Habit
+        <i class="fas fa-plus"></i> Habit Baru
     </button>
 </div>
 
@@ -278,7 +278,7 @@ require_once '../includes/header.php';
     <?php if (empty($habits)): ?>
         <div class="text-center py-5 text-muted">
             <i class="fas fa-seedling fa-2x mb-3" style="opacity: 0.3;"></i>
-            <p class="mb-0">No active routines configured yet. Create one to begin leveling up.</p>
+            <p class="mb-0">Belum ada rutinitas aktif. Buat satu untuk mulai naik level.</p>
         </div>
     <?php else: ?>
         <div class="data-list">
@@ -303,7 +303,7 @@ require_once '../includes/header.php';
                                         }
                                 ?>
                                     <span class="<?php echo $streakClass; ?>">
-                                        <i class="fas fa-fire"></i> <?php echo $streak; ?>d<?php echo $boostText; ?>
+                                        <i class="fas fa-fire"></i> <?php echo $streak; ?>h<?php echo $boostText; ?>
                                     </span>
                                 <?php endif; ?>
                             </div>
@@ -321,26 +321,26 @@ require_once '../includes/header.php';
                         </div>
                         
                         <?php if ($habit['completed_today']): ?>
-                            <span class="badge-status accent"><i class="fas fa-check"></i> Done</span>
+                            <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
                         <?php else: ?>
                             <form method="POST" style="margin: 0;">
                                 <?php echo csrf_field(); ?>
                                 <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
                                 <button type="submit" name="complete_habit" class="btn-core btn-accent" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
-                                    Complete
+                                    Selesaikan
                                 </button>
                             </form>
                         <?php endif; ?>
                         
                         <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Edit" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
+                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
                         <form method="POST" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Delete">
+                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -356,16 +356,16 @@ require_once '../includes/header.php';
                                 <input type="hidden" name="edit_habit" value="1">
                                 <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-edit me-2 text-accent"></i> Edit Routine</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-edit me-2 text-accent"></i> Ubah Rutinitas</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Habit Name</label>
+                                        <label class="form-label">Nama habit</label>
                                         <input type="text" class="form-control" name="habit_name" value="<?php echo htmlspecialchars($habit['habit_name']); ?>" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Category / Attribute</label>
+                                        <label class="form-label">Kategori / Atribut</label>
                                         <select class="form-select" name="category" required>
                                             <option value="Intelligence" <?php echo $habit['category'] == 'Intelligence' ? 'selected' : ''; ?>>Intelligence</option>
                                             <option value="Physical" <?php echo $habit['category'] == 'Physical' ? 'selected' : ''; ?>>Physical</option>
@@ -376,15 +376,15 @@ require_once '../includes/header.php';
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-6">
-                                            <label class="form-label">Difficulty</label>
+                                            <label class="form-label">Tingkat kesulitan</label>
                                             <select class="form-select" name="difficulty" required>
-                                                <option value="Easy" <?php echo $habit['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Easy (+5 EXP)</option>
-                                                <option value="Medium" <?php echo $habit['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Medium (+10 EXP)</option>
-                                                <option value="Hard" <?php echo $habit['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Hard (+15 EXP)</option>
+                                                <option value="Easy" <?php echo $habit['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Mudah (+5 EXP)</option>
+                                                <option value="Medium" <?php echo $habit['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Sedang (+10 EXP)</option>
+                                                <option value="Hard" <?php echo $habit['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Sulit (+15 EXP)</option>
                                             </select>
                                         </div>
                                         <div class="col-6">
-                                            <label class="form-label">Reset Frequency</label>
+                                            <label class="form-label">Frekuensi reset</label>
                                             <select class="form-select" name="reset_period" required>
                                                 <option value="daily" <?php echo strtolower($habit['reset_period']) == 'daily' ? 'selected' : ''; ?>>Daily</option>
                                                 <option value="weekly" <?php echo strtolower($habit['reset_period']) == 'weekly' ? 'selected' : ''; ?>>Weekly</option>
@@ -394,8 +394,8 @@ require_once '../includes/header.php';
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                                    <button type="submit" class="btn-core btn-primary">Save Changes</button>
+                                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn-core btn-primary">Simpan Perubahan</button>
                                 </div>
                             </form>
                         </div>

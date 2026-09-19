@@ -6,7 +6,7 @@
     <div id="nagBanner" class="nag-banner" style="display: none;" role="alert">
         <i class="fas fa-fire text-warning"></i>
         <span id="nagText"></span>
-        <a href="habits.php" class="btn-core btn-accent" style="padding: 0.3rem 0.7rem; font-size: 0.75rem;">Do it now</a>
+        <a href="habits.php" class="btn-core btn-accent" style="padding: 0.3rem 0.7rem; font-size: 0.75rem;">Kerjakan sekarang</a>
         <button id="nagClose" class="btn-core btn-ghost" style="padding: 0.3rem 0.5rem;" aria-label="Dismiss">
             <i class="fas fa-times"></i>
         </button>
@@ -89,7 +89,7 @@
             </div>
             <div>
                 <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 2px;">
-                    <?php echo htmlspecialchars($toast['name']); ?> Completed!
+                    <?php echo htmlspecialchars($toast['name']); ?> Selesai!
                 </div>
                 <div class="d-flex align-items-center gap-2" style="font-size: 0.85rem; font-family: var(--font-mono);">
                     <span style="color: var(--accent-emerald);">+<?php echo $toast['exp']; ?> EXP</span>
@@ -130,19 +130,19 @@
                     <div style="width: 64px; height: 64px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.15); color: var(--accent-danger); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem auto;">
                         <i class="fas fa-skull"></i>
                     </div>
-                    <h3 class="text-danger fw-bold mb-2">YOU FELL IN BATTLE!</h3>
+                    <h3 class="text-danger fw-bold mb-2">KAMU GUGUR DALAM PERTEMPURAN!</h3>
                     <p class="text-secondary" style="font-size: 0.9rem;">
-                        Your HP dropped to 0 due to missed daily habits or failed quests.
+                        HP-mu habis karena kebiasaan harian terlewat atau misi yang gagal.
                     </p>
                     <div class="p-3 my-3" style="background-color: var(--bg-base); border-radius: 8px; border: 1px solid var(--border-dim); font-family: var(--font-mono); font-size: 0.85rem;">
-                        <div class="text-danger mb-1">-<?php echo $death['lost_exp']; ?> EXP Lost (50% Penalty)</div>
-                        <div class="text-muted">All active streaks reset to 0</div>
+                        <div class="text-danger mb-1">-<?php echo $death['lost_exp']; ?> EXP Hilang (Penalti 50%)</div>
+                        <div class="text-muted">Semua streak aktif di-reset ke 0</div>
                     </div>
                     <p class="text-light small mb-4">
-                        The system has revived you with full HP. Don't let your discipline slip again!
+                        Sistem telah menghidupkanmu kembali dengan HP penuh. Jangan biarkan disiplinmu kendor lagi!
                     </p>
                     <button type="button" class="btn-core btn-primary w-100 py-2" onclick="document.getElementById('deathModal').remove();">
-                        Rise Again
+                        Bangkit Lagi
                     </button>
                 </div>
             </div>
@@ -191,7 +191,7 @@
             const render = () => {
                 const on = LVSound.isOn();
                 btn.querySelector('i').className = on ? 'fas fa-volume-up' : 'fas fa-volume-mute';
-                btn.querySelector('span').textContent = on ? 'Sound on' : 'Muted';
+                btn.querySelector('span').textContent = on ? 'Suara nyala' : 'Senyap';
             };
             render();
             btn.addEventListener('click', () => { LVSound.toggle(); render(); });
@@ -227,11 +227,10 @@
 
         /* ============ Browser notifications + nag banner ============ */
         function nagMessage(incomplete, streak) {
-            const s = incomplete > 1 ? 's' : '';
             const threat = streak > 0
-                ? ` Your ${streak}-day streak is on the line.`
+                ? ` Streak ${streak} harimu terancam.`
                 : '';
-            return `${incomplete} routine${s} still open.${threat}`;
+            return `${incomplete} rutinitas masih terbuka.${threat}`;
         }
 
         function showNagBanner(incomplete, streak) {
@@ -249,7 +248,7 @@
 
         async function fireNagNotification(incomplete, streak) {
             if (!('Notification' in window) || Notification.permission !== 'granted') return;
-            const title = 'Streak at risk!';
+            const title = 'Streak terancam!';
             const options = {
                 body: nagMessage(incomplete, streak),
                 icon: '../assets/icons/icon-192.png',
@@ -307,9 +306,9 @@
             const render = () => {
                 if (!label) return;
                 label.textContent =
-                    Notification.permission === 'granted' ? 'Notifications on' :
-                    Notification.permission === 'denied' ? 'Notifications blocked' :
-                    'Enable notifications';
+                    Notification.permission === 'granted' ? 'Notifikasi aktif' :
+                    Notification.permission === 'denied' ? 'Notifikasi diblokir' :
+                    'Aktifkan notifikasi';
             };
             render();
             if (enableBtn) {
@@ -321,7 +320,7 @@
             if (testBtn) {
                 testBtn.addEventListener('click', () => {
                     if (Notification.permission !== 'granted') {
-                        alert('Enable notifications first.');
+                        alert('Aktifkan notifikasi dulu.');
                         return;
                     }
                     fireNagNotification(2, 5);
@@ -335,7 +334,7 @@
         // Custom confirmation for all destructive actions
         document.querySelectorAll('button[name*="delete"], button[title*="Delete"], button[title*="Remove"], .btn-danger').forEach(button => {
             button.addEventListener('click', function (event) {
-                if (!confirm('Are you sure you want to delete this? This action cannot be undone.')) {
+                if (!confirm('Yakin ingin menghapus ini? Tindakan ini tidak bisa dibatalkan.')) {
                     event.preventDefault();
                 }
             });

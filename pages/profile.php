@@ -118,8 +118,8 @@ try {
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Character Profile</h1>
-        <p class="page-subtitle">User credentials, identity avatar, and lifetime record statistics.</p>
+        <h1 class="page-title">Profil Karakter</h1>
+        <p class="page-subtitle">Kredensial pengguna, avatar identitas, dan statistik rekor seumur hidup.</p>
     </div>
 </div>
 
@@ -135,7 +135,7 @@ try {
                         <i class="fas fa-user" style="font-size: 2.25rem;"></i>
                     </div>
                 <?php endif; ?>
-                <button class="btn-core position-absolute bottom-0 end-0" id="edit-picture-btn" title="Change Avatar" style="width: 28px; height: 28px; padding: 0; border-radius: 50%; background-color: var(--text-primary); color: var(--bg-base);">
+                <button class="btn-core position-absolute bottom-0 end-0" id="edit-picture-btn" title="Ganti Avatar" style="width: 28px; height: 28px; padding: 0; border-radius: 50%; background-color: var(--text-primary); color: var(--bg-base);">
                     <i class="fas fa-pencil-alt" style="font-size: 10px;"></i>
                 </button>
             </div>
@@ -145,7 +145,7 @@ try {
 
             <!-- Mobile only logout (sidebar footer is hidden on small screens) -->
             <a href="../logout.php" class="btn-core btn-ghost text-danger w-100 d-md-none mt-2" style="font-size: 0.8rem;">
-                <i class="fas fa-sign-out-alt"></i> Log out
+                <i class="fas fa-sign-out-alt"></i> Keluar
             </a>
 
             <!-- Card for profile picture edit options -->
@@ -156,13 +156,13 @@ try {
                         <input type="file" name="profile_picture" id="profile_picture" accept="image/*" class="form-control" style="font-size: 0.75rem;">
                     </div>
                     <div class="d-flex gap-2 justify-content-center">
-                        <button type="button" class="btn-core btn-ghost" id="cancel-upload">Cancel</button>
-                        <button type="submit" class="btn-core btn-primary">Upload</button>
+                        <button type="button" class="btn-core btn-ghost" id="cancel-upload">Batal</button>
+                        <button type="submit" class="btn-core btn-primary">Unggah</button>
                     </div>
                 </form>
                 <form action="profile.php" method="POST" class="mt-3">
                     <?php echo csrf_field(); ?>
-                    <button type="submit" name="delete_picture" class="btn-core btn-ghost text-danger w-100" style="font-size: 0.75rem;">Remove Avatar</button>
+                    <button type="submit" name="delete_picture" class="btn-core btn-ghost text-danger w-100" style="font-size: 0.75rem;">Hapus Avatar</button>
                 </form>
             </div>
         </div>
@@ -171,12 +171,12 @@ try {
     <div class="col-md-8">
         <div class="bento-panel h-100 p-4">
             <div class="panel-header">
-                <h3 class="panel-title"><i class="fas fa-chart-line text-accent"></i> Level & Advancement Metrics</h3>
+                <h3 class="panel-title"><i class="fas fa-chart-line text-accent"></i> Metrik Level & Perkembangan</h3>
             </div>
             
             <div class="mb-4">
                 <div class="d-flex justify-content-between mb-1" style="font-size: 0.78rem;">
-                    <span style="font-weight: 500;">Level <?php echo $level; ?></span>
+                    <span style="font-weight: 500;">Tingkat <?php echo $level; ?></span>
                     <span class="font-mono text-accent"><?php echo number_format($totalExp); ?> / <?php echo number_format($level * 1000); ?> EXP</span>
                 </div>
                 <div class="vitals-track">
@@ -184,20 +184,20 @@ try {
                     <div class="vitals-fill" style="width: <?php echo $expPercentage; ?>%; background-color: var(--accent);"></div>
                 </div>
                 <div class="text-end text-muted mt-1 font-mono" style="font-size: 0.7rem;">
-                    <?php echo number_format(max(0, $expToNextLevel)); ?> EXP TO NEXT LEVEL
+                    SISA <?php echo number_format(max(0, $expToNextLevel)); ?> EXP KE TINGKAT BERIKUTNYA
                 </div>
             </div>
 
             <div class="row g-3">
                 <div class="col-6">
                     <div style="padding: 1rem; background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
-                        <div class="text-muted mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Quests Completed</div>
+                        <div class="text-muted mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Misi Tuntas</div>
                         <div style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 600; line-height: 1;"><?php echo number_format($questStats['quests_completed'] ?? 0); ?></div>
                     </div>
                 </div>
                 <div class="col-6">
                     <div style="padding: 1rem; background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
-                        <div class="text-muted mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Habits Completed</div>
+                        <div class="text-muted mb-1" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Kebiasaan Tuntas</div>
                         <div style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 600; line-height: 1; color: var(--accent);"><?php echo number_format($habitStats['habits_completed'] ?? 0); ?></div>
                     </div>
                 </div>
@@ -208,12 +208,12 @@ try {
 
 <div class="bento-panel mt-3 p-4">
     <div class="panel-header">
-        <h3 class="panel-title"><i class="fas fa-bell text-accent"></i> Reminders & App</h3>
+            <h3 class="panel-title"><i class="fas fa-bell text-accent"></i> Pengingat & Aplikasi</h3>
     </div>
 
     <?php if (!empty($reminderSaved)): ?>
         <div class="p-2 mb-3 text-center" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.8rem;">
-            Reminder time saved.
+            Waktu pengingat tersimpan.
         </div>
     <?php endif; ?>
     <?php if (!empty($reminderError)): ?>
@@ -226,29 +226,29 @@ try {
         <div class="col-md-4">
             <form method="POST" action="profile.php">
                 <?php echo csrf_field(); ?>
-                <label class="form-label" for="reminder_time">Daily streak warning at</label>
+                <label class="form-label" for="reminder_time">Peringatan streak harian pukul</label>
                 <div class="d-flex gap-2">
                     <input type="time" class="form-control font-mono" id="reminder_time" name="reminder_time"
                            value="<?php echo htmlspecialchars(substr($user['reminder_time'] ?? '20:00:00', 0, 5)); ?>" required>
-                    <button type="submit" name="save_reminder" value="1" class="btn-core btn-primary">Save</button>
+                    <button type="submit" name="save_reminder" value="1" class="btn-core btn-primary">Simpan</button>
                 </div>
-                <div class="text-muted mt-1" style="font-size: 0.72rem;">If routines are still open past this hour, the system nags you.</div>
+                <div class="text-muted mt-1" style="font-size: 0.72rem;">Jika rutinitas masih terbuka lewat jam ini, sistem akan mengomelimu.</div>
             </form>
         </div>
         <div class="col-md-8">
-            <label class="form-label">Browser notifications</label>
+            <label class="form-label">Notifikasi browser</label>
             <div class="d-flex flex-wrap gap-2">
                 <button type="button" class="btn-core btn-outline" id="btn-enable-notif">
-                    <i class="fas fa-bell"></i> <span id="notif-label">Enable notifications</span>
+                    <i class="fas fa-bell"></i> <span id="notif-label">Aktifkan notifikasi</span>
                 </button>
                 <button type="button" class="btn-core btn-ghost" id="btn-test-notif">
-                    <i class="fas fa-flask"></i> Send test
+                    <i class="fas fa-flask"></i> Kirim tes
                 </button>
                 <button type="button" class="btn-core btn-ghost" id="btn-install-app" style="display: none;">
-                    <i class="fas fa-download"></i> Install app
+                    <i class="fas fa-download"></i> Pasang aplikasi
                 </button>
             </div>
-            <div class="text-muted mt-1" style="font-size: 0.72rem;">Works best after installing Lifevuww to your home screen.</div>
+            <div class="text-muted mt-1" style="font-size: 0.72rem;">Paling baik setelah Lifevuww dipasang ke layar utama.</div>
         </div>
     </div>
 </div>

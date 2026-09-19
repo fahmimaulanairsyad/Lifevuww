@@ -52,8 +52,8 @@ arsort($stat_data);
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Attribute Matrix</h1>
-        <p class="page-subtitle">Multi-dimensional progression across core life pillars.</p>
+        <h1 class="page-title">Matriks Atribut</h1>
+        <p class="page-subtitle">Perkembangan multidimensi lima pilar kehidupan.</p>
     </div>
 </div>
 
@@ -61,7 +61,7 @@ arsort($stat_data);
     <div class="row align-items-center g-4">
         <div class="col-md-5">
             <div class="panel-header">
-                <h3 class="panel-title"><i class="fas fa-layer-group text-accent"></i> Core Attributes</h3>
+                <h3 class="panel-title"><i class="fas fa-layer-group text-accent"></i> Atribut Inti</h3>
             </div>
             
             <div class="data-list">
@@ -158,7 +158,7 @@ arsort($stat_data);
                     bodyFont: { family: "'Geist Mono', monospace", size: 11 },
                     displayColors: false,
                     callbacks: {
-                        label: function(context) { return 'Level ' + context.parsed.r; }
+                        label: function(context) { return 'Tingkat ' + context.parsed.r; }
                     }
                 }
             }

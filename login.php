@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: pages/dashboard.php");
         exit();
     } else {
-        $error = "Invalid username or password";
+        $error = "Nama pengguna atau kata sandi salah";
     }
 }
 ?>
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Lifevuww</title>
+    <title>Masuk - Lifevuww</title>
     <!-- Favicon -->
     <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
     <!-- PWA -->
@@ -57,8 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div style="width: 100%; max-width: 380px;">
         <div class="text-center mb-4">
             <img src="assets/images/logo.svg" alt="Lifevuww Logo" style="width: 44px; height: 44px; margin-bottom: 1rem;">
-            <h1 style="font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em;">Lifevuww Terminal</h1>
-            <p class="text-muted" style="font-size: 0.82rem;">Sign in to access your life progression system</p>
+            <h1 style="font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em;">Selamat Datang di Lifevuww</h1>
+            <p class="text-muted" style="font-size: 0.82rem;">Masuk untuk mengakses sistem progres hidupmu</p>
         </div>
 
         <div class="bento-panel p-4">
@@ -71,19 +71,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <form method="POST">
                 <?php echo csrf_field(); ?>
                 <div class="mb-3">
-                    <label class="form-label">Username</label>
-                    <input type="text" name="username" class="form-control" required autofocus placeholder="Enter your username">
+                    <label class="form-label">Nama pengguna</label>
+                    <input type="text" name="username" class="form-control" required autofocus placeholder="Masukkan nama penggunamu">
                 </div>
                 <div class="mb-4">
-                    <label class="form-label">Password</label>
+                    <label class="form-label">Kata sandi</label>
                     <input type="password" name="password" class="form-control" required placeholder="••••••••">
                 </div>
-                <button type="submit" class="btn-core btn-primary w-100" style="padding: 0.65rem;">Authenticate</button>
+                <button type="submit" class="btn-core btn-primary w-100" style="padding: 0.65rem;">Masuk</button>
             </form>
         </div>
 
         <p class="text-center mt-3" style="color: var(--text-muted); font-size: 0.8rem;">
-            Don't have an account? <a href="register.php" style="color: var(--text-primary); font-weight: 500;">Register here</a>
+            Belum punya akun? <a href="register.php" style="color: var(--text-primary); font-weight: 500;">Daftar di sini</a>
         </p>
     </div>
 

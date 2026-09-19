@@ -1,7 +1,7 @@
 {
   "name": "Lifevuww",
   "short_name": "Lifevuww",
-  "description": "Gamified habit tracker and RPG productivity system",
+  "description": "Pelacak kebiasaan gamifikasi dan sistem produktivitas RPG",
   "start_url": "./index.php",
   "scope": "./",
   "display": "standalone",
