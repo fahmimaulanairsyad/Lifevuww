@@ -18,10 +18,25 @@ $dbname = $_ENV['DB_NAME'] ?? 'habit_tracker_rpg';
 $username = $_ENV['DB_USERNAME'] ?? 'root';
 $password = $_ENV['DB_PASSWORD'] ?? '';
 
+// --- Application Timezone (single source of truth) ---
+// Server hosting berjalan di UTC sedangkan pengguna di WIB (UTC+7).
+// Tanpa ini, aktivitas jam 00:00–06:59 WIB tercatat sebagai "kemarin"
+// dan reset harian jatuh jam 07:00 WIB, bukan tengah malam.
+if (!defined('APP_TIMEZONE')) {
+    define('APP_TIMEZONE', $_ENV['APP_TIMEZONE'] ?? 'Asia/Jakarta');
+}
+date_default_timezone_set(APP_TIMEZONE);
+
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    // Samakan zona waktu session MySQL dengan PHP agar CURDATE(), NOW(),
+    // DATE(), dan perbandingan reset harian konsisten satu sama lain.
+    $tzOffset = (new DateTime('now', new DateTimeZone(APP_TIMEZONE)))->format('P'); // contoh: +07:00
+    if (preg_match('/^[+-]\d{2}:\d{2}$/', $tzOffset)) {
+        $pdo->exec("SET time_zone = '$tzOffset'");
+    }
 } catch(PDOException $e) {
     error_log("Database connection failed: " . $e->getMessage());
     die("Database connection failed. Please check your configuration.");
