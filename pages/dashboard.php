@@ -135,7 +135,7 @@ GROUP BY u.user_id
 
 <div class="page-header">
     <div>
-        <h1 class="page-title">Dasbor Komando</h1>
+        <h1 class="page-title">Dasbor</h1>
         <p class="page-subtitle">Status real-time progres karakter, disiplin harian, dan statistik vital.</p>
     </div>
 </div>
