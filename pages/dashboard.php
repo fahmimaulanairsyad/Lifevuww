@@ -257,6 +257,7 @@ GROUP BY u.user_id
 <div class="bento-panel">
     <div class="panel-header">
         <h3 class="panel-title"><i class="fas fa-history text-muted"></i> Penyelesaian Terakhir</h3>
+        <a href="history.php" style="font-size: 0.78rem; color: var(--text-secondary);">Lihat semua →</a>
     </div>
     
     <div class="data-list">

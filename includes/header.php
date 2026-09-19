@@ -187,6 +187,9 @@ require_once __DIR__ . '/../config/database.php';
                 <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>">
                     <i class="fas fa-store"></i> <span>Toko</span>
                 </a>
+                <a href="history.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-history"></i> <span>Riwayat</span>
+                </a>
                 <!-- Mobile only profile link -->
                 <a href="profile.php" class="nav-item d-md-none <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
                     <i class="fas fa-user-circle"></i> <span>Profil</span>

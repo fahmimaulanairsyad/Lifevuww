@@ -42,6 +42,26 @@ try {
     // Calculate EXP for next level
     $expToNextLevel = ($level * 1000) - $totalExp;
 
+    // Handle change password
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
+        validate_csrf();
+        $cur = $_POST['current_password'] ?? '';
+        $new = $_POST['new_password'] ?? '';
+        $conf = $_POST['confirm_password'] ?? '';
+
+        if (!password_verify($cur, $user['password'])) {
+            $passError = "Kata sandi saat ini salah.";
+        } elseif (strlen($new) < 6) {
+            $passError = "Kata sandi baru minimal 6 karakter.";
+        } elseif ($new !== $conf) {
+            $passError = "Konfirmasi kata sandi tidak cocok.";
+        } else {
+            $pdo->prepare("UPDATE users SET password = ? WHERE user_id = ?")
+                ->execute([password_hash($new, PASSWORD_DEFAULT), $_SESSION['user_id']]);
+            $passSaved = true;
+        }
+    }
+
     // Handle reminder time setting
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_reminder'])) {
         validate_csrf();
@@ -261,6 +281,91 @@ try {
                 </button>
             </div>
             <div class="text-muted mt-1" style="font-size: 0.72rem;">Bunyi perayaan saat tugas selesai.</div>
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Pasang manual ke layar utama</label>
+            <div>
+                <button type="button" class="btn-core btn-ghost" data-bs-toggle="modal" data-bs-target="#installGuideModal">
+                    <i class="fas fa-question-circle"></i> Panduan pasang manual
+                </button>
+            </div>
+            <div class="text-muted mt-1" style="font-size: 0.72rem;">Untuk browser yang tidak memunculkan tombol pasang otomatis.</div>
+        </div>
+    </div>
+</div>
+
+<div class="bento-panel mt-3 p-4">
+    <div class="panel-header">
+        <h3 class="panel-title"><i class="fas fa-shield-alt text-accent"></i> Keamanan Akun</h3>
+    </div>
+
+    <?php if (!empty($passSaved)): ?>
+        <div class="p-2 mb-3 text-center" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.8rem;">
+            Kata sandi berhasil diganti.
+        </div>
+    <?php endif; ?>
+    <?php if (!empty($passError)): ?>
+        <div class="p-2 mb-3 text-center" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
+            <?php echo htmlspecialchars($passError); ?>
+        </div>
+    <?php endif; ?>
+
+    <form method="POST" action="profile.php">
+        <?php echo csrf_field(); ?>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label" for="current_password">Kata sandi saat ini</label>
+                <input type="password" class="form-control" id="current_password" name="current_password" required autocomplete="current-password">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="new_password">Kata sandi baru (min. 6)</label>
+                <input type="password" class="form-control" id="new_password" name="new_password" required autocomplete="new-password">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label" for="confirm_password">Ulangi kata sandi baru</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required autocomplete="new-password">
+            </div>
+        </div>
+        <div class="mt-3">
+            <button type="submit" name="change_password" value="1" class="btn-core btn-primary">Ganti Kata Sandi</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Panduan Pasang Manual -->
+<div class="modal fade" id="installGuideModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-download me-2 text-accent"></i> Pasang Lifevuww Manual</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body" style="font-size: 0.85rem;">
+                <p class="text-muted">Kalau tombol pasang otomatis tidak muncul, ikuti langkah sesuai perangkatmu:</p>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Android — Chrome</h6>
+                <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
+                    <li>Ketuk ikon <strong>Install</strong> di address bar (kalau ada).</li>
+                    <li>Atau ketuk menu <strong>⋮ → Add to Home screen / Install app</strong>.</li>
+                </ol>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Android — Brave</h6>
+                <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
+                    <li>Ketuk menu <strong>⋮ → Add to Home screen</strong>.</li>
+                    <li>Konfirmasi nama <strong>Lifevuww → Add</strong>.</li>
+                </ol>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">iPhone — Safari</h6>
+                <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
+                    <li>Ketuk tombol <strong>Share</strong> (kotak + panah ke atas).</li>
+                    <li>Pilih <strong>Add to Home Screen → Add</strong>.</li>
+                </ol>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">PC — Chrome / Brave / Edge</h6>
+                <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0;">
+                    <li>Klik ikon <strong>Install</strong> di sisi kanan address bar.</li>
+                    <li>Atau menu <strong>⋮ → Save and share / Cast, save and share → Install page as app</strong>.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-core btn-primary" data-bs-dismiss="modal">Mengerti</button>
+            </div>
         </div>
     </div>
 </div>
