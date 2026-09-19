@@ -334,6 +334,17 @@
     </script>
 
     <script>
+        // Clicking anywhere on a date field opens the native calendar popup
+        document.querySelectorAll('input[type="date"]').forEach((el) => {
+            el.addEventListener('click', () => {
+                try {
+                    if (typeof el.showPicker === 'function') el.showPicker();
+                } catch (e) { /* picker unsupported, fall back to typing */ }
+            });
+        });
+    </script>
+
+    <script>
         // Custom confirmation for all destructive actions
         document.querySelectorAll('button[name*="delete"], button[title*="Delete"], button[title*="Remove"], .btn-danger').forEach(button => {
             button.addEventListener('click', function (event) {

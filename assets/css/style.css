@@ -5,6 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 
 :root {
+    color-scheme: dark;
     /* Base Layers (Zinc Off-Black: depth over pure black) */
     --bg-base: #09090b;
     --bg-surface: #111114;
@@ -432,6 +433,20 @@ a:hover {
     font-size: 0.78rem;
     font-weight: 500;
     margin-bottom: 0.35rem;
+}
+
+/* Native date picker: keep the calendar icon visible on dark inputs
+   and make it an obvious click target */
+input[type="date"] {
+    position: relative;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.75);
+    opacity: 0.85;
+    cursor: pointer;
+    padding: 2px;
+    margin: 0;
 }
 
 /* Modals */
