@@ -43,19 +43,21 @@ try {
 }
 
 if (!function_exists('calculateLevel')) {
+    // 100 EXP per tingkat: pengguna aktif (~20 EXP/hari) naik ke Level 2
+    // dalam ±5 hari, bukan berbulan-bulan.
     function calculateLevel($exp) {
-        return floor($exp / 1000) + 1;
+        return floor($exp / 100) + 1;
     }
 }
 
 if (!function_exists('calculateRank')) {
     function calculateRank($level) {
         if ($level >= 30) return 'S-Rank Sovereign';
-        if ($level >= 25) return 'A-Rank Master';
-        if ($level >= 20) return 'B-Rank Elite';
-        if ($level >= 15) return 'C-Rank Vanguard';
-        if ($level >= 10) return 'D-Rank Explorer';
-        if ($level >= 5) return 'E-Rank Rookie';
+        if ($level >= 22) return 'A-Rank Master';
+        if ($level >= 15) return 'B-Rank Elite';
+        if ($level >= 10) return 'C-Rank Vanguard';
+        if ($level >= 6) return 'D-Rank Explorer';
+        if ($level >= 3) return 'E-Rank Rookie';
         return 'F-Rank Novice';
     }
 }

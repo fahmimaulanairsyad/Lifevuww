@@ -38,8 +38,8 @@ GROUP BY u.user_id
 
     // Level & Rank calculation (using centralized functions)
     $level = calculateLevel($totalExp);
-    $nextLevelExp = $level * 1000;
-    $currentLevelExp = ($level - 1) * 1000;
+    $nextLevelExp = $level * 100;
+    $currentLevelExp = ($level - 1) * 100;
     $expToNextLevel = $nextLevelExp - $totalExp;
     $rank = calculateRank($level);
 

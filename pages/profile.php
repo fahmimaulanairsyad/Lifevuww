@@ -40,7 +40,7 @@ try {
     $rank = calculateRank($level);
 
     // Calculate EXP for next level
-    $expToNextLevel = ($level * 1000) - $totalExp;
+    $expToNextLevel = ($level * 100) - $totalExp;
 
     // Handle change password
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
@@ -197,10 +197,10 @@ try {
             <div class="mb-4">
                 <div class="d-flex justify-content-between mb-1" style="font-size: 0.78rem;">
                     <span style="font-weight: 500;">Tingkat <?php echo $level; ?></span>
-                    <span class="font-mono text-accent"><?php echo number_format($totalExp); ?> / <?php echo number_format($level * 1000); ?> EXP</span>
+                    <span class="font-mono text-accent"><?php echo number_format($totalExp); ?> / <?php echo number_format($level * 100); ?> EXP</span>
                 </div>
                 <div class="vitals-track">
-                    <?php $expPercentage = min(100, max(0, (($totalExp - (($level-1)*1000)) / 1000) * 100)); ?>
+                    <?php $expPercentage = min(100, max(0, (($totalExp - (($level-1)*100)) / 100) * 100)); ?>
                     <div class="vitals-fill" style="width: <?php echo $expPercentage; ?>%; background-color: var(--accent);"></div>
                 </div>
                 <div class="text-end text-muted mt-1 font-mono" style="font-size: 0.7rem;">
