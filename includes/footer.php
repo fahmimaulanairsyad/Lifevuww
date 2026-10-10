@@ -157,9 +157,16 @@
 
     <!-- Reminder scheduler data (from header nag engine) -->
     <?php $nagIncompleteJs = $nagIncomplete ?? 0; ?>
-    <?php if ($nagIncompleteJs > 0): ?>
+    <?php if (isset($nagIncomplete)): ?>
     <script>
         window.LV_REMINDER = {
+            time: <?php echo json_encode($reminderShort ?? '20:00'); ?>,
+            incomplete: <?php echo (int) $nagIncompleteJs; ?>,
+            streak: <?php echo (int) ($nagMaxStreak ?? 0); ?>
+        };
+        // Always-on snapshot for the native shell: re-syncs (or cancels)
+        // the daily scheduled nag on every page load.
+        window.LV_REMINDER_ALWAYS = {
             time: <?php echo json_encode($reminderShort ?? '20:00'); ?>,
             incomplete: <?php echo (int) $nagIncompleteJs; ?>,
             streak: <?php echo (int) ($nagMaxStreak ?? 0); ?>
@@ -198,6 +205,54 @@
                     document.querySelectorAll('.btn-sound-toggle').forEach(render);
                 });
             });
+        })();
+
+        /* ============ Native shell (Capacitor APK): scheduled daily nag ============
+           Fires even with the app fully closed. No-op on plain browsers. */
+        const LVNative = (() => {
+            const plugin = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) || null;
+            const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+            async function ensurePerm() {
+                if (!plugin) return false;
+                try {
+                    const st = await plugin.checkPermissions();
+                    if (st.display === 'granted') return true;
+                    const req = await plugin.requestPermissions();
+                    return req.display === 'granted';
+                } catch (e) { return false; }
+            }
+
+            async function scheduleDaily(hour, minute, incomplete, streak) {
+                if (!plugin) return;
+                try {
+                    await plugin.cancel({ notifications: [{ id: 1001 }] });
+                    if (!incomplete) return; // nothing open: no nag needed
+                    const s = incomplete > 1 ? 's' : '';
+                    const threat = streak > 0 ? ` Streak ${streak} harimu terancam.` : '';
+                    await plugin.schedule({
+                        notifications: [{
+                            id: 1001,
+                            title: 'Streak terancam!',
+                            body: `${incomplete} rutinitas masih terbuka.${threat}`,
+                            schedule: { on: { hour, minute }, repeats: true, allowWhileIdle: true },
+                            sound: null,
+                            smallIcon: 'ic_stat_notify',
+                            autoCancel: true
+                        }]
+                    });
+                } catch (e) { /* ignore */ }
+            }
+
+            return { plugin, isNative, ensurePerm, scheduleDaily };
+        })();
+
+        // (Re)sync the daily native schedule on every page load
+        (function () {
+            const R = window.LV_REMINDER_ALWAYS;
+            if (!R || !LVNative.plugin) return;
+            const parts = String(R.time).split(':');
+            LVNative.scheduleDaily(parseInt(parts[0], 10), parseInt(parts[1], 10), R.incomplete, R.streak);
         })();
 
         /* ============ PWA: service worker + install prompt ============ */
@@ -306,8 +361,16 @@
                 if (enableBtn) enableBtn.disabled = true;
                 return;
             }
-            const render = () => {
+            const render = async () => {
                 if (!label) return;
+                // Native shell first: its permission is the one that matters in the APK
+                if (LVNative.plugin) {
+                    try {
+                        const st = await LVNative.plugin.checkPermissions();
+                        label.textContent = st.display === 'granted' ? 'Notifikasi aktif' : 'Aktifkan notifikasi';
+                        return;
+                    } catch (e) { /* fall through to web */ }
+                }
                 label.textContent =
                     Notification.permission === 'granted' ? 'Notifikasi aktif' :
                     Notification.permission === 'denied' ? 'Notifikasi diblokir' :
@@ -316,12 +379,39 @@
             render();
             if (enableBtn) {
                 enableBtn.addEventListener('click', async () => {
+                    if (LVNative.plugin) {
+                        await LVNative.ensurePerm();
+                        render();
+                        return;
+                    }
                     try { await Notification.requestPermission(); } catch (e) { /* ignore */ }
                     render();
                 });
             }
             if (testBtn) {
-                testBtn.addEventListener('click', () => {
+                testBtn.addEventListener('click', async () => {
+                    // Native shell: fire a real notification 3 seconds out
+                    if (LVNative.plugin) {
+                        const ok = await LVNative.ensurePerm();
+                        if (!ok) {
+                            alert('Aktifkan notifikasi dulu.');
+                            return;
+                        }
+                        try {
+                            await LVNative.plugin.schedule({
+                                notifications: [{
+                                    id: 9999,
+                                    title: 'Tes notifikasi',
+                                    body: 'Kalau ini muncul, nag harian juga akan muncul.',
+                                    schedule: { at: new Date(Date.now() + 3000) },
+                                    sound: null,
+                                    smallIcon: 'ic_stat_notify'
+                                }]
+                            });
+                        } catch (e) { /* ignore */ }
+                        LVSound.coin();
+                        return;
+                    }
                     if (Notification.permission !== 'granted') {
                         alert('Aktifkan notifikasi dulu.');
                         return;
