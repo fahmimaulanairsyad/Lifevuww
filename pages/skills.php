@@ -1,35 +1,22 @@
-<?php   
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+<?php
+// pages/skills.php
+require_once __DIR__ . '/../config/database.php';
+enforce_login();
 
-require_once '../includes/header.php';
-require_once '../config/database.php'; // Pastikan koneksi database diatur di file ini
-
-// Cek apakah user sudah login
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once __DIR__ . '/../includes/header.php';
 
 // Ambil data progres skill berdasarkan kategori
-$categoryToSkillId = [
-    'Wealth' => 1,
-    'Intelligence' => 2,
-    'Physical' => 3,
-    'Health' => 4,
-    'Social' => 5
-];
+$categories = ['Wealth', 'Intelligence', 'Physical', 'Health', 'Social'];
 
 // Inisialisasi data kategori dengan nilai default 0
-$categories = ['Wealth', 'Intelligence', 'Physical', 'Health', 'Social'];
 $stat_data = array_fill_keys($categories, 0);
 
 // Variabel untuk menyimpan progres tertinggi
 $maxProgress = 0;
 
 // Ambil progres skill untuk setiap kategori berdasarkan user_id
-foreach ($categoryToSkillId as $category => $skillId) {
+foreach ($categories as $category) {
+    $skillId = skill_id_for_category($category)[0];
     // Ambil progres skill berdasarkan skill_id dan user_id
     $stmt = $pdo->prepare("SELECT progress FROM skills WHERE user_id = ? AND skill_id = ?");
     $stmt->execute([$_SESSION['user_id'], $skillId]);
@@ -101,7 +88,7 @@ arsort($stat_data);
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
 <script>
     const ctxRadar = document.getElementById('radarChart').getContext('2d');
     const maxProgress = <?php echo $maxProgress > 0 ? $maxProgress : 1; ?>; 

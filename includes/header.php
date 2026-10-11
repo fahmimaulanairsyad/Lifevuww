@@ -1,8 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 require_once __DIR__ . '/../config/database.php';
+secure_session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,74 +19,26 @@ require_once __DIR__ . '/../config/database.php';
     <meta name="apple-mobile-web-app-title" content="Lifevuww">
     <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <link href="../assets/css/style.css" rel="stylesheet">
     <!-- Confetti library for Dopamine feedback -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" integrity="sha384-HAH79XdRvHr6axVGh4xQWVCp14kcd32bNk4Xu0sHDHtFQ42n6BAM8ykvB47dGz6D" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="app-layout">
         <?php 
         if(isset($_SESSION['user_id'])): 
+            // Daily rollover terpusat (transaksional + idempoten, dipakai juga oleh cron)
+            try {
+                run_daily_rollover($pdo, $_SESSION['user_id']);
+            } catch (Exception $e) {
+                error_log("Header rollover failed: " . $e->getMessage());
+            }
+
             $stmt = $pdo->prepare("SELECT hp, max_hp, gold, exp, streak_freeze, last_daily_check, reminder_time FROM users WHERE user_id = ?");
             $stmt->execute([$_SESSION['user_id']]);
             $navUser = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            // ==========================================
-            // AUTO DAILY-CHECK ENGINE (UNTUK LOCALHOST)
-            // ==========================================
-            $today = date('Y-m-d');
-            if ($navUser && $navUser['last_daily_check'] !== $today) {
-                // Hari baru terdeteksi! Jalankan evaluasi habit hari kemarin
-                if (!empty($navUser['last_daily_check'])) {
-                    // Cek habit yang tidak selesai
-                    $stmtMissed = $pdo->prepare("
-                        SELECT habit_id, difficulty, streak 
-                        FROM habits 
-                        WHERE user_id = ? AND completed_today = 0
-                    ");
-                    $stmtMissed->execute([$_SESSION['user_id']]);
-                    $missedHabits = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
-
-                    if (!empty($missedHabits)) {
-                        // Cek apakah punya Streak Freeze
-                        if (($navUser['streak_freeze'] ?? 0) > 0) {
-                            // Pakai 1 freeze
-                            $pdo->prepare("UPDATE users SET streak_freeze = streak_freeze - 1 WHERE user_id = ?")
-                                ->execute([$_SESSION['user_id']]);
-                            $navUser['streak_freeze']--;
-                        } else {
-                            // Hitung damage HP
-                            $totalDamage = 0;
-                            foreach ($missedHabits as $h) {
-                                $damage = match ($h['difficulty']) {
-                                    'Easy' => 5,
-                                    'Medium' => 10,
-                                    'Hard' => 15,
-                                    default => 5,
-                                };
-                                $totalDamage += $damage;
-                            }
-                            // Kurangi HP & putuskan streak
-                            $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")
-                                ->execute([$totalDamage, $_SESSION['user_id']]);
-                            $pdo->prepare("UPDATE habits SET streak = 0 WHERE user_id = ?")
-                                ->execute([$_SESSION['user_id']]);
-                            $navUser['hp'] = max(0, ($navUser['hp'] ?? 100) - $totalDamage);
-                        }
-                    }
-
-                    // Reset status completed_today = 0 untuk semua habit agar siap dikerjakan hari ini
-                    $pdo->prepare("UPDATE habits SET completed_today = 0, last_reset = NOW() WHERE user_id = ?")
-                        ->execute([$_SESSION['user_id']]);
-                }
-
-                // Update tanggal pengecekan terakhir ke hari ini
-                $pdo->prepare("UPDATE users SET last_daily_check = ? WHERE user_id = ?")
-                    ->execute([$today, $_SESSION['user_id']]);
-                $navUser['last_daily_check'] = $today;
-            }
 
             // ==========================================
             // LOGIKA GAME OVER / DEATH PENALTY (HP <= 0)

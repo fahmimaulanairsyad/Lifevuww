@@ -1,15 +1,9 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// pages/history.php
+require_once __DIR__ . '/../config/database.php';
+enforce_login();
 
-require_once '../includes/header.php';
-require_once '../config/database.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once __DIR__ . '/../includes/header.php';
 
 $userId = $_SESSION['user_id'];
 

@@ -1,14 +1,9 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once '../includes/header.php';
-require_once '../config/database.php';
+// pages/shop.php
+require_once __DIR__ . '/../config/database.php';
+enforce_login();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once __DIR__ . '/../includes/header.php';
 
 $userId = $_SESSION['user_id'];
 
@@ -21,85 +16,97 @@ $userGold = $stmt->fetchColumn() ?: 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validate_csrf();
 
-    // Beli Health Potion (Recovery)
+    // Beli Health Potion (Recovery) — atomic: guard gold di WHERE + cek rowCount
     if (isset($_POST['buy_potion'])) {
         $potionType = $_POST['potion_type'];
         $cost = ($potionType === 'full') ? 75 : 25;
         $healAmount = ($potionType === 'full') ? 100 : 25;
-        
-        if ($userGold >= $cost) {
-            $pdo->beginTransaction();
-            try {
-                $pdo->prepare("UPDATE users SET gold = gold - ?, hp = LEAST(max_hp, hp + ?) WHERE user_id = ?")
-                    ->execute([$cost, $healAmount, $userId]);
+
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare("UPDATE users SET gold = gold - ?, hp = LEAST(max_hp, hp + ?) WHERE user_id = ? AND gold >= ?");
+            $stmt->execute([$cost, $healAmount, $userId, $cost]);
+            if ($stmt->rowCount() === 0) {
+                $pdo->rollBack();
+                $error = "Gold tidak cukup untuk ramuan ini!";
+            } else {
                 $pdo->commit();
                 header("Location: shop.php?success=healed");
                 exit();
-            } catch (Exception $e) {
-                $pdo->rollBack();
-                $error = "Transaksi gagal.";
             }
-        } else {
-            $error = "Gold tidak cukup untuk ramuan ini!";
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $error = "Transaksi gagal.";
         }
     }
 
-    // Beli Streak Freeze
+    // Beli Streak Freeze — atomic
     if (isset($_POST['buy_freeze'])) {
         $cost = 50;
-        if ($userGold >= $cost) {
-            $pdo->beginTransaction();
-            try {
-                $pdo->prepare("UPDATE users SET gold = gold - ?, streak_freeze = streak_freeze + 1 WHERE user_id = ?")
-                    ->execute([$cost, $userId]);
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare("UPDATE users SET gold = gold - ?, streak_freeze = streak_freeze + 1 WHERE user_id = ? AND gold >= ?");
+            $stmt->execute([$cost, $userId, $cost]);
+            if ($stmt->rowCount() === 0) {
+                $pdo->rollBack();
+                $error = "Gold tidak cukup untuk Perisai Streak Freeze!";
+            } else {
                 $pdo->commit();
                 header("Location: shop.php?success=frozen");
                 exit();
-            } catch (Exception $e) {
-                $pdo->rollBack();
-                $error = "Transaksi gagal.";
             }
-        } else {
-            $error = "Gold tidak cukup untuk Perisai Streak Freeze!";
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $error = "Transaksi gagal.";
         }
     }
 
-    // Tambah Reward
+    // Tambah Reward — harga minimal 1 Gold (cegah cost negatif/nol)
     if (isset($_POST['add_reward'])) {
-        $name = $_POST['reward_name'];
-        $cost = intval($_POST['cost']);
-        $icon = $_POST['icon'];
-        
-        $stmt = $pdo->prepare("INSERT INTO rewards (user_id, reward_name, cost, icon) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$userId, $name, $cost, $icon]);
-        header("Location: shop.php");
-        exit();
+        $name = trim($_POST['reward_name'] ?? '');
+        $cost = max(1, intval($_POST['cost'] ?? 0));
+        $icon = $_POST['icon'] ?? 'fa-gift';
+
+        if ($name === '') {
+            $error = "Nama hadiah tidak boleh kosong.";
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO rewards (user_id, reward_name, cost, icon) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$userId, $name, $cost, $icon]);
+            header("Location: shop.php");
+            exit();
+        }
     }
-    
-    // Beli Reward
+
+    // Beli Reward — atomic
     if (isset($_POST['buy_reward'])) {
         $rewardId = intval($_POST['reward_id']);
-        
+
         $stmt = $pdo->prepare("SELECT cost FROM rewards WHERE reward_id = ? AND user_id = ?");
         $stmt->execute([$rewardId, $userId]);
         $reward = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        if ($reward && $userGold >= $reward['cost']) {
+
+        if (!$reward || $reward['cost'] < 1) {
+            $error = "Hadiah tidak valid.";
+        } else {
             $pdo->beginTransaction();
             try {
-                // Kurangi gold
-                $pdo->prepare("UPDATE users SET gold = gold - ? WHERE user_id = ?")->execute([$reward['cost'], $userId]);
-                // Catat log pembelian
-                $pdo->prepare("INSERT INTO reward_logs (user_id, reward_id, cost) VALUES (?, ?, ?)")->execute([$userId, $rewardId, $reward['cost']]);
-                $pdo->commit();
-                header("Location: shop.php?success=bought");
-                exit();
+                // Kurangi gold hanya jika saldo cukup (cegah race)
+                $stmt = $pdo->prepare("UPDATE users SET gold = gold - ? WHERE user_id = ? AND gold >= ?");
+                $stmt->execute([$reward['cost'], $userId, $reward['cost']]);
+                if ($stmt->rowCount() === 0) {
+                    $pdo->rollBack();
+                    $error = "Gold tidak cukup!";
+                } else {
+                    // Catat log pembelian
+                    $pdo->prepare("INSERT INTO reward_logs (user_id, reward_id, cost) VALUES (?, ?, ?)")->execute([$userId, $rewardId, $reward['cost']]);
+                    $pdo->commit();
+                    header("Location: shop.php?success=bought");
+                    exit();
+                }
             } catch (Exception $e) {
                 $pdo->rollBack();
                 $error = "Transaksi gagal.";
             }
-        } else {
-            $error = "Gold tidak cukup!";
         }
     }
     

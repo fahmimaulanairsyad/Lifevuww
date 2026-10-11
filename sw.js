@@ -1,7 +1,7 @@
 /* Lifevuww Service Worker: static-asset cache + offline fallback.
    Dynamic PHP pages are NEVER cached (network-only) to avoid stale
    session data. Only versioned on purpose via CACHE_NAME. */
-const CACHE_NAME = 'lifevuww-v1';
+const CACHE_NAME = 'lifevuww-v2';
 const STATIC_ASSETS = [
   './assets/css/style.css',
   './assets/icons/icon-192.png',
@@ -21,6 +21,18 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if ('focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('./index.php');
+    })
   );
 });
 

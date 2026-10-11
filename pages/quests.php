@@ -1,15 +1,9 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// pages/quests.php
+require_once __DIR__ . '/../config/database.php';
+enforce_login();
 
-require_once '../includes/header.php';
-require_once '../config/database.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once __DIR__ . '/../includes/header.php';
 
 // Fetch quests with 'In Progress' status
 try {
@@ -33,12 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $start_date = $_POST['start_date'];
         $category = $_POST['category'];
 
-        $expReward = match ($difficulty) {
-            'Easy' => 5,
-            'Medium' => 10,
-            'Hard' => 15,
-            default => 5,
-        };
+        $expReward = exp_for_difficulty($difficulty);
 
         $durationDays = match ($difficulty) {
             'Easy' => 7,
@@ -68,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($questId) {
             try {
                 // Ambil detail quest
-                $stmt = $pdo->prepare("SELECT exp_reward, category FROM quests WHERE quest_id = ? AND user_id = ?");
+                $stmt = $pdo->prepare("SELECT quest_name, exp_reward, category FROM quests WHERE quest_id = ? AND user_id = ?");
                 $stmt->execute([$questId, $_SESSION['user_id']]);
                 $quest = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -96,25 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'gold' => $goldReward
                 ];
     
-                // Ambil skill_id berdasarkan kategori
-                $categoryToSkillId = [
-                    'Wealth' => 1,
-                    'Intelligence' => 2,
-                    'Physical' => 3,
-                    'Health' => 4,
-                    'Social' => 5
-                ];
-                $skillId = $categoryToSkillId[$quest['category']] ?? null;
-    
-                if ($skillId) {
-                    // Update progres skill (insert jika belum ada, update jika sudah ada)
-                    $stmt = $pdo->prepare("
-                        INSERT INTO skills (user_id, skill_id, progress) 
-                        VALUES (?, ?, 1) 
-                        ON DUPLICATE KEY UPDATE progress = progress + 1
-                    ");
-                    $stmt->execute([$_SESSION['user_id'], $skillId]);
-                }
+                // Tambah progres skill + ambil skill_id untuk log
+                bump_skill_progress($pdo, $_SESSION['user_id'], $quest['category']);
+                $skillMap = skill_id_for_category($quest['category']);
+                $skillId = $skillMap[0] ?? null;
     
                 // Log quest yang selesai, termasuk exp_reward
                 $stmt = $pdo->prepare("INSERT INTO quest_logs (quest_id, user_id, skill_id, status, completed_at, exp_reward) 
@@ -168,12 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $start_date = $_POST['start_date'];
         $category = $_POST['category'];
 
-        $expReward = match ($difficulty) {
-            'Easy' => 5,
-            'Medium' => 10,
-            'Hard' => 15,
-            default => 0,
-        };
+        $expReward = exp_for_difficulty($difficulty, 0);
 
         $durationDays = match ($difficulty) {
             'Easy' => 7,

@@ -66,6 +66,17 @@ CREATE TABLE `habits` (
   CONSTRAINT `habits_ibfk_4` FOREIGN KEY (`reset_period_id`) REFERENCES `habit_reset_periods` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `login_attempts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `login_attempts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `ip` varchar(45) NOT NULL,
+  `attempted_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ip_time` (`ip`,`attempted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `quest_logs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -99,7 +110,7 @@ CREATE TABLE `quests` (
   `exp_reward` int(11) DEFAULT 0,
   `min_level` int(11) DEFAULT 1,
   `duration_days` int(11) DEFAULT NULL,
-  `status` enum('In Progress','Completed') NOT NULL,
+  `status` enum('In Progress','Completed','Failed') NOT NULL,
   `user_id` int(11) NOT NULL,
   `skill_id` int(11) DEFAULT NULL,
   `start_date` date DEFAULT NULL,
@@ -149,10 +160,10 @@ DROP TABLE IF EXISTS `skills`;
 CREATE TABLE `skills` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `skill_id` int(11) NOT NULL,
-  `skill_name` varchar(100) NOT NULL,
+  `skill_name` varchar(100) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `min_level` int(11) DEFAULT 1,
-  `skill_type` enum('Wealth','Intelligence','Physical','Health','Social') NOT NULL,
+  `skill_type` enum('Wealth','Intelligence','Physical','Health','Social') DEFAULT NULL,
   `category` enum('1','2','3','4','5') DEFAULT '1',
   `progress` int(11) DEFAULT 0,
   `user_id` int(11) DEFAULT NULL,
@@ -180,7 +191,9 @@ CREATE TABLE `users` (
   `streak_freeze` int(11) DEFAULT 0,
   `last_daily_check` date DEFAULT NULL,
   `reminder_time` time DEFAULT '20:00:00',
-  PRIMARY KEY (`user_id`)
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `email` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

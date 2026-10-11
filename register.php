@@ -1,9 +1,7 @@
 <?php
 // register.php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once 'config/database.php';
+require_once __DIR__ . '/config/database.php';
+secure_session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     validate_csrf();
@@ -18,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Masukkan alamat email yang valid.";
     } elseif (strlen($rawPassword) < 6) {
         $error = "Kata sandi minimal 6 karakter.";
+    } elseif (strlen($rawPassword) > 72) {
+        $error = "Kata sandi maksimal 72 karakter.";
     } else {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
         $stmt->execute([$username, $email]);
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body style="background-color: var(--bg-base); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem;">

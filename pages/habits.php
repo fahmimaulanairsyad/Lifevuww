@@ -4,16 +4,9 @@
 
 
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-require_once '../config/database.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+// pages/habits.php
+require_once __DIR__ . '/../config/database.php';
+enforce_login();
 
 $userId = $_SESSION['user_id'];
 
@@ -35,12 +28,7 @@ function resetHabits($pdo, $userId) {
 
 // Fungsi untuk menambahkan habit
 function addHabit($pdo, $userId, $habitName, $difficulty, $resetPeriod, $category) {
-    $expReward = match ($difficulty) {
-        'Easy' => 5,
-        'Medium' => 10,
-        'Hard' => 15,
-        default => 0,
-    };
+    $expReward = exp_for_difficulty($difficulty, 0);
 
     $stmt = $pdo->prepare("
     INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, completed_today, last_reset)
@@ -105,25 +93,8 @@ function completeHabit($pdo, $userId, $habitId) {
                 'multiplier' => $multiplier
             ];
 
-            // Tentukan skill_id berdasarkan kategori habit
-            $categoryToSkillId = [
-                'Wealth' => 1,
-                'Intelligence' => 2,
-                'Physical' => 3,
-                'Health' => 4,
-                'Social' => 5
-            ];
-            $skillId = $categoryToSkillId[$habit['category']] ?? null;
-
-            // Tambahkan progres skill jika kategori valid
-            if ($skillId !== null) {
-                $stmt = $pdo->prepare("
-                    INSERT INTO skills (user_id, skill_id, progress) 
-                    VALUES (?, ?, 1) 
-                    ON DUPLICATE KEY UPDATE progress = progress + 1
-                ");
-                $stmt->execute([$userId, $skillId]);
-            }
+            // Tambahkan progres skill berdasarkan kategori habit
+            bump_skill_progress($pdo, $userId, $habit['category']);
 
             // Catat ke habit_logs dengan kolom exp_reward (simpan EXP final setelah multiplier)
             $pdo->prepare("
@@ -143,21 +114,16 @@ function completeHabit($pdo, $userId, $habitId) {
 
 
 
-// Fungsi untuk menghapus habit
+// Fungsi untuk menghapus habit (dibatasi milik user sendiri)
 function deleteHabit($pdo, $userId, $habitId) {
-    $pdo->prepare("DELETE FROM habit_logs WHERE habit_id = ?")->execute([$habitId]);
+    $pdo->prepare("DELETE FROM habit_logs WHERE habit_id = ? AND user_id = ?")->execute([$habitId, $userId]);
     $pdo->prepare("DELETE FROM habits WHERE habit_id = ? AND user_id = ?")
         ->execute([$habitId, $userId]);
 }
 
 // Fungsi untuk update habit
 function updateHabit($pdo, $userId, $habitId, $habitName, $difficulty, $resetPeriod, $category) {
-    $expReward = match ($difficulty) {
-        'Easy' => 5,
-        'Medium' => 10,
-        'Hard' => 15,
-        default => 5,
-    };
+    $expReward = exp_for_difficulty($difficulty);
     $stmt = $pdo->prepare("
         UPDATE habits 
         SET habit_name = ?, difficulty = ?, reset_period = ?, category = ?, exp_reward = ? 

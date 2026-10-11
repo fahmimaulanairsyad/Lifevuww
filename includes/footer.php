@@ -188,7 +188,7 @@
     <?php endif; ?>
 
     <!-- Bootstrap JS for Modals -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
     <script>
         /* ============ Sound toggles (sidebar + profile) ============ */
@@ -228,7 +228,6 @@
                 try {
                     await plugin.cancel({ notifications: [{ id: 1001 }] });
                     if (!incomplete) return; // nothing open: no nag needed
-                    const s = incomplete > 1 ? 's' : '';
                     const threat = streak > 0 ? ` Streak ${streak} harimu terancam.` : '';
                     await plugin.schedule({
                         notifications: [{
@@ -246,7 +245,7 @@
                 }
             }
 
-            return { plugin, isNative, ensurePerm, scheduleDaily };
+            return { plugin, ensurePerm, scheduleDaily };
         })();
 
         // (Re)sync the daily native schedule on every page load
@@ -325,10 +324,14 @@
                         return;
                     }
                 }
-            } catch (e) { /* fall through to constructor */ }
+            } catch (e) {
+                console.warn('SW notification failed, trying constructor:', (e && e.message) || e);
+            }
             try {
                 new Notification(title, options);
-            } catch (e) { /* ignore */ }
+            } catch (e) {
+                console.warn('Web notification failed:', (e && e.message) || e);
+            }
         }
 
         // Immediate nag (past reminder hour, computed server-side)
@@ -432,10 +435,10 @@
                                     smallIcon: 'ic_stat_notify'
                                 }]
                             });
+                            LVSound.coin();
                         } catch (e) {
                             alert('Gagal menjadwalkan notif: ' + ((e && e.message) || e));
                         }
-                        LVSound.coin();
                         return;
                     }
                     if (!hasWebNotif || Notification.permission !== 'granted') {

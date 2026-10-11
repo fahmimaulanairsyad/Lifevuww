@@ -25,15 +25,15 @@ Setiap rutinitas positif yang Anda selesaikan memberikan **Experience Points (EX
 
 ### 1. ⚔️ Character Progression & Ranks
 Karakter Anda bertumbuh seiring kedisiplinan Anda di dunia nyata:
-* **Level Formula:** `Level = floor(EXP / 1000) + 1`
+* **Level Formula:** `Level = floor(EXP / 100) + 1`
 * **Rank Tiers:**
   * Level 30+: **S-Rank Sovereign**
-  * Level 25+: **A-Rank Master**
-  * Level 20+: **B-Rank Elite**
-  * Level 15+: **C-Rank Vanguard**
-  * Level 10+: **D-Rank Explorer**
-  * Level 5+: **E-Rank Rookie**
-  * Level 1–4: **F-Rank Novice**
+  * Level 22+: **A-Rank Master**
+  * Level 15+: **B-Rank Elite**
+  * Level 10+: **C-Rank Vanguard**
+  * Level 6+: **D-Rank Explorer**
+  * Level 3+: **E-Rank Rookie**
+  * Level 1–2: **F-Rank Novice**
 
 ### 2. ❤️ Health System & Death Penalty
 * Pengguna memiliki **100 Max HP**.

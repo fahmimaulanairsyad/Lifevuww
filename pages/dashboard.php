@@ -1,17 +1,9 @@
-<?php   
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
+<?php
 // pages/dashboard.php
+require_once __DIR__ . '/../config/database.php';
+enforce_login();
 
-require_once '../includes/header.php';
-require_once '../config/database.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once __DIR__ . '/../includes/header.php';
 
 try {
     // Comprehensive user statistics query
@@ -290,7 +282,7 @@ GROUP BY u.user_id
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" crossorigin="anonymous"></script>
 <script>
     const ctxWeekly = document.getElementById('weeklyActivityChart').getContext('2d');
     new Chart(ctxWeekly, {

@@ -1,15 +1,9 @@
-<?php   
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+<?php
+// pages/profile.php
+require_once __DIR__ . '/../config/database.php';
+enforce_login();
 
-require_once '../includes/header.php';
-require_once '../config/database.php';
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once __DIR__ . '/../includes/header.php';
 
 // Fetch user profile and statistics
 try {
@@ -53,6 +47,8 @@ try {
             $passError = "Kata sandi saat ini salah.";
         } elseif (strlen($new) < 6) {
             $passError = "Kata sandi baru minimal 6 karakter.";
+        } elseif (strlen($new) > 72) {
+            $passError = "Kata sandi baru maksimal 72 karakter.";
         } elseif ($new !== $conf) {
             $passError = "Konfirmasi kata sandi tidak cocok.";
         } else {
@@ -81,39 +77,46 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         validate_csrf();
         if (isset($_FILES['profile_picture']) && !empty($_FILES['profile_picture']['tmp_name'])) {
-            $fileName = basename($_FILES['profile_picture']['name']);
-            $targetFile = $uploadDir . uniqid() . "_" . $fileName;
-            $imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+            $tmpPath = $_FILES['profile_picture']['tmp_name'];
+            $allowedExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $allowedMime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            $ext = strtolower(pathinfo($_FILES['profile_picture']['name'], PATHINFO_EXTENSION));
 
-            // Check if file is an image
-            $check = getimagesize($_FILES['profile_picture']['tmp_name']);
-            if ($check !== false && in_array($imageFileType, ['jpg', 'jpeg', 'png', 'gif'])) {
+            // Triple check: extension allowlist + finfo MIME + getimagesize
+            $finfo = new finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->file($tmpPath);
+            $check = getimagesize($tmpPath);
+            if ($check !== false && in_array($ext, $allowedExt, true) && in_array($mime, $allowedMime, true)) {
                 if ($_FILES['profile_picture']['size'] <= 2000000) {
                     // Delete old picture if exists
-                    if (!empty($user['profile_picture']) && file_exists($uploadDir . $user['profile_picture'])) {
-                        unlink($uploadDir . $user['profile_picture']);
+                    if (!empty($user['profile_picture']) && file_exists($uploadDir . basename($user['profile_picture']))) {
+                        unlink($uploadDir . basename($user['profile_picture']));
                     }
+                    // Randomized filename: user-supplied name never touches disk
+                    $newName = 'avatar_' . $_SESSION['user_id'] . '_' . bin2hex(random_bytes(8)) . '.' . $ext;
+                    $targetFile = $uploadDir . $newName;
                     // Move uploaded file
-                    if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $targetFile)) {
+                    if (move_uploaded_file($tmpPath, $targetFile)) {
                         $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE user_id = ?");
-                        $stmt->execute([basename($targetFile), $_SESSION['user_id']]);
+                        $stmt->execute([$newName, $_SESSION['user_id']]);
                         header("Location: profile.php");
                         exit();
                     } else {
-                        $error = "Failed to upload file.";
+                        $error = "Gagal mengunggah file.";
                     }
                 } else {
-                    $error = "File size exceeds 2MB.";
+                    $error = "Ukuran file melebihi 2MB.";
                 }
             } else {
-                $error = "Invalid file type.";
+                $error = "Tipe file tidak valid. Gunakan JPG, PNG, GIF, atau WebP.";
             }
         }
 
         if (isset($_POST['delete_picture'])) {
             // Delete profile picture and set to default
-            if (!empty($user['profile_picture']) && file_exists($uploadDir . $user['profile_picture'])) {
-                unlink($uploadDir . $user['profile_picture']); // Delete old picture
+            $oldPic = basename($user['profile_picture'] ?? '');
+            if ($oldPic !== '' && file_exists($uploadDir . $oldPic)) {
+                unlink($uploadDir . $oldPic); // Delete old picture
             }
             $stmt = $pdo->prepare("UPDATE users SET profile_picture = NULL WHERE user_id = ?");
             $stmt->execute([$_SESSION['user_id']]);
