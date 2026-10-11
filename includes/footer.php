@@ -241,7 +241,9 @@
                             autoCancel: true
                         }]
                     });
-                } catch (e) { /* ignore */ }
+                } catch (e) {
+                    console.warn('Daily nag schedule failed:', (e && e.message) || e);
+                }
             }
 
             return { plugin, isNative, ensurePerm, scheduleDaily };
@@ -304,13 +306,13 @@
             }, { once: true });
         }
 
-        async function fireNagNotification(incomplete, streak) {
+        async function fireNagNotification(incomplete, streak, tag) {
             if (!('Notification' in window) || Notification.permission !== 'granted') return;
             const title = 'Streak terancam!';
             const options = {
                 body: nagMessage(incomplete, streak),
                 icon: '../assets/icons/icon-192.png',
-                tag: 'lv-nag'
+                tag: tag || 'lv-nag'
             };
             // Android (Chrome/Brave) does NOT support `new Notification()` from a
             // page at all — it must go through the service worker. Desktop
@@ -409,6 +411,9 @@
             }
             if (testBtn) {
                 testBtn.addEventListener('click', async () => {
+                    // Cegah double-tap: kunci tombol 3 detik
+                    testBtn.disabled = true;
+                    setTimeout(() => { testBtn.disabled = false; }, 3000);
                     // Native shell: fire a real notification 3 seconds out
                     if (LVNative.plugin) {
                         const ok = await LVNative.ensurePerm();
@@ -422,12 +427,14 @@
                                     id: 9999,
                                     title: 'Tes notifikasi',
                                     body: 'Kalau ini muncul, nag harian juga akan muncul.',
-                                    schedule: { at: new Date(Date.now() + 3000) },
+                                    schedule: { at: new Date(Date.now() + 3000), allowWhileIdle: true },
                                     sound: null,
                                     smallIcon: 'ic_stat_notify'
                                 }]
                             });
-                        } catch (e) { /* ignore */ }
+                        } catch (e) {
+                            alert('Gagal menjadwalkan notif: ' + ((e && e.message) || e));
+                        }
                         LVSound.coin();
                         return;
                     }
@@ -435,7 +442,7 @@
                         alert('Aktifkan notifikasi dulu.');
                         return;
                     }
-                    fireNagNotification(2, 5);
+                    fireNagNotification(2, 5, 'lv-test');
                     LVSound.coin();
                 });
             }
