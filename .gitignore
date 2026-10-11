@@ -1,10 +1,11 @@
 # Environment
 .env
 
-# User-uploaded content (keep app assets)
+# User-uploaded content (keep app assets + upload-dir protection)
 assets/images/*
 !assets/images/avatar.jpg
 !assets/images/logo.svg
+!assets/images/.htaccess
 
 # IDE
 .vscode/
