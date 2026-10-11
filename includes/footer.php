@@ -351,6 +351,21 @@
             }
         })();
 
+        /* ============ Bridge diagnostic readout (profile) ============ */
+        (function () {
+            const el = document.getElementById('bridge-status');
+            if (!el) return;
+            const hasCap = typeof window.Capacitor !== 'undefined';
+            let plat = '-';
+            try {
+                plat = hasCap && window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : (hasCap ? 'yes' : '-');
+            } catch (e) { plat = 'err'; }
+            const hasPlugin = !!(hasCap && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications);
+            const hasSW = ('serviceWorker' in navigator);
+            const hasNotif = ('Notification' in window);
+            el.textContent = `bridge:${hasCap ? plat : 'no'} plugin:${hasPlugin ? 'yes' : 'no'} sw:${hasSW ? 'yes' : 'no'} notif:${hasNotif ? 'yes' : 'no'}`;
+        })();
+
         /* ============ Notification permission buttons (profile) ============ */
         (function () {
             const enableBtn = document.getElementById('btn-enable-notif');

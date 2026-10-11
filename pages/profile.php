@@ -269,6 +269,7 @@ try {
                 </button>
             </div>
             <div class="text-muted mt-1" style="font-size: 0.72rem;">Paling baik setelah Lifevuww dipasang ke layar utama.</div>
+            <div class="text-muted font-mono mt-1" id="bridge-status" style="font-size: 0.68rem;">bridge:…</div>
         </div>
     </div>
 
