@@ -371,11 +371,10 @@
             const enableBtn = document.getElementById('btn-enable-notif');
             const testBtn = document.getElementById('btn-test-notif');
             const label = document.getElementById('notif-label');
-            if (!('Notification' in window)) {
-                if (label) label.textContent = 'Not supported here';
-                if (enableBtn) enableBtn.disabled = true;
-                return;
-            }
+            // NOTE: no early return when the web Notification API is missing —
+            // the APK WebView has no window.Notification by design, yet its
+            // native path below is fully functional.
+            const hasWebNotif = ('Notification' in window);
             const render = async () => {
                 if (!label) return;
                 // Native shell first: its permission is the one that matters in the APK
@@ -385,6 +384,10 @@
                         label.textContent = st.display === 'granted' ? 'Notifikasi aktif' : 'Aktifkan notifikasi';
                         return;
                     } catch (e) { /* fall through to web */ }
+                }
+                if (!hasWebNotif) {
+                    label.textContent = 'Not supported here';
+                    return;
                 }
                 label.textContent =
                     Notification.permission === 'granted' ? 'Notifikasi aktif' :
@@ -399,6 +402,7 @@
                         render();
                         return;
                     }
+                    if (!hasWebNotif) return;
                     try { await Notification.requestPermission(); } catch (e) { /* ignore */ }
                     render();
                 });
@@ -427,7 +431,7 @@
                         LVSound.coin();
                         return;
                     }
-                    if (Notification.permission !== 'granted') {
+                    if (!hasWebNotif || Notification.permission !== 'granted') {
                         alert('Aktifkan notifikasi dulu.');
                         return;
                     }
