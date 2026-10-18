@@ -1,0 +1,294 @@
+/* ==========================================================================
+   Lifevuww Design System - Desktop Web Stylesheet
+   Applies to screens wider than 768px (PC, Mac, Laptops, Workstations)
+   ========================================================================== */
+
+@media (min-width: 769px) {
+    /* Hide mobile-only components */
+    .mobile-top-bar {
+        display: none !important;
+    }
+
+    /* Desktop Shell Layout */
+    .app-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .app-sidebar {
+        width: var(--sidebar-width);
+        background-color: var(--bg-surface);
+        border-right: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 40;
+    }
+
+    .sidebar-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        padding: 0 1.25rem;
+        border-bottom: 1px solid var(--border-hairline);
+        gap: 10px;
+    }
+
+    .brand-name {
+        font-weight: 600;
+        font-size: 0.9rem;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+    }
+
+    .sidebar-vitals {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--border-hairline);
+        background-color: var(--bg-surface);
+    }
+
+    .vitals-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        margin-bottom: 4px;
+    }
+
+    .vitals-label {
+        font-weight: 500;
+        color: var(--text-muted);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-size: 0.65rem;
+    }
+
+    .vitals-value {
+        font-family: var(--font-mono);
+        font-weight: 500;
+    }
+
+    .sidebar-nav {
+        padding: 1rem 0.6rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        color: var(--text-secondary);
+        border-radius: var(--radius);
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        border: 1px solid transparent;
+    }
+
+    .nav-item i {
+        width: 18px;
+        margin-right: 10px;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        transition: color 0.15s ease;
+    }
+
+    .nav-item span {
+        display: inline !important;
+    }
+
+    .nav-item:hover {
+        background-color: var(--bg-surface-hover);
+        color: var(--text-primary);
+    }
+
+    .nav-item:hover i {
+        color: var(--text-primary);
+    }
+
+    .nav-item.active {
+        background-color: var(--bg-elevated);
+        color: var(--text-primary);
+        border-color: var(--border-subtle);
+    }
+
+    .nav-item.active i {
+        color: var(--accent);
+    }
+
+    .sidebar-footer {
+        padding: 0.75rem 0.6rem;
+        border-top: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    /* Main Desktop Content Area */
+    .app-main {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        min-height: 100vh;
+        padding: 2.25rem 2.5rem;
+        background-color: var(--bg-base);
+    }
+
+    .main-container {
+        max-width: 980px;
+        margin: 0 auto;
+    }
+
+    /* Desktop Page Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid var(--border-hairline);
+    }
+
+    .page-title {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.03em;
+    }
+
+    .page-subtitle {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-top: 4px;
+        margin-bottom: 0;
+    }
+
+    /* Desktop Streak Nag Banner */
+    .nag-banner {
+        position: fixed;
+        top: 0;
+        left: var(--sidebar-width);
+        right: 0;
+        z-index: 90;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 0.6rem 1rem;
+        background-color: rgba(24, 24, 28, 0.97);
+        border-bottom: 1px solid var(--accent-border);
+        font-size: 0.82rem;
+        color: var(--text-primary);
+    }
+
+    /* Desktop 4-Column Connected Metric Strip */
+    .metric-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-hairline);
+        border-radius: var(--radius);
+        overflow: hidden;
+    }
+
+    .metric-cell {
+        padding: 1.25rem 1.5rem;
+        border-right: 1px solid var(--border-hairline);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .metric-cell:last-child {
+        border-right: none;
+    }
+
+    .metric-cell .metric-label {
+        font-size: 0.7rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .metric-cell .metric-value {
+        font-family: var(--font-mono);
+        font-size: 1.6rem;
+        font-weight: 600;
+        line-height: 1;
+        color: var(--text-primary);
+    }
+
+    .metric-cell .metric-sub {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.35rem;
+    }
+
+    /* Desktop Horizontal Data Row */
+    .data-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.85rem 0;
+        border-bottom: 1px solid var(--border-hairline);
+        transition: background-color 0.1s ease;
+    }
+
+    .data-row:last-child {
+        border-bottom: none;
+    }
+
+    .data-main {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        flex: 1;
+    }
+
+    .data-title {
+        font-size: 0.88rem;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .data-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem 0.75rem;
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    .data-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Auth Desktop Center */
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+
+    .auth-box {
+        width: 100%;
+        max-width: 380px;
+    }
+}

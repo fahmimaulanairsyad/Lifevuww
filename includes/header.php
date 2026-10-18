@@ -21,7 +21,22 @@ secure_session_start();
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
+    <!-- Common Base Styles -->
     <link href="../assets/css/style.css" rel="stylesheet">
+    <!-- Dedicated Desktop Stylesheet -->
+    <link href="../assets/css/desktop.css" rel="stylesheet" media="(min-width: 769px)">
+    <!-- Dedicated Mobile & Android APK Stylesheet -->
+    <link href="../assets/css/mobile.css" rel="stylesheet" media="(max-width: 768px)">
+    <!-- Platform Tagging (Desktop vs Mobile vs APK) -->
+    <script>
+        (function() {
+            var isCap = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+            var isMobile = isCap || window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+            var root = document.documentElement;
+            if (isMobile) { root.classList.add('is-mobile'); } else { root.classList.add('is-desktop'); }
+            if (isCap) { root.classList.add('is-apk'); }
+        })();
+    </script>
     <!-- Confetti library for Dopamine feedback -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" integrity="sha384-HAH79XdRvHr6axVGh4xQWVCp14kcd32bNk4Xu0sHDHtFQ42n6BAM8ykvB47dGz6D" crossorigin="anonymous"></script>
 </head>
@@ -99,6 +114,25 @@ secure_session_start();
                 ];
             }
         ?>
+        <!-- Dedicated Mobile Top App Bar -->
+        <header class="mobile-top-bar">
+            <a href="dashboard.php" class="mobile-brand">
+                <img src="../assets/images/logo.svg" alt="Logo" class="mobile-logo">
+                <span class="mobile-brand-title">Lifevuww</span>
+            </a>
+            <div class="mobile-vitals">
+                <span class="mobile-chip hp">
+                    <i class="fas fa-heart"></i> <?php echo $navUser['hp'] ?? 100; ?>
+                </span>
+                <span class="mobile-chip gold">
+                    <i class="fas fa-coins"></i> <?php echo number_format($navUser['gold'] ?? 0); ?>
+                </span>
+                <a href="profile.php" class="mobile-profile-link" title="Profil">
+                    <i class="fas fa-user-circle"></i>
+                </a>
+            </div>
+        </header>
+
         <aside class="app-sidebar">
             <div class="sidebar-header">
                 <img src="../assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
@@ -122,27 +156,23 @@ secure_session_start();
 
             <nav class="sidebar-nav">
                 <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
-                <a href="dashboard.php" class="nav-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>">
+                <a href="dashboard.php" class="nav-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>" title="Dasbor">
                     <i class="fas fa-home"></i> <span>Dasbor</span>
                 </a>
-                <a href="habits.php" class="nav-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>">
+                <a href="habits.php" class="nav-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>" title="Kebiasaan">
                     <i class="fas fa-check-square"></i> <span>Kebiasaan</span>
                 </a>
-                <a href="quests.php" class="nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>">
+                <a href="quests.php" class="nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>" title="Misi">
                     <i class="fas fa-map-signs"></i> <span>Misi</span>
                 </a>
-                <a href="skills.php" class="nav-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>">
+                <a href="skills.php" class="nav-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" title="Keahlian">
                     <i class="fas fa-book-open"></i> <span>Keahlian</span>
                 </a>
-                <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>">
+                <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" title="Toko">
                     <i class="fas fa-store"></i> <span>Toko</span>
                 </a>
-                <a href="history.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>">
+                <a href="history.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" title="Riwayat">
                     <i class="fas fa-history"></i> <span>Riwayat</span>
-                </a>
-                <!-- Mobile only profile link -->
-                <a href="profile.php" class="nav-item d-md-none <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
-                    <i class="fas fa-user-circle"></i> <span>Profil</span>
                 </a>
             </nav>
 

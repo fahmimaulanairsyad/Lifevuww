@@ -1,9 +1,11 @@
 /* Lifevuww Service Worker: static-asset cache + offline fallback.
    Dynamic PHP pages are NEVER cached (network-only) to avoid stale
    session data. Only versioned on purpose via CACHE_NAME. */
-const CACHE_NAME = 'lifevuww-v2';
+const CACHE_NAME = 'lifevuww-v3';
 const STATIC_ASSETS = [
   './assets/css/style.css',
+  './assets/css/desktop.css',
+  './assets/css/mobile.css',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/images/logo.svg',

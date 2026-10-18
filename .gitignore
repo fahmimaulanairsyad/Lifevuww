@@ -7,6 +7,10 @@ assets/images/*
 !assets/images/logo.svg
 !assets/images/.htaccess
 
+# Preview files
+preview-logo.html
+assets/logo-concepts/
+
 # IDE
 .vscode/
 .idea/
