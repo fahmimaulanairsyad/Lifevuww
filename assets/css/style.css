@@ -580,21 +580,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Toast */
+/* Reward Toast */
 .dopamine-toast {
     position: fixed;
     bottom: 1.5rem;
     right: 1.5rem;
+    max-width: 340px;
     background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius);
-    padding: 0.9rem 1.1rem;
+    padding: 0.8rem 0.9rem;
     display: flex;
     align-items: center;
-    gap: 0.9rem;
+    gap: 0.7rem;
     z-index: 100;
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.6);
-    animation: toastSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: toastSlide 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes toastSlide {
@@ -603,8 +604,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .toast-icon {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
     border-radius: var(--radius);
     background-color: var(--accent-dim);
     border: 1px solid var(--accent-border);
@@ -612,8 +614,49 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
 }
+
+.toast-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.toast-rewards {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+}
+
+.toast-reward {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-hairline);
+    white-space: nowrap;
+}
+
+.toast-reward.exp { color: var(--accent); }
+.toast-reward.gold { color: var(--status-warning); }
+.toast-reward.streak { color: #f97316; }
 
 /* Streak Nag Banner (desktop position) */
 .nag-banner {
@@ -942,6 +985,18 @@ body.nag-active .app-main {
         min-height: 42px;
         font-size: 0.88rem !important;
     }
+
+    /* Reward Toast: full width, sits above the bottom tab bar */
+    .dopamine-toast {
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+        max-width: none;
+        padding: 0.7rem 0.8rem;
+    }
+
+    .toast-title { font-size: 0.82rem; }
+    .toast-reward { font-size: 0.68rem; }
 
     .modal-dialog {
         margin: 0.5rem;

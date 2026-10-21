@@ -85,19 +85,17 @@
         $toast = $_SESSION['reward_toast'];
         unset($_SESSION['reward_toast']);
     ?>
-        <div class="dopamine-toast" id="dopamineToast">
-            <div class="icon-box">
+        <div class="dopamine-toast" id="dopamineToast" role="status">
+            <div class="toast-icon">
                 <i class="fas <?php echo ($toast['type'] === 'quest') ? 'fa-scroll' : 'fa-check'; ?>"></i>
             </div>
-            <div>
-                <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 2px;">
-                    <?php echo htmlspecialchars($toast['name']); ?> Selesai!
-                </div>
-                <div class="d-flex align-items-center gap-2" style="font-size: 0.85rem; font-family: var(--font-mono);">
-                    <span style="color: var(--accent-emerald);">+<?php echo $toast['exp']; ?> EXP</span>
-                    <span style="color: var(--accent-warning);"><i class="fas fa-coins me-1"></i>+<?php echo $toast['gold']; ?></span>
+            <div class="toast-body">
+                <div class="toast-title"><?php echo htmlspecialchars($toast['name']); ?> selesai!</div>
+                <div class="toast-rewards">
+                    <span class="toast-reward exp">+<?php echo $toast['exp']; ?> EXP</span>
+                    <span class="toast-reward gold"><i class="fas fa-coins"></i> +<?php echo $toast['gold']; ?></span>
                     <?php if (isset($toast['streak']) && $toast['streak'] > 1): ?>
-                        <span style="color: #f97316;"><i class="fas fa-fire me-1"></i><?php echo $toast['streak']; ?>x Streak!</span>
+                        <span class="toast-reward streak"><i class="fas fa-fire"></i> <?php echo $toast['streak']; ?>x streak</span>
                     <?php endif; ?>
                 </div>
             </div>

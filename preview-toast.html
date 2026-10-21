@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id" class="is-mobile">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lifevuww - Toast Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-layout">
+        <header class="mobile-top-bar">
+            <a href="#" class="mobile-brand">
+                <img src="../assets/images/logo.svg" alt="Logo" class="mobile-logo">
+                <span class="mobile-brand-title">Lifevuww</span>
+            </a>
+            <div class="mobile-vitals">
+                <span class="mobile-chip hp"><i class="fas fa-heart"></i> 10</span>
+                <span class="mobile-chip gold"><i class="fas fa-coins"></i> 176</span>
+                <a href="#" class="mobile-profile-link"><i class="fas fa-user-circle"></i></a>
+            </div>
+        </header>
+
+        <aside class="app-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i class="fas fa-home"></i> <span>Dasbor</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-check-square"></i> <span>Kebiasaan</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-map-signs"></i> <span>Misi</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-book-open"></i> <span>Keahlian</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-store"></i> <span>Toko</span></a>
+            </nav>
+        </aside>
+
+        <main class="app-main">
+            <div class="main-container">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Kebiasaan</h1>
+                        <p class="page-subtitle">Selesaikan rutinitas harianmu.</p>
+                    </div>
+                </div>
+                <div class="bento-panel">
+                    <div class="data-row">
+                        <div class="data-main">
+                            <div style="width: 28px; height: 28px; border-radius: var(--radius); background: var(--bg-surface-hover); border: 1px solid var(--border-hairline);"></div>
+                            <div>
+                                <div class="data-title">minimum 1 botol (3)</div>
+                                <div class="data-meta"><span class="badge-status">Health</span></div>
+                            </div>
+                        </div>
+                        <div class="data-actions">
+                            <span class="font-mono text-accent" style="font-size: 0.82rem;">+5 EXP</span>
+                            <button class="btn-core btn-accent" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">Selesaikan</button>
+                        </div>
+                    </div>
+                    <div class="data-row">
+                        <div class="data-main">
+                            <div style="width: 28px; height: 28px; border-radius: var(--radius); background: var(--bg-surface-hover); border: 1px solid var(--border-hairline);"></div>
+                            <div>
+                                <div class="data-title">Duolingo</div>
+                                <div class="data-meta"><span class="badge-status">Intelligence</span></div>
+                            </div>
+                        </div>
+                        <div class="data-actions">
+                            <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Reward Toast (new design) -->
+    <div class="dopamine-toast" id="dopamineToast" role="status">
+        <div class="toast-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="toast-body">
+            <div class="toast-title">minimum 1 botol (1) selesai!</div>
+            <div class="toast-rewards">
+                <span class="toast-reward exp">+5 EXP</span>
+                <span class="toast-reward gold"><i class="fas fa-coins"></i> +5</span>
+                <span class="toast-reward streak"><i class="fas fa-fire"></i> 2x streak</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
