@@ -624,13 +624,73 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     z-index: 90;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    padding: 0.6rem 1rem;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem;
     background-color: rgba(24, 24, 28, 0.97);
     border-bottom: 1px solid var(--accent-border);
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     color: var(--text-primary);
+}
+
+.nag-icon {
+    color: var(--status-warning);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.nag-text {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.35;
+}
+
+.nag-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: var(--radius);
+    background-color: var(--accent);
+    color: #042f2e;
+    font-size: 0.7rem;
+    transition: transform 0.1s ease, background-color 0.15s ease;
+}
+
+.nag-cta:hover {
+    background-color: var(--accent-hover);
+    color: #042f2e;
+}
+
+.nag-cta:active {
+    transform: scale(0.9);
+}
+
+.nag-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.nag-close:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+}
+
+/* Push content down when the nag banner is visible (no overlap) */
+body.nag-active .app-main {
+    padding-top: calc(2.25rem + var(--nag-h, 0px));
 }
 
 /* ==========================================================
@@ -827,10 +887,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     .nag-banner {
         top: 52px;
         left: 0;
-        flex-wrap: wrap;
-        row-gap: 0.4rem;
-        font-size: 0.75rem;
-        text-align: center;
+        font-size: 0.74rem;
+        padding: 0.45rem 0.7rem;
+        gap: 0.45rem;
+    }
+
+    .nag-icon { font-size: 0.75rem; }
+    .nag-cta,
+    .nag-close { width: 22px; height: 22px; font-size: 0.65rem; }
+
+    /* Konten turun mengikuti tinggi banner, tidak saling tumpuk */
+    body.nag-active .app-main {
+        margin-top: calc(52px + var(--nag-h, 0px));
+        padding-top: 1.25rem;
     }
 
     /* 2x2 Metric Strip */

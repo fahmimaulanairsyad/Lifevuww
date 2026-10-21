@@ -4,10 +4,12 @@
 
     <!-- Streak Nag Banner (hidden by default, shown by JS) -->
     <div id="nagBanner" class="nag-banner" style="display: none;" role="alert">
-        <i class="fas fa-fire text-warning"></i>
-        <span id="nagText"></span>
-        <a href="habits.php" class="btn-core btn-accent" style="padding: 0.3rem 0.7rem; font-size: 0.75rem;">Kerjakan sekarang</a>
-        <button id="nagClose" class="btn-core btn-ghost" style="padding: 0.3rem 0.5rem;" aria-label="Dismiss">
+        <i class="fas fa-fire nag-icon"></i>
+        <span id="nagText" class="nag-text"></span>
+        <a href="habits.php" class="nag-cta" aria-label="Buka daftar kebiasaan">
+            <i class="fas fa-arrow-right"></i>
+        </a>
+        <button id="nagClose" class="nag-close" aria-label="Tutup peringatan">
             <i class="fas fa-times"></i>
         </button>
     </div>
@@ -298,8 +300,17 @@
             if (!bar || !txt) return;
             txt.textContent = nagMessage(incomplete, streak);
             bar.style.display = '';
+            document.body.classList.add('nag-active');
+            // Geser konten agar tidak tertimpa banner
+            const measure = () => {
+                document.documentElement.style.setProperty('--nag-h', bar.offsetHeight + 'px');
+            };
+            measure();
+            window.addEventListener('resize', measure);
             document.getElementById('nagClose').addEventListener('click', () => {
                 bar.style.display = 'none';
+                document.body.classList.remove('nag-active');
+                document.documentElement.style.setProperty('--nag-h', '0px');
                 sessionStorage.setItem('lv_nag_dismissed', '1');
             }, { once: true });
         }

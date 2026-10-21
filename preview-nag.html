@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id" class="is-mobile">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lifevuww - Nag Banner Preview</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/style.css" rel="stylesheet">
+</head>
+<body class="nag-active">
+    <div class="app-layout">
+        <!-- Mobile Top Bar -->
+        <header class="mobile-top-bar">
+            <a href="#" class="mobile-brand">
+                <img src="../assets/images/logo.svg" alt="Logo" class="mobile-logo">
+                <span class="mobile-brand-title">Lifevuww</span>
+            </a>
+            <div class="mobile-vitals">
+                <span class="mobile-chip hp"><i class="fas fa-heart"></i> 10</span>
+                <span class="mobile-chip gold"><i class="fas fa-coins"></i> 171</span>
+                <a href="#" class="mobile-profile-link"><i class="fas fa-user-circle"></i></a>
+            </div>
+        </header>
+
+        <!-- Sidebar / Bottom Bar -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <img src="../assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
+                <span class="brand-name">Lifevuww</span>
+            </div>
+            <div class="sidebar-vitals">
+                <div class="vitals-row"><span class="vitals-label">HP</span><span class="vitals-value font-mono text-danger">10 / 100</span></div>
+                <div class="vitals-track mb-3"><div class="vitals-fill" style="width: 10%; background-color: var(--status-danger);"></div></div>
+                <div class="vitals-row"><span class="vitals-label">Gold</span><span class="vitals-value font-mono text-warning">171</span></div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active"><i class="fas fa-home"></i> <span>Dasbor</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-check-square"></i> <span>Kebiasaan</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-map-signs"></i> <span>Misi</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-book-open"></i> <span>Keahlian</span></a>
+                <a href="#" class="nav-item"><i class="fas fa-store"></i> <span>Toko</span></a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item"><i class="fas fa-user-circle"></i> <span>Profil</span></a>
+            </div>
+        </aside>
+
+        <main class="app-main">
+            <div class="main-container">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Dasbor</h1>
+                        <p class="page-subtitle">Status real-time progres karakter.</p>
+                    </div>
+                </div>
+                <div class="bento-panel">
+                    <span class="badge-status accent mb-2">F-Rank Novice</span>
+                    <h2 style="font-size: 1.65rem; margin: 0 0 1rem; font-weight: 600;">Mivuww</h2>
+                    <p class="text-muted mb-0" style="font-size: 0.85rem;">Kartu konten di bawah banner tidak lagi tertimpa.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Nag Banner -->
+    <div id="nagBanner" class="nag-banner" role="alert">
+        <i class="fas fa-fire nag-icon"></i>
+        <span id="nagText" class="nag-text">8 rutinitas masih terbuka. Streak 2 harimu terancam.</span>
+        <a href="#" class="nag-cta" aria-label="Buka daftar kebiasaan"><i class="fas fa-arrow-right"></i></a>
+        <button id="nagClose" class="nag-close" aria-label="Tutup peringatan"><i class="fas fa-times"></i></button>
+    </div>
+
+    <script>
+        // Simulasi perilaku JS produksi
+        const bar = document.getElementById('nagBanner');
+        const measure = () => {
+            document.documentElement.style.setProperty('--nag-h', bar.offsetHeight + 'px');
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        document.getElementById('nagClose').addEventListener('click', () => {
+            bar.style.display = 'none';
+            document.body.classList.remove('nag-active');
+            document.documentElement.style.setProperty('--nag-h', '0px');
+        });
+    </script>
+</body>
+</html>
