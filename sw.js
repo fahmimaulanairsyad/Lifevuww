@@ -1,11 +1,10 @@
-/* Lifevuww Service Worker: static-asset cache + offline fallback.
-   Dynamic PHP pages are NEVER cached (network-only) to avoid stale
-   session data. Only versioned on purpose via CACHE_NAME. */
-const CACHE_NAME = 'lifevuww-v3';
-const STATIC_ASSETS = [
-  './assets/css/style.css',
-  './assets/css/desktop.css',
-  './assets/css/mobile.css',
+/* Lifevuww Service Worker
+   - CSS/JS: NETWORK-FIRST (never serve stale styles after an update)
+   - Images/icons: CACHE-FIRST (rarely change, safe to keep offline)
+   - PHP pages: NETWORK-FIRST, never cached (session data safety)
+*/
+const CACHE_NAME = 'lifevuww-v5';
+const PRECACHE = [
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/images/logo.svg',
@@ -14,7 +13,9 @@ const STATIC_ASSETS = [
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then((cache) => Promise.allSettled(PRECACHE.map((url) => cache.add(url))))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -43,26 +44,41 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-  const isStatic = /\.(css|js|png|jpg|jpeg|svg|ico|woff2?)$/i.test(url.pathname);
+  if (url.origin !== self.location.origin) return;
 
-  if (isStatic && url.origin === self.location.origin) {
-    // Cache-first for versioned static assets
+  // Navigations (PHP): always hit the network, offline fallback only when dead
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(() => caches.match('./offline.html'))
+    );
+    return;
+  }
+
+  // Stylesheets and scripts: network-first so a deployed fix is picked up
+  // immediately instead of being masked by a stale cache entry.
+  if (/\.(css|js)$/i.test(url.pathname)) {
+    event.respondWith(
+      fetch(request).then((res) => {
+        if (res && res.status === 200 && res.type === 'basic') {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        }
+        return res;
+      }).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Images and other immutable assets: cache-first
+  if (/\.(png|jpg|jpeg|svg|ico|woff2?)$/i.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((hit) =>
         hit || fetch(request).then((res) => {
           const copy = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           return res;
-        }).catch(() => caches.match('./offline.html'))
+        })
       )
-    );
-    return;
-  }
-
-  // Navigations and PHP: network-first, offline fallback page when unreachable
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request).catch(() => caches.match('./offline.html'))
     );
   }
 });

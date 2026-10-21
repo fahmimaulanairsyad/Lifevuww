@@ -211,7 +211,6 @@
            Fires even with the app fully closed. No-op on plain browsers. */
         const LVNative = (() => {
             const plugin = (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) || null;
-            const isNative = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 
             async function ensurePerm() {
                 if (!plugin) return false;
