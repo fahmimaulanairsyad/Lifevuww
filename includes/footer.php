@@ -67,6 +67,7 @@
 
             return {
                 fanfare() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.09, 0.22, 'triangle', 0.11)); },
+                levelUp() { [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98].forEach((f, i) => tone(f, i * 0.09, 0.3, 'triangle', 0.13)); },
                 quest() { [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.08, 0.2, 'triangle', 0.1)); },
                 coin() { tone(988, 0, 0.08, 'square', 0.05); tone(1319, 0.08, 0.18, 'square', 0.05); },
                 sad() { tone(196, 0, 0.3, 'sawtooth', 0.06); tone(146.8, 0.25, 0.5, 'sawtooth', 0.06); },
@@ -116,6 +117,50 @@
                     setTimeout(() => toast.remove(), 400);
                 }
             }, 4500);
+        </script>
+    <?php endif; ?>
+
+    <!-- Level Up / Rank Up Modal -->
+    <?php if (isset($_SESSION['level_up'])):
+        $lvlUp = $_SESSION['level_up'];
+        unset($_SESSION['level_up']);
+    ?>
+        <div class="modal fade show" id="levelUpModal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.85);" aria-modal="true" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content text-center p-4" style="border: 1px solid var(--accent); background-color: var(--bg-surface); position: relative; overflow: hidden;">
+                    <div style="width: 72px; height: 72px; border-radius: 50%; background-color: var(--accent-dim); border: 2px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 1.25rem auto;">
+                        <i class="fas <?php echo $lvlUp['is_rank_up'] ? 'fa-crown' : 'fa-arrow-circle-up'; ?>"></i>
+                    </div>
+                    <span class="badge-status accent font-mono mb-2" style="font-size: 0.8rem; padding: 0.3rem 0.8rem;">
+                        <?php echo $lvlUp['is_rank_up'] ? 'RANK UP ACHIEVED!' : 'LEVEL UP!'; ?>
+                    </span>
+                    <h2 class="fw-bold mb-1" style="font-size: 1.75rem; letter-spacing: -0.02em;">
+                        Tingkat <?php echo $lvlUp['new_level']; ?> Tercapai!
+                    </h2>
+                    <p class="text-secondary" style="font-size: 0.85rem; margin-bottom: 1.25rem;">
+                        Disiplin dan konsistensimu membuahkan hasil. Karaktermu bertambah kuat!
+                    </p>
+                    
+                    <?php if ($lvlUp['is_rank_up']): ?>
+                        <div class="p-3 mb-4 text-center" style="background-color: var(--bg-surface-hover); border-radius: var(--radius); border: 1px solid var(--border-subtle);">
+                            <div class="text-muted" style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Gelar Baru Terbuka</div>
+                            <div class="font-mono text-accent" style="font-size: 1.15rem; font-weight: 600;">
+                                <i class="fas fa-medal me-1"></i> <?php echo htmlspecialchars($lvlUp['new_rank']); ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <button type="button" class="btn-core btn-primary w-100 py-2" onclick="document.getElementById('levelUpModal').remove();">
+                        Lanjutkan Perjuangan
+                    </button>
+                </div>
+            </div>
+        </div>
+        <script>
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 } }), 250);
+            setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 } }), 400);
+            LVSound.levelUp();
         </script>
     <?php endif; ?>
 

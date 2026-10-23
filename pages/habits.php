@@ -63,9 +63,32 @@ function completeHabit($pdo, $userId, $habitId) {
         $finalExp = floor($habit['exp_reward'] * $multiplier);
         $earnedGold = $finalExp; // Gold yang didapat sama dengan EXP akhir
 
-        // Tambahkan EXP dan Gold ke pengguna
-        $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ? WHERE user_id = ?")
-            ->execute([$finalExp, $earnedGold, $userId]);
+        // Ambil data user lama untuk deteksi Level Up & Rank Up
+        $stmtUserOld = $pdo->prepare("SELECT exp, level FROM users WHERE user_id = ? FOR UPDATE");
+        $stmtUserOld->execute([$userId]);
+        $oldUserData = $stmtUserOld->fetch(PDO::FETCH_ASSOC);
+        $oldExp = (int) ($oldUserData['exp'] ?? 0);
+        $oldLvl = (int) ($oldUserData['level'] ?? 1);
+
+        $newExpTotal = $oldExp + $finalExp;
+        $newLvl = calculateLevel($newExpTotal);
+        $oldRank = calculateRank($oldLvl);
+        $newRank = calculateRank($newLvl);
+
+        // Tambahkan EXP dan Gold ke pengguna serta update level
+        $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ? WHERE user_id = ?")
+            ->execute([$finalExp, $earnedGold, $newLvl, $userId]);
+
+        // Cek jika naik tingkat / rank
+        if ($newLvl > $oldLvl) {
+            $_SESSION['level_up'] = [
+                'old_level' => $oldLvl,
+                'new_level' => $newLvl,
+                'old_rank' => $oldRank,
+                'new_rank' => $newRank,
+                'is_rank_up' => ($oldRank !== $newRank)
+            ];
+        }
 
         // Set Session untuk Dopamine Toast & Confetti
         $_SESSION['reward_toast'] = [
@@ -96,6 +119,64 @@ function completeHabit($pdo, $userId, $habitId) {
 }
 
 
+
+// Fungsi untuk membatalkan penyelesaian habit hari ini
+function undoHabit($pdo, $userId, $habitId) {
+    try {
+        $pdo->beginTransaction();
+
+        $stmt = $pdo->prepare("SELECT habit_name, category, exp_reward FROM habits WHERE habit_id = ? AND user_id = ? AND completed_today = 1 FOR UPDATE");
+        $stmt->execute([$habitId, $userId]);
+        $habit = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$habit) {
+            $pdo->rollBack();
+            return;
+        }
+
+        // Ambil log penyelesaian hari ini
+        $stmtLog = $pdo->prepare("
+            SELECT log_id, exp_reward 
+            FROM habit_logs 
+            WHERE habit_id = ? AND user_id = ? AND status = 'Completed' AND completion_date = CURDATE()
+            ORDER BY log_id DESC LIMIT 1
+        ");
+        $stmtLog->execute([$habitId, $userId]);
+        $log = $stmtLog->fetch(PDO::FETCH_ASSOC);
+
+        $revertExp = $log ? (int) $log['exp_reward'] : (int) $habit['exp_reward'];
+        $revertGold = $revertExp;
+
+        // Revert status completed dan kurangi streak
+        $pdo->prepare("
+            UPDATE habits 
+            SET completed_today = 0, streak = GREATEST(0, streak - 1) 
+            WHERE habit_id = ? AND user_id = ?
+        ")->execute([$habitId, $userId]);
+
+        // Revert EXP dan Gold user
+        $stmtUser = $pdo->prepare("SELECT exp FROM users WHERE user_id = ? FOR UPDATE");
+        $stmtUser->execute([$userId]);
+        $curExp = (int) $stmtUser->fetchColumn();
+        $newExp = max(0, $curExp - $revertExp);
+        $newLevel = calculateLevel($newExp);
+
+        $pdo->prepare("UPDATE users SET exp = ?, gold = GREATEST(0, gold - ?), level = ? WHERE user_id = ?")
+            ->execute([$newExp, $revertGold, $newLevel, $userId]);
+
+        // Hapus log penyelesaian
+        if ($log) {
+            $pdo->prepare("DELETE FROM habit_logs WHERE log_id = ?")->execute([$log['log_id']]);
+        }
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log("undoHabit error: " . $e->getMessage());
+    }
+}
 
 // Fungsi untuk menghapus habit (dibatasi milik user sendiri)
 function deleteHabit($pdo, $userId, $habitId) {
@@ -136,6 +217,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['complete_habit']) && !empty($_POST['habit_id'])) {
         completeHabit($pdo, $userId, intval($_POST['habit_id']));
+        header("Location: habits.php");
+        exit();
+    }
+
+    if (isset($_POST['undo_habit']) && !empty($_POST['habit_id'])) {
+        undoHabit($pdo, $userId, intval($_POST['habit_id']));
+        header("Location: habits.php");
+        exit();
+    }
+
+    if (isset($_POST['install_starter_habits'])) {
+        $starters = [
+            ['Minum 2 Liter Air', 'Easy', 'daily', 'Health'],
+            ['Membaca Buku 15 Menit', 'Easy', 'daily', 'Intelligence'],
+            ['Olahraga / Jalan 20 Menit', 'Medium', 'daily', 'Physical'],
+            ['Tidur Sebelum Jam 23:00', 'Medium', 'daily', 'Health'],
+            ['Merapikan Meja Kerja', 'Easy', 'daily', 'Social']
+        ];
+        foreach ($starters as $s) {
+            addHabit($pdo, $userId, $s[0], $s[1], $s[2], $s[3]);
+        }
         header("Location: habits.php");
         exit();
     }
@@ -225,8 +327,20 @@ require_once '../includes/header.php';
 <div class="bento-panel">
     <?php if (empty($habits)): ?>
         <div class="text-center py-5 text-muted">
-            <i class="fas fa-seedling fa-2x mb-3" style="opacity: 0.3;"></i>
-            <p class="mb-0">Belum ada rutinitas aktif. Buat satu untuk mulai naik level.</p>
+            <i class="fas fa-seedling fa-2x mb-3 text-accent" style="opacity: 0.6;"></i>
+            <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem;">Belum ada rutinitas aktif</h3>
+            <p class="mb-4" style="max-width: 450px; margin: 0 auto 1.5rem auto; font-size: 0.85rem;">Bangun fondasi karaktermu sekarang. Buat rutinitas pertamamu atau pasang paket starter langsung.</p>
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <button class="btn-core btn-primary" data-bs-toggle="modal" data-bs-target="#addHabitModal">
+                    <i class="fas fa-plus"></i> Buat Sendiri
+                </button>
+                <form method="POST" action="habits.php" style="margin: 0;">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" name="install_starter_habits" value="1" class="btn-core btn-outline">
+                        <i class="fas fa-magic text-accent"></i> Pasang 5 Kebiasaan Starter
+                    </button>
+                </form>
+            </div>
         </div>
     <?php else: ?>
         <div class="data-list">
@@ -270,6 +384,14 @@ require_once '../includes/header.php';
                         
                         <?php if ($habit['completed_today']): ?>
                             <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
+                            <form method="POST" action="habits.php" style="margin: 0; display: inline;">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="undo_habit" value="1">
+                                <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
+                                <button type="submit" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.55rem;" title="Batalkan penyelesaian hari ini" aria-label="Batalkan penyelesaian <?php echo htmlspecialchars($habit['habit_name']); ?>">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                            </form>
                         <?php else: ?>
                             <form method="POST" style="margin: 0;">
                                 <?php echo csrf_field(); ?>

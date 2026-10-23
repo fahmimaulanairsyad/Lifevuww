@@ -57,6 +57,45 @@ try {
     die("Gagal memuat riwayat. Coba lagi nanti.");
 }
 
+// Query aktivitas 60 hari terakhir untuk Heatmap Kalender Konsistensi (GitHub Style)
+$stmtHeat = $pdo->prepare("
+    SELECT log_date, COUNT(*) AS total_count, SUM(exp_reward) AS total_exp
+    FROM (
+        SELECT completion_date AS log_date, exp_reward 
+        FROM habit_logs 
+        WHERE user_id = ? AND status = 'Completed' AND completion_date >= DATE_SUB(CURDATE(), INTERVAL 59 DAY)
+        UNION ALL
+        SELECT DATE(COALESCE(completed_at, completion_date, created_at)) AS log_date, exp_reward 
+        FROM quest_logs 
+        WHERE user_id = ? AND status = 'Completed' AND DATE(COALESCE(completed_at, completion_date, created_at)) >= DATE_SUB(CURDATE(), INTERVAL 59 DAY)
+    ) act
+    GROUP BY log_date
+");
+$stmtHeat->execute([$userId, $userId]);
+$heatMapData = [];
+$totalHeatTasks = 0;
+$activeHeatDays = 0;
+foreach ($stmtHeat->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    $c = (int) $row['total_count'];
+    $heatMapData[$row['log_date']] = [
+        'count' => $c,
+        'exp' => (int) $row['total_exp']
+    ];
+    $totalHeatTasks += $c;
+    if ($c > 0) $activeHeatDays++;
+}
+
+// Susun array 60 hari berurutan
+$heatDays = [];
+for ($i = 59; $i >= 0; $i--) {
+    $d = date('Y-m-d', strtotime("-$i days"));
+    $heatDays[] = [
+        'date' => $d,
+        'count' => $heatMapData[$d]['count'] ?? 0,
+        'exp' => $heatMapData[$d]['exp'] ?? 0
+    ];
+}
+
 // Urutkan terbaru dulu, lalu kelompokkan per tanggal
 usort($entries, fn($a, $b) => strcmp($b['sort_key'], $a['sort_key']));
 $grouped = [];
@@ -78,6 +117,60 @@ function status_badge($status) {
     <div>
         <h1 class="page-title">Riwayat Aktivitas</h1>
         <p class="page-subtitle">Jejak penyelesaian habit dan misi per tanggal.</p>
+    </div>
+</div>
+
+<!-- Heatmap Konsistensi 60 Hari (GitHub Style) -->
+<div class="bento-panel mb-4 p-4">
+    <div class="panel-header">
+        <div>
+            <h3 class="panel-title"><i class="fas fa-th text-accent"></i> Heatmap Konsistensi (60 Hari Terakhir)</h3>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Peta visual keteraturan disiplin dan produktivitas harianmu.</p>
+        </div>
+        <div class="d-flex gap-3 font-mono" style="font-size: 0.75rem;">
+            <span><strong class="text-accent"><?php echo $activeHeatDays; ?></strong> / 60 hari aktif</span>
+            <span><strong class="text-accent"><?php echo $totalHeatTasks; ?></strong> tugas tuntas</span>
+        </div>
+    </div>
+
+    <!-- Heatmap Grid -->
+    <div class="heatmap-wrapper" style="overflow-x: auto; padding-bottom: 0.25rem;">
+        <div style="display: flex; gap: 5px; flex-wrap: wrap; max-width: 100%;">
+            <?php foreach ($heatDays as $hd): 
+                $cnt = $hd['count'];
+                $bg = 'var(--bg-surface-hover)';
+                $border = 'var(--border-hairline)';
+                if ($cnt >= 5) {
+                    $bg = '#10b981';
+                    $border = '#10b981';
+                } elseif ($cnt >= 3) {
+                    $bg = 'rgba(16, 185, 129, 0.65)';
+                    $border = 'rgba(16, 185, 129, 0.75)';
+                } elseif ($cnt >= 1) {
+                    $bg = 'rgba(16, 185, 129, 0.28)';
+                    $border = 'rgba(16, 185, 129, 0.4)';
+                }
+                $tooltip = indo_short_date($hd['date']) . ': ' . ($cnt > 0 ? "{$cnt} tugas tuntas (+{$hd['exp']} EXP)" : "Tidak ada aktivitas");
+            ?>
+                <div class="heatmap-cell" 
+                     title="<?php echo htmlspecialchars($tooltip); ?>" 
+                     style="width: 16px; height: 16px; border-radius: 3px; background-color: <?php echo $bg; ?>; border: 1px solid <?php echo $border; ?>; cursor: pointer;">
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="d-flex justify-content-between align-items-center mt-3 pt-2" style="border-top: 1px solid var(--border-hairline); font-size: 0.72rem; color: var(--text-muted);">
+        <span>Setiap kotak mewakili 1 hari</span>
+        <div class="d-flex align-items-center gap-1">
+            <span>Sedikit</span>
+            <div style="width: 10px; height: 10px; border-radius: 2px; background: var(--bg-surface-hover); border: 1px solid var(--border-hairline);"></div>
+            <div style="width: 10px; height: 10px; border-radius: 2px; background: rgba(16, 185, 129, 0.28); border: 1px solid rgba(16, 185, 129, 0.4);"></div>
+            <div style="width: 10px; height: 10px; border-radius: 2px; background: rgba(16, 185, 129, 0.65); border: 1px solid rgba(16, 185, 129, 0.75);"></div>
+            <div style="width: 10px; height: 10px; border-radius: 2px; background: #10b981; border: 1px solid #10b981;"></div>
+            <span>Banyak</span>
+        </div>
     </div>
 </div>
 

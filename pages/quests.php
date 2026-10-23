@@ -61,11 +61,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$questId, $_SESSION['user_id']]);
                 $quest = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                // Ambil data user lama untuk deteksi Level Up & Rank Up
+                $stmtUserOld = $pdo->prepare("SELECT exp, level FROM users WHERE user_id = ? FOR UPDATE");
+                $stmtUserOld->execute([$_SESSION['user_id']]);
+                $oldUserData = $stmtUserOld->fetch(PDO::FETCH_ASSOC);
+                $oldExp = (int) ($oldUserData['exp'] ?? 0);
+                $oldLvl = (int) ($oldUserData['level'] ?? 1);
+
                 // Tambahkan EXP dan Gold ke pengguna
                 $expReward = $quest['exp_reward'];
                 $goldReward = $expReward * 2; // Quest memberikan Gold lebih banyak (x2)
-                $stmt = $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ? WHERE user_id = ?");
-                $stmt->execute([$expReward, $goldReward, $_SESSION['user_id']]);
+
+                $newExpTotal = $oldExp + $expReward;
+                $newLvl = calculateLevel($newExpTotal);
+                $oldRank = calculateRank($oldLvl);
+                $newRank = calculateRank($newLvl);
+
+                $stmt = $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ? WHERE user_id = ?");
+                $stmt->execute([$expReward, $goldReward, $newLvl, $_SESSION['user_id']]);
+
+                if ($newLvl > $oldLvl) {
+                    $_SESSION['level_up'] = [
+                        'old_level' => $oldLvl,
+                        'new_level' => $newLvl,
+                        'old_rank' => $oldRank,
+                        'new_rank' => $newRank,
+                        'is_rank_up' => ($oldRank !== $newRank)
+                    ];
+                }
 
                 // Set Session untuk Dopamine Toast & Confetti
                 $_SESSION['reward_toast'] = [
