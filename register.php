@@ -14,8 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $error = "Nama pengguna minimal 3 karakter.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "Masukkan alamat email yang valid.";
-    } elseif (strlen($rawPassword) < 6) {
-        $error = "Kata sandi minimal 6 karakter.";
+    } elseif (strlen($rawPassword) < 8) {
+        $error = "Kata sandi minimal 8 karakter.";
     } elseif (strlen($rawPassword) > 72) {
         $error = "Kata sandi maksimal 72 karakter.";
     } else {
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <input type="email" name="email" class="form-control" required placeholder="nama@domain.com">
                 </div>
                 <div class="mb-4">
-                    <label class="form-label">Kata sandi (min. 6 karakter)</label>
+                    <label class="form-label">Kata sandi (min. 8 karakter)</label>
                     <input type="password" name="password" class="form-control" required placeholder="••••••••">
                 </div>
                 <button type="submit" class="btn-core btn-primary w-100" style="padding: 0.65rem;">Buat Akun</button>

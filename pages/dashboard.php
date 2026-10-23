@@ -6,22 +6,8 @@ enforce_login();
 require_once __DIR__ . '/../includes/header.php';
 
 try {
-    // Comprehensive user statistics query
-    $stmt = $pdo->prepare("
-SELECT 
-    u.*,
-    COUNT(DISTINCT h.habit_id) as total_habits,
-    COUNT(DISTINCT hl.log_id) as completed_habits,
-    COUNT(DISTINCT q.quest_id) as active_quests,
-    COUNT(DISTINCT ql.quest_id) as completed_quests
-FROM users u
-LEFT JOIN habits h ON u.user_id = h.user_id
-LEFT JOIN habit_logs hl ON h.habit_id = hl.habit_id
-LEFT JOIN quest_logs ql ON u.user_id = ql.user_id AND ql.status = 'In Progress'
-LEFT JOIN quests q ON ql.quest_id = q.quest_id
-WHERE u.user_id = ?
-GROUP BY u.user_id
-");
+    // Data pengguna (query lama menggabungkan 4 tabel dan hasil hitungannya tidak dipakai)
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -65,15 +51,15 @@ GROUP BY u.user_id
     $totalQuests = $progress['total_quests'] ?? 0;
     $completedQuests = $progress['completed_quests'] ?? 0;
 
-    // Ambil data habit progress & highest streak
+    // Ambil data habit progress & highest streak.
+    // completed_habits = yang selesai HARI INI (sebelumnya menghitung seluruh riwayat log).
     $stmt = $pdo->prepare("
-        SELECT 
+        SELECT
             COUNT(*) as total_habits,
-            SUM(CASE WHEN hl.status = 'Completed' THEN 1 ELSE 0 END) as completed_habits,
-            COALESCE(MAX(h.streak), 0) as max_streak
-        FROM habits h
-        LEFT JOIN habit_logs hl ON h.habit_id = hl.habit_id
-        WHERE h.user_id = ?
+            COALESCE(SUM(completed_today), 0) as completed_habits,
+            COALESCE(MAX(streak), 0) as max_streak
+        FROM habits
+        WHERE user_id = ?
     ");
     $stmt->execute([$_SESSION['user_id']]);
     $habitStats = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -1,30 +1,9 @@
-
-
-
-
-
 <?php
 // pages/habits.php
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
 $userId = $_SESSION['user_id'];
-
-// Fungsi untuk reset habits berdasarkan reset_period
-function resetHabits($pdo, $userId) {
-    $stmt = $pdo->prepare("
-        UPDATE habits
-        SET completed_today = 0, 
-            last_reset = NOW()
-        WHERE user_id = :user_id
-        AND (
-            (reset_period = 'daily' AND DATE(last_reset) < CURDATE()) OR
-            (reset_period = 'weekly' AND WEEK(last_reset, 1) < WEEK(CURDATE(), 1)) OR
-            (reset_period = 'monthly' AND MONTH(last_reset) < MONTH(CURDATE()))
-        )
-    ");
-    $stmt->execute([':user_id' => $userId]);
-}
 
 // Fungsi untuk menambahkan habit
 function addHabit($pdo, $userId, $habitName, $difficulty, $resetPeriod, $category) {
@@ -58,52 +37,56 @@ function completeHabit($pdo, $userId, $habitId) {
             return;
         }
 
-        if (!$habit['completed_today']) {
-            $pdo->beginTransaction();
+        $pdo->beginTransaction();
 
-            // Tambah Streak
-            $newStreak = $habit['streak'] + 1;
-            
-            // Hitung Multiplier berdasarkan Streak
-            $multiplier = 1.0;
-            if ($newStreak >= 7) {
-                $multiplier = 1.5;
-            } elseif ($newStreak >= 3) {
-                $multiplier = 1.2;
-            }
-            
-            $finalExp = floor($habit['exp_reward'] * $multiplier);
-            $earnedGold = $finalExp; // Gold yang didapat sama dengan EXP akhir
-
-            // Tandai habit sebagai completed dan update streak
-            $pdo->prepare("UPDATE habits SET completed_today = 1, streak = ? WHERE habit_id = ? AND user_id = ?")
-                ->execute([$newStreak, $habitId, $userId]);
-
-            // Tambahkan EXP dan Gold ke pengguna
-            $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ? WHERE user_id = ?")
-                ->execute([$finalExp, $earnedGold, $userId]);
-
-            // Set Session untuk Dopamine Toast & Confetti
-            $_SESSION['reward_toast'] = [
-                'type' => 'habit',
-                'name' => $habit['habit_name'],
-                'exp' => $finalExp,
-                'gold' => $earnedGold,
-                'streak' => $newStreak,
-                'multiplier' => $multiplier
-            ];
-
-            // Tambahkan progres skill berdasarkan kategori habit
-            bump_skill_progress($pdo, $userId, $habit['category']);
-
-            // Catat ke habit_logs dengan kolom exp_reward (simpan EXP final setelah multiplier)
-            $pdo->prepare("
-                INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward)
-                VALUES (?, ?, NOW(), 'Completed', ?)
-            ")->execute([$habitId, $userId, $finalExp]);
-
-            $pdo->commit();
+        // Klaim atomik: hanya SATU request yang bisa mengubah completed_today 0 -> 1.
+        // Klik ganda / request paralel / replay POST tidak akan memberi hadiah dua kali.
+        $claim = $pdo->prepare("UPDATE habits SET completed_today = 1, streak = streak + 1 WHERE habit_id = ? AND user_id = ? AND completed_today = 0");
+        $claim->execute([$habitId, $userId]);
+        if ($claim->rowCount() === 0) {
+            $pdo->rollBack();
+            return;
         }
+
+        $stmtStreak = $pdo->prepare("SELECT streak FROM habits WHERE habit_id = ? AND user_id = ?");
+        $stmtStreak->execute([$habitId, $userId]);
+        $newStreak = (int) $stmtStreak->fetchColumn();
+
+        // Hitung Multiplier berdasarkan Streak
+        $multiplier = 1.0;
+        if ($newStreak >= 7) {
+            $multiplier = 1.5;
+        } elseif ($newStreak >= 3) {
+            $multiplier = 1.2;
+        }
+
+        $finalExp = floor($habit['exp_reward'] * $multiplier);
+        $earnedGold = $finalExp; // Gold yang didapat sama dengan EXP akhir
+
+        // Tambahkan EXP dan Gold ke pengguna
+        $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ? WHERE user_id = ?")
+            ->execute([$finalExp, $earnedGold, $userId]);
+
+        // Set Session untuk Dopamine Toast & Confetti
+        $_SESSION['reward_toast'] = [
+            'type' => 'habit',
+            'name' => $habit['habit_name'],
+            'exp' => $finalExp,
+            'gold' => $earnedGold,
+            'streak' => $newStreak,
+            'multiplier' => $multiplier
+        ];
+
+        // Tambahkan progres skill berdasarkan kategori habit
+        bump_skill_progress($pdo, $userId, $habit['category']);
+
+        // Catat ke habit_logs dengan kolom exp_reward (simpan EXP final setelah multiplier)
+        $pdo->prepare("
+            INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward)
+            VALUES (?, ?, NOW(), 'Completed', ?)
+        ")->execute([$habitId, $userId, $finalExp]);
+
+        $pdo->commit();
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
@@ -132,8 +115,7 @@ function updateHabit($pdo, $userId, $habitId, $habitName, $difficulty, $resetPer
     $stmt->execute([$habitName, $difficulty, $resetPeriod, $category, $expReward, $habitId, $userId]);
 }
 
-// Reset habits
-resetHabits($pdo, $userId);
+// (Reset harian/mingguan/bulanan ditangani run_daily_rollover() di enforce_login())
 
 // Proses permintaan POST (dengan validasi CSRF)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

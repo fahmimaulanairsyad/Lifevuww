@@ -3,8 +3,6 @@
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
-require_once __DIR__ . '/../includes/header.php';
-
 // Fetch user profile and statistics
 try {
     // Fetch user details
@@ -45,8 +43,8 @@ try {
 
         if (!password_verify($cur, $user['password'])) {
             $passError = "Kata sandi saat ini salah.";
-        } elseif (strlen($new) < 6) {
-            $passError = "Kata sandi baru minimal 6 karakter.";
+        } elseif (strlen($new) < 8) {
+            $passError = "Kata sandi baru minimal 8 karakter.";
         } elseif (strlen($new) > 72) {
             $passError = "Kata sandi baru maksimal 72 karakter.";
         } elseif ($new !== $conf) {
@@ -137,6 +135,9 @@ try {
     error_log("Profile error: " . $e->getMessage());
     die("Error loading profile. Please try again later.");
 }
+
+// Header baru di-include SETELAH semua handler POST (redirect butuh belum ada output)
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header">
@@ -145,6 +146,12 @@ try {
         <p class="page-subtitle">Kredensial pengguna, avatar identitas, dan statistik rekor seumur hidup.</p>
     </div>
 </div>
+
+<?php if (!empty($error)): ?>
+    <div class="p-2 mb-3 text-center" role="alert" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
+        <?php echo htmlspecialchars($error); ?>
+    </div>
+<?php endif; ?>
 
 <div class="row g-3">
     <div class="col-md-4">
@@ -322,7 +329,7 @@ try {
                 <input type="password" class="form-control" id="current_password" name="current_password" required autocomplete="current-password">
             </div>
             <div class="col-md-4">
-                <label class="form-label" for="new_password">Kata sandi baru (min. 6)</label>
+                <label class="form-label" for="new_password">Kata sandi baru (min. 8)</label>
                 <input type="password" class="form-control" id="new_password" name="new_password" required autocomplete="new-password">
             </div>
             <div class="col-md-4">

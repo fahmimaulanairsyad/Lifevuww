@@ -40,12 +40,7 @@ secure_session_start();
     <div class="app-layout">
         <?php 
         if(isset($_SESSION['user_id'])): 
-            // Daily rollover terpusat (transaksional + idempoten, dipakai juga oleh cron)
-            try {
-                run_daily_rollover($pdo, $_SESSION['user_id']);
-            } catch (Exception $e) {
-                error_log("Header rollover failed: " . $e->getMessage());
-            }
+            // Daily rollover sudah dijalankan di enforce_login() sebelum handler halaman.
 
             $stmt = $pdo->prepare("SELECT hp, max_hp, gold, exp, streak_freeze, last_daily_check, reminder_time FROM users WHERE user_id = ?");
             $stmt->execute([$_SESSION['user_id']]);

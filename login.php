@@ -31,7 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            $pdo->prepare("DELETE FROM login_attempts WHERE ip = ?")->execute([$ip]);
+            // Catatan: percobaan gagal TIDAK dihapus saat login sukses. Kalau dihapus,
+            // penyerang cukup login ke akun miliknya sendiri di sela tebakan untuk mereset limit.
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['username'] = $user['username'];

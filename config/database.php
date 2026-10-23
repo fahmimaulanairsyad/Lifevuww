@@ -160,8 +160,11 @@ if (!function_exists('secure_session_start')) {
 }
 
 if (!function_exists('enforce_login')) {
-    // Starts a hardened session, redirects guests, and enforces idle timeout.
+    // Starts a hardened session, redirects guests, enforces idle timeout, and
+    // runs the daily rollover BEFORE any page handler (so no handler ever sees
+    // yesterday's flags on a new day).
     function enforce_login($loginPath = '../login.php', $timeoutSeconds = 1800) {
+        global $pdo;
         secure_session_start();
         if (!isset($_SESSION['user_id'])) {
             header("Location: " . $loginPath);
@@ -174,18 +177,37 @@ if (!function_exists('enforce_login')) {
             exit();
         }
         $_SESSION['last_activity'] = time();
+
+        if (isset($pdo)) {
+            try {
+                run_daily_rollover($pdo, (int) $_SESSION['user_id']);
+            } catch (Exception $e) {
+                error_log("Rollover failed for user " . (int) $_SESSION['user_id'] . ": " . $e->getMessage());
+            }
+        }
     }
 }
 
 if (!function_exists('run_daily_rollover')) {
-    // THE single daily engine: evaluates missed habits, consumes one streak
-    // freeze per user when available, applies HP damage, expires overdue
-    // quests, resets daily flags, and stamps last_daily_check. Transactional
-    // per user and idempotent (no-op if already rolled today).
+    // THE single daily engine (called from enforce_login() and cron/daily_reset.php).
+    // Transactional per user and idempotent (no-op if already rolled today).
+    //  - daily habits are evaluated every day; weekly habits only when the ISO week
+    //    changed since the last check; monthly habits only when the month changed.
+    //  - only the habits that were actually missed lose their streak.
+    //  - a missed habit is logged as 'Failed' on the day it was missed (yesterday).
+    //  - one streak freeze (if owned) absorbs the damage instead of HP loss.
     // Returns ['rolled' => bool, 'damage' => int, 'frozen' => bool, 'failed_quests' => int].
     function run_daily_rollover($pdo, $userId) {
         $today = date('Y-m-d');
+        $yesterday = date('Y-m-d', strtotime('-1 day'));
         $result = ['rolled' => false, 'damage' => 0, 'frozen' => false, 'failed_quests' => 0];
+
+        // Fast path without a transaction/lock: almost every request ends here.
+        $quick = $pdo->prepare("SELECT last_daily_check FROM users WHERE user_id = ?");
+        $quick->execute([$userId]);
+        if (substr((string) $quick->fetchColumn(), 0, 10) === $today) {
+            return $result;
+        }
 
         $pdo->beginTransaction();
         try {
@@ -196,17 +218,27 @@ if (!function_exists('run_daily_rollover')) {
                 $pdo->rollBack();
                 return $result;
             }
-            if ($user['last_daily_check'] === $today) {
+            $lastDate = substr((string) ($user['last_daily_check'] ?? ''), 0, 10);
+            if ($lastDate === $today) {
                 $pdo->rollBack();
                 return $result;
             }
-            $isFirstRun = empty($user['last_daily_check']);
+            $isFirstRun = ($lastDate === '');
 
             if (!$isFirstRun) {
-                // 1. Missed habits from yesterday
+                // Which reset periods ended between the last check and today?
+                // (internal constants only - never user input)
+                $periods = ["'daily'"];
+                $lastTs = strtotime($lastDate);
+                if (date('o-W', $lastTs) !== date('o-W')) $periods[] = "'weekly'";
+                if (date('Y-m', $lastTs) !== date('Y-m')) $periods[] = "'monthly'";
+                $periodSql = implode(',', $periods);
+                $periodCond = "COALESCE(LOWER(reset_period), 'daily') IN ($periodSql)";
+
+                // 1. Missed habits (only those whose period just ended)
                 $stmtMissed = $pdo->prepare("
                     SELECT habit_id, difficulty FROM habits
-                    WHERE user_id = ? AND completed_today = 0
+                    WHERE user_id = ? AND completed_today = 0 AND $periodCond
                 ");
                 $stmtMissed->execute([$userId]);
                 $missed = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
@@ -218,26 +250,26 @@ if (!function_exists('run_daily_rollover')) {
                         $result['frozen'] = true;
                     } else {
                         $damage = 0;
+                        $missedIds = [];
                         foreach ($missed as $h) {
-                            $damage += match ($h['difficulty']) {
-                                'Easy' => 5,
-                                'Medium' => 10,
-                                'Hard' => 15,
-                                default => 5,
-                            };
+                            $damage += exp_for_difficulty($h['difficulty'], 5);
+                            $missedIds[] = (int) $h['habit_id'];
                         }
                         $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")
                             ->execute([$damage, $userId]);
-                        $pdo->prepare("UPDATE habits SET streak = 0 WHERE user_id = ?")
-                            ->execute([$userId]);
+
+                        // Reset the streak of the MISSED habits only
+                        $in = implode(',', array_fill(0, count($missedIds), '?'));
+                        $pdo->prepare("UPDATE habits SET streak = 0 WHERE user_id = ? AND habit_id IN ($in)")
+                            ->execute(array_merge([$userId], $missedIds));
                         $result['damage'] = $damage;
 
                         $logFail = $pdo->prepare("
                             INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward)
-                            VALUES (?, ?, CURDATE(), 'Failed', 0)
+                            VALUES (?, ?, ?, 'Failed', 0)
                         ");
-                        foreach ($missed as $h) {
-                            $logFail->execute([$h['habit_id'], $userId]);
+                        foreach ($missedIds as $hid) {
+                            $logFail->execute([$hid, $userId, $yesterday]);
                         }
                     }
                 }
@@ -267,8 +299,8 @@ if (!function_exists('run_daily_rollover')) {
                     $result['failed_quests']++;
                 }
 
-                // 3. Reset daily flags for the new day
-                $pdo->prepare("UPDATE habits SET completed_today = 0, last_reset = NOW() WHERE user_id = ?")
+                // 3. Reset completion flags - only for periods that just ended
+                $pdo->prepare("UPDATE habits SET completed_today = 0, last_reset = NOW() WHERE user_id = ? AND $periodCond")
                     ->execute([$userId]);
             }
 

@@ -3,14 +3,7 @@
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
-require_once __DIR__ . '/../includes/header.php';
-
 $userId = $_SESSION['user_id'];
-
-// Ambil data user untuk balance Gold
-$stmt = $pdo->prepare("SELECT gold FROM users WHERE user_id = ?");
-$stmt->execute([$userId]);
-$userGold = $stmt->fetchColumn() ?: 0;
 
 // POST Handlers
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -119,11 +112,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// Ambil saldo Gold terbaru (setelah handler POST)
+$stmt = $pdo->prepare("SELECT gold FROM users WHERE user_id = ?");
+$stmt->execute([$userId]);
+$userGold = $stmt->fetchColumn() ?: 0;
+
 // Ambil data rewards
 $stmt = $pdo->prepare("SELECT * FROM rewards WHERE user_id = ? ORDER BY cost ASC");
 $stmt->execute([$userId]);
 $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Header baru di-include SETELAH semua handler POST (redirect butuh belum ada output)
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="page-header d-flex justify-content-between align-items-end">
