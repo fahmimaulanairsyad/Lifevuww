@@ -158,6 +158,7 @@ try {
 }
 
 // Header baru di-include SETELAH semua handler POST (redirect butuh belum ada output)
+$pageTitle = 'Misi';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
@@ -230,7 +231,19 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     <?php else: ?>
         <div class="data-list">
-            <?php foreach ($quests as $quest): ?>
+            <?php foreach ($quests as $quest): 
+                $startDate = $quest['start_date'] ?? date('Y-m-d');
+                $duration = (int) ($quest['duration_days'] ?? 7);
+                $deadline = date('Y-m-d', strtotime("$startDate + $duration days"));
+                $today = date('Y-m-d');
+                $daysLeft = (int) ceil((strtotime($deadline) - strtotime($today)) / 86400);
+                $hpPenalty = match ($quest['difficulty']) {
+                    'Easy' => 10,
+                    'Medium' => 20,
+                    'Hard' => 30,
+                    default => 10,
+                };
+            ?>
                 <div class="data-row">
                     <div class="data-main">
                         <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem;">
@@ -241,6 +254,10 @@ require_once __DIR__ . '/../includes/header.php';
                             <div class="data-meta">
                                 <span class="badge-status"><?php echo htmlspecialchars($quest['category']); ?></span>
                                 <span class="badge-status font-mono"><?php echo htmlspecialchars($quest['difficulty']); ?></span>
+                                <span class="badge-status font-mono <?php echo $daysLeft <= 1 ? 'danger' : ($daysLeft <= 3 ? 'warning' : ''); ?>">
+                                    <i class="fas fa-hourglass-half"></i> <?php echo $daysLeft < 0 ? 'Telat' : ($daysLeft === 0 ? 'Hari Terakhir!' : "Sisa {$daysLeft} hari"); ?>
+                                </span>
+                                <span class="text-danger font-mono" title="Penalti jika gagal"><i class="fas fa-heart text-danger"></i> -<?php echo $hpPenalty; ?> HP</span>
                             </div>
                         </div>
                     </div>
@@ -263,14 +280,14 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php endif; ?>
                         
                         <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
+                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
                         <form method="POST" action="quests.php" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
-                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus">
+                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -291,12 +308,12 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Tujuan misi</label>
-                                        <input type="text" class="form-control" name="quest_name" value="<?php echo htmlspecialchars($quest['quest_name']); ?>" required>
+                                        <label for="edit_qname_<?php echo $quest['quest_id']; ?>" class="form-label">Tujuan misi</label>
+                                        <input type="text" class="form-control" id="edit_qname_<?php echo $quest['quest_id']; ?>" name="quest_name" value="<?php echo htmlspecialchars($quest['quest_name']); ?>" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Kategori / Atribut</label>
-                                        <select class="form-select" name="category" required>
+                                        <label for="edit_qcat_<?php echo $quest['quest_id']; ?>" class="form-label">Kategori / Atribut</label>
+                                        <select class="form-select" id="edit_qcat_<?php echo $quest['quest_id']; ?>" name="category" required>
                                             <option value="Intelligence" <?php echo $quest['category'] == 'Intelligence' ? 'selected' : ''; ?>>Intelligence</option>
                                             <option value="Physical" <?php echo $quest['category'] == 'Physical' ? 'selected' : ''; ?>>Physical</option>
                                             <option value="Wealth" <?php echo $quest['category'] == 'Wealth' ? 'selected' : ''; ?>>Wealth</option>
@@ -306,16 +323,16 @@ require_once __DIR__ . '/../includes/header.php';
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-6">
-                                            <label class="form-label">Tingkat kesulitan</label>
-                                            <select class="form-select" name="difficulty" required>
+                                            <label for="edit_qdiff_<?php echo $quest['quest_id']; ?>" class="form-label">Tingkat kesulitan</label>
+                                            <select class="form-select" id="edit_qdiff_<?php echo $quest['quest_id']; ?>" name="difficulty" required>
                                                 <option value="Easy" <?php echo $quest['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Mudah (+5 EXP)</option>
                                                 <option value="Medium" <?php echo $quest['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Sedang (+10 EXP)</option>
                                                 <option value="Hard" <?php echo $quest['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Sulit (+15 EXP)</option>
                                             </select>
                                         </div>
                                         <div class="col-6">
-                                            <label class="form-label">Tanggal mulai</label>
-                                            <input type="date" class="form-control" name="start_date" value="<?php echo htmlspecialchars($quest['start_date']); ?>" required>
+                                            <label for="edit_qdate_<?php echo $quest['quest_id']; ?>" class="form-label">Tanggal mulai</label>
+                                            <input type="date" class="form-control" id="edit_qdate_<?php echo $quest['quest_id']; ?>" name="start_date" value="<?php echo htmlspecialchars($quest['start_date']); ?>" required>
                                         </div>
                                     </div>
                                 </div>

@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
+$pageTitle = 'Dasbor';
 require_once __DIR__ . '/../includes/header.php';
 
 try {
@@ -67,17 +68,29 @@ try {
     $completedHabits = $habitStats['completed_habits'] ?? 0;
     $maxStreak = $habitStats['max_streak'] ?? 0;
 
-    // Query untuk mengambil data quest yang telah diselesaikan
+    // Query gabungan riwayat penyelesaian kebiasaan dan misi terbaru
     $stmt = $pdo->prepare("
-        SELECT q.quest_name, ql.exp_reward, ql.completed_at 
-        FROM quest_logs ql
-        JOIN quests q ON ql.quest_id = q.quest_id
-        WHERE ql.user_id = ? AND ql.status = 'Completed'
-        ORDER BY ql.completed_at DESC
-        LIMIT 5
+        SELECT item_name, exp_reward, completed_at, item_type
+        FROM (
+            SELECT h.habit_name AS item_name, hl.exp_reward, 
+                   CONCAT(hl.completion_date, ' 23:59:59') AS completed_at, 
+                   'habit' AS item_type
+            FROM habit_logs hl
+            JOIN habits h ON hl.habit_id = h.habit_id
+            WHERE hl.user_id = ? AND hl.status = 'Completed'
+            UNION ALL
+            SELECT q.quest_name AS item_name, ql.exp_reward, 
+                   COALESCE(ql.completed_at, ql.completion_date, ql.created_at) AS completed_at, 
+                   'quest' AS item_type
+            FROM quest_logs ql
+            JOIN quests q ON ql.quest_id = q.quest_id
+            WHERE ql.user_id = ? AND ql.status = 'Completed'
+        ) combined
+        ORDER BY completed_at DESC
+        LIMIT 6
     ");
-    $stmt->execute([$_SESSION['user_id']]);
-    $completedQuestsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
+    $recentActivityList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Query untuk Grafik Aktivitas 7 Hari Terakhir
     $stmtActivity = $pdo->prepare("
@@ -239,23 +252,24 @@ try {
     </div>
     
     <div class="data-list">
-        <?php if (!empty($completedQuestsList)): ?>
-            <?php foreach ($completedQuestsList as $quest): ?>
+        <?php if (!empty($recentActivityList)): ?>
+            <?php foreach ($recentActivityList as $act): ?>
                 <div class="data-row">
                     <div class="data-main">
-                        <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 0.75rem;">
-                            <i class="fas fa-check"></i>
+                        <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $act['item_type'] === 'quest' ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.75rem;">
+                            <i class="fas <?php echo $act['item_type'] === 'quest' ? 'fa-scroll' : 'fa-check'; ?>"></i>
                         </div>
                         <div>
-                            <div class="data-title"><?php echo htmlspecialchars($quest['quest_name']); ?></div>
+                            <div class="data-title"><?php echo htmlspecialchars($act['item_name']); ?></div>
                             <div class="data-meta font-mono">
-                                <span><?php echo indo_short_date($quest['completed_at'], true); ?></span>
+                                <span><?php echo indo_short_date($act['completed_at'], true); ?></span>
+                                <span class="badge-status font-mono"><?php echo $act['item_type'] === 'quest' ? 'Misi' : 'Kebiasaan'; ?></span>
                             </div>
                         </div>
                     </div>
                     <div class="data-actions">
-                        <span class="badge-status accent">
-                            +<?php echo htmlspecialchars($quest['exp_reward']); ?> EXP
+                        <span class="badge-status accent font-mono">
+                            +<?php echo htmlspecialchars($act['exp_reward']); ?> EXP
                         </span>
                     </div>
                 </div>

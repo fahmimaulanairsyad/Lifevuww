@@ -137,6 +137,7 @@ try {
 }
 
 // Header baru di-include SETELAH semua handler POST (redirect butuh belum ada output)
+$pageTitle = 'Profil';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 

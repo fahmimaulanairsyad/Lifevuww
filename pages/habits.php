@@ -152,7 +152,7 @@ $stmt = $pdo->prepare("SELECT * FROM habits WHERE user_id = ?");
 $stmt->execute([$userId]);
 $habits = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Muat header
+$pageTitle = 'Kebiasaan';
 require_once '../includes/header.php';
 ?>
 
@@ -251,7 +251,7 @@ require_once '../includes/header.php';
                                         }
                                 ?>
                                     <span class="<?php echo $streakClass; ?>">
-                                        <i class="fas fa-fire"></i> <?php echo $streak; ?>h<?php echo $boostText; ?>
+                                        <i class="fas fa-fire"></i> <?php echo $streak; ?> hari<?php echo $boostText; ?>
                                     </span>
                                 <?php endif; ?>
                             </div>
@@ -281,14 +281,14 @@ require_once '../includes/header.php';
                         <?php endif; ?>
                         
                         <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
+                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
                         <form method="POST" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus">
+                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -309,12 +309,12 @@ require_once '../includes/header.php';
                                 </div>
                                 <div class="modal-body">
                                     <div class="mb-3">
-                                        <label class="form-label">Nama kebiasaan</label>
-                                        <input type="text" class="form-control" name="habit_name" value="<?php echo htmlspecialchars($habit['habit_name']); ?>" required>
+                                        <label for="edit_hname_<?php echo $habit['habit_id']; ?>" class="form-label">Nama kebiasaan</label>
+                                        <input type="text" class="form-control" id="edit_hname_<?php echo $habit['habit_id']; ?>" name="habit_name" value="<?php echo htmlspecialchars($habit['habit_name']); ?>" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Kategori / Atribut</label>
-                                        <select class="form-select" name="category" required>
+                                        <label for="edit_hcat_<?php echo $habit['habit_id']; ?>" class="form-label">Kategori / Atribut</label>
+                                        <select class="form-select" id="edit_hcat_<?php echo $habit['habit_id']; ?>" name="category" required>
                                             <option value="Intelligence" <?php echo $habit['category'] == 'Intelligence' ? 'selected' : ''; ?>>Intelligence</option>
                                             <option value="Physical" <?php echo $habit['category'] == 'Physical' ? 'selected' : ''; ?>>Physical</option>
                                             <option value="Wealth" <?php echo $habit['category'] == 'Wealth' ? 'selected' : ''; ?>>Wealth</option>
@@ -324,16 +324,16 @@ require_once '../includes/header.php';
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-6">
-                                            <label class="form-label">Tingkat kesulitan</label>
-                                            <select class="form-select" name="difficulty" required>
+                                            <label for="edit_hdiff_<?php echo $habit['habit_id']; ?>" class="form-label">Tingkat kesulitan</label>
+                                            <select class="form-select" id="edit_hdiff_<?php echo $habit['habit_id']; ?>" name="difficulty" required>
                                                 <option value="Easy" <?php echo $habit['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Mudah (+5 EXP)</option>
                                                 <option value="Medium" <?php echo $habit['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Sedang (+10 EXP)</option>
                                                 <option value="Hard" <?php echo $habit['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Sulit (+15 EXP)</option>
                                             </select>
                                         </div>
                                         <div class="col-6">
-                                            <label class="form-label">Frekuensi reset</label>
-                                            <select class="form-select" name="reset_period" required>
+                                            <label for="edit_hres_<?php echo $habit['habit_id']; ?>" class="form-label">Frekuensi reset</label>
+                                            <select class="form-select" id="edit_hres_<?php echo $habit['habit_id']; ?>" name="reset_period" required>
                                                 <option value="daily" <?php echo strtolower($habit['reset_period']) == 'daily' ? 'selected' : ''; ?>>Daily</option>
                                                 <option value="weekly" <?php echo strtolower($habit['reset_period']) == 'weekly' ? 'selected' : ''; ?>>Weekly</option>
                                                 <option value="monthly" <?php echo strtolower($habit['reset_period']) == 'monthly' ? 'selected' : ''; ?>>Monthly</option>

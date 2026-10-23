@@ -3,11 +3,11 @@ require_once __DIR__ . '/../config/database.php';
 secure_session_start();
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lifevuww</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' - Lifevuww' : 'Lifevuww'; ?></title>
     <!-- Favicon -->
     <link rel="icon" href="../assets/images/logo.svg" type="image/svg+xml">
     <!-- PWA -->
@@ -22,7 +22,7 @@ secure_session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=5" rel="stylesheet">
+    <link href="../assets/css/style.css?v=6" rel="stylesheet">
     <!-- Platform Tagging (Desktop vs Mobile vs APK) -->
     <script>
         (function() {
@@ -118,7 +118,7 @@ secure_session_start();
                 <span class="mobile-chip gold">
                     <i class="fas fa-coins"></i> <?php echo number_format($navUser['gold'] ?? 0); ?>
                 </span>
-                <a href="profile.php" class="mobile-profile-link" title="Profil">
+                <a href="profile.php" class="mobile-profile-link" title="Profil" aria-label="Profil Pengguna">
                     <i class="fas fa-user-circle"></i>
                 </a>
             </div>
@@ -147,34 +147,34 @@ secure_session_start();
 
             <nav class="sidebar-nav">
                 <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
-                <a href="dashboard.php" class="nav-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>" title="Dasbor">
+                <a href="dashboard.php" class="nav-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>" title="Dasbor" aria-label="Dasbor">
                     <i class="fas fa-home"></i> <span>Dasbor</span>
                 </a>
-                <a href="habits.php" class="nav-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>" title="Kebiasaan">
+                <a href="habits.php" class="nav-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>" title="Kebiasaan" aria-label="Kebiasaan">
                     <i class="fas fa-check-square"></i> <span>Kebiasaan</span>
                 </a>
-                <a href="quests.php" class="nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>" title="Misi">
+                <a href="quests.php" class="nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>" title="Misi" aria-label="Misi">
                     <i class="fas fa-map-signs"></i> <span>Misi</span>
                 </a>
-                <a href="skills.php" class="nav-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" title="Keahlian">
+                <a href="skills.php" class="nav-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" title="Keahlian" aria-label="Keahlian">
                     <i class="fas fa-book-open"></i> <span>Keahlian</span>
                 </a>
-                <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" title="Toko">
+                <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" title="Toko" aria-label="Toko Hadiah">
                     <i class="fas fa-store"></i> <span>Toko</span>
                 </a>
-                <a href="history.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" title="Riwayat">
+                <a href="history.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" title="Riwayat" aria-label="Riwayat Aktivitas">
                     <i class="fas fa-history"></i> <span>Riwayat</span>
                 </a>
             </nav>
 
             <div class="sidebar-footer">
-                <a href="profile.php" class="nav-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
+                <a href="profile.php" class="nav-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" aria-label="Profil Pengguna">
                     <i class="fas fa-user-circle"></i> <span>Profil</span>
                 </a>
-                <button type="button" id="btn-sound" class="nav-item btn-sound-toggle" style="background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; text-align: left;">
+                <button type="button" id="btn-sound" class="nav-item btn-sound-toggle" aria-label="Nyalakan atau matikan efek suara" style="background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; text-align: left;">
                     <i class="fas fa-volume-up"></i> <span>Suara nyala</span>
                 </button>
-                <a href="../logout.php" class="nav-item" style="color: var(--text-tertiary);">
+                <a href="../logout.php" class="nav-item" aria-label="Keluar dari akun" style="color: var(--text-tertiary);">
                     <i class="fas fa-sign-out-alt"></i> <span>Keluar</span>
                 </a>
             </div>

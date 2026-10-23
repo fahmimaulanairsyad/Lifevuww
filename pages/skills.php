@@ -3,38 +3,29 @@
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
+$pageTitle = 'Keahlian';
 require_once __DIR__ . '/../includes/header.php';
 
-// Ambil data progres skill berdasarkan kategori
+// Ambil data progres skill berdasarkan kategori (1 query tunggal, bukan 5 query loop)
 $categories = ['Wealth', 'Intelligence', 'Physical', 'Health', 'Social'];
-
-// Inisialisasi data kategori dengan nilai default 0
 $stat_data = array_fill_keys($categories, 0);
-
-// Variabel untuk menyimpan progres tertinggi
 $maxProgress = 0;
 
-// Ambil progres skill untuk setiap kategori berdasarkan user_id
+$stmt = $pdo->prepare("SELECT skill_id, progress FROM skills WHERE user_id = ?");
+$stmt->execute([$_SESSION['user_id']]);
+$userSkills = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
 foreach ($categories as $category) {
     $skillId = skill_id_for_category($category)[0];
-    // Ambil progres skill berdasarkan skill_id dan user_id
-    $stmt = $pdo->prepare("SELECT progress FROM skills WHERE user_id = ? AND skill_id = ?");
-    $stmt->execute([$_SESSION['user_id'], $skillId]);
-    $skill = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    // Jika ada data progres untuk skill, masukkan ke dalam stat_data dan cek nilai tertinggi
-    if ($skill) {
-        $progress = (int) $skill['progress'];
-        $stat_data[$category] = $progress;
-        if ($progress > $maxProgress) {
-            $maxProgress = $progress;  // Update progres tertinggi
-        }
+    $progress = (int) ($userSkills[$skillId] ?? 0);
+    $stat_data[$category] = $progress;
+    if ($progress > $maxProgress) {
+        $maxProgress = $progress;
     }
 }
 
 // Urutkan tampilan stat dari level yang tertinggi (higher) ke terendah
 arsort($stat_data);
-
 ?>
 
 <div class="page-header">

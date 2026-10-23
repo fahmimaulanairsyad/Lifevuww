@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
+$pageTitle = 'Riwayat';
 require_once __DIR__ . '/../includes/header.php';
 
 $userId = $_SESSION['user_id'];

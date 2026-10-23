@@ -15,21 +15,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cost = ($potionType === 'full') ? 75 : 25;
         $healAmount = ($potionType === 'full') ? 100 : 25;
 
-        $pdo->beginTransaction();
-        try {
-            $stmt = $pdo->prepare("UPDATE users SET gold = gold - ?, hp = LEAST(max_hp, hp + ?) WHERE user_id = ? AND gold >= ?");
-            $stmt->execute([$cost, $healAmount, $userId, $cost]);
-            if ($stmt->rowCount() === 0) {
+        // Cek apakah HP sudah penuh
+        $curHp = $pdo->prepare("SELECT hp, max_hp FROM users WHERE user_id = ?");
+        $curHp->execute([$userId]);
+        $userHpRow = $curHp->fetch(PDO::FETCH_ASSOC);
+
+        if ($userHpRow && ($userHpRow['hp'] >= $userHpRow['max_hp'])) {
+            $error = "HP kamu sudah penuh, ramuan tidak diperlukan!";
+        } else {
+            $pdo->beginTransaction();
+            try {
+                $stmt = $pdo->prepare("UPDATE users SET gold = gold - ?, hp = LEAST(max_hp, hp + ?) WHERE user_id = ? AND gold >= ?");
+                $stmt->execute([$cost, $healAmount, $userId, $cost]);
+                if ($stmt->rowCount() === 0) {
+                    $pdo->rollBack();
+                    $error = "Gold tidak cukup untuk ramuan ini!";
+                } else {
+                    $pdo->commit();
+                    header("Location: shop.php?success=healed");
+                    exit();
+                }
+            } catch (Exception $e) {
                 $pdo->rollBack();
-                $error = "Gold tidak cukup untuk ramuan ini!";
-            } else {
-                $pdo->commit();
-                header("Location: shop.php?success=healed");
-                exit();
+                $error = "Transaksi gagal.";
             }
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $error = "Transaksi gagal.";
         }
     }
 
@@ -122,8 +131,23 @@ $stmt = $pdo->prepare("SELECT * FROM rewards WHERE user_id = ? ORDER BY cost ASC
 $stmt->execute([$userId]);
 $rewards = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Ambil riwayat penukaran hadiah terakhir
+$stmtLogs = $pdo->prepare("
+    SELECT rl.cost, rl.claimed_at, COALESCE(r.reward_name, 'Hadiah Kustom') AS reward_name, COALESCE(r.icon, 'fa-gift') AS icon
+    FROM reward_logs rl
+    LEFT JOIN rewards r ON rl.reward_id = r.reward_id
+    WHERE rl.user_id = ?
+    ORDER BY rl.claimed_at DESC
+    LIMIT 5
+");
+$stmtLogs->execute([$userId]);
+$claimedLogs = $stmtLogs->fetchAll(PDO::FETCH_ASSOC);
+
 // Header baru di-include SETELAH semua handler POST (redirect butuh belum ada output)
+$pageTitle = 'Toko Hadiah';
 require_once __DIR__ . '/../includes/header.php';
+
+$isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
 ?>
 
 <div class="page-header d-flex justify-content-between align-items-end">
@@ -184,8 +208,12 @@ require_once __DIR__ . '/../includes/header.php';
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="potion_type" value="minor">
-                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < 25 ? 'disabled' : ''; ?>>
-                        <i class="fas fa-coins text-warning me-1"></i> 25 Gold
+                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 25 || $isHpFull) ? 'disabled' : ''; ?>>
+                        <?php if ($isHpFull): ?>
+                            <i class="fas fa-check text-accent me-1"></i> HP Penuh
+                        <?php else: ?>
+                            <i class="fas fa-coins text-warning me-1"></i> 25 Gold
+                        <?php endif; ?>
                     </button>
                 </form>
             </div>
@@ -206,8 +234,12 @@ require_once __DIR__ . '/../includes/header.php';
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="potion_type" value="full">
-                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < 75 ? 'disabled' : ''; ?>>
-                        <i class="fas fa-coins text-warning me-1"></i> 75 Gold
+                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 75 || $isHpFull) ? 'disabled' : ''; ?>>
+                        <?php if ($isHpFull): ?>
+                            <i class="fas fa-check text-accent me-1"></i> HP Penuh
+                        <?php else: ?>
+                            <i class="fas fa-coins text-warning me-1"></i> 75 Gold
+                        <?php endif; ?>
                     </button>
                 </form>
             </div>
@@ -251,7 +283,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <form method="POST" action="shop.php" style="position: absolute; top: 0.75rem; right: 0.75rem;">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="reward_id" value="<?php echo $reward['reward_id']; ?>">
-                        <button type="submit" name="delete_reward" class="btn-core btn-ghost p-1" title="Hapus hadiah">
+                        <button type="submit" name="delete_reward" class="btn-core btn-ghost p-1" title="Hapus hadiah" aria-label="Hapus hadiah <?php echo htmlspecialchars($reward['reward_name']); ?>">
                             <i class="fas fa-times" style="font-size: 0.75rem;"></i>
                         </button>
                     </form>
@@ -289,6 +321,41 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
+<!-- Section: Riwayat Penukaran Hadiah -->
+<?php if (!empty($claimedLogs)): ?>
+<div class="mt-5">
+    <div class="panel-header" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem; margin-bottom: 1rem;">
+        <h3 class="panel-title" style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
+            <i class="fas fa-history text-accent"></i> Riwayat Klaim Hadiah
+        </h3>
+    </div>
+    <div class="bento-panel p-3">
+        <div class="data-list">
+            <?php foreach ($claimedLogs as $log): ?>
+                <div class="data-row" style="padding: 0.65rem 0;">
+                    <div class="data-main">
+                        <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--status-warning-dim); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--status-warning); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                            <i class="fas <?php echo htmlspecialchars($log['icon']); ?>"></i>
+                        </div>
+                        <div>
+                            <div class="data-title" style="font-size: 0.85rem;"><?php echo htmlspecialchars($log['reward_name']); ?></div>
+                            <div class="data-meta font-mono" style="font-size: 0.72rem;">
+                                <span><?php echo indo_short_date($log['claimed_at'], true); ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-actions">
+                        <span class="badge-status warning font-mono">
+                            <i class="fas fa-coins me-1"></i>-<?php echo number_format($log['cost']); ?> Gold
+                        </span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <!-- Modal Add Reward -->
 <div class="modal fade" id="addRewardModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -301,17 +368,17 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Nama hadiah</label>
-                        <input type="text" class="form-control" name="reward_name" placeholder="mis., Beli kopi, Main game 2 jam" required>
+                        <label for="add_rew_name" class="form-label">Nama hadiah</label>
+                        <input type="text" class="form-control" id="add_rew_name" name="reward_name" placeholder="mis., Beli kopi, Main game 2 jam" required>
                     </div>
                     <div class="row g-2">
                         <div class="col-6">
-                            <label class="form-label">Harga (Gold)</label>
-                            <input type="number" class="form-control font-mono" name="cost" min="1" placeholder="100" required>
+                            <label for="add_rew_cost" class="form-label">Harga (Gold)</label>
+                            <input type="number" class="form-control font-mono" id="add_rew_cost" name="cost" min="1" placeholder="100" required>
                         </div>
                         <div class="col-6">
-                            <label class="form-label">Ikon</label>
-                            <select class="form-select" name="icon">
+                            <label for="add_rew_icon" class="form-label">Ikon</label>
+                            <select class="form-select" id="add_rew_icon" name="icon">
                                 <option value="fa-gift">Kado</option>
                                 <option value="fa-coffee">Kopi</option>
                                 <option value="fa-gamepad">Game</option>
