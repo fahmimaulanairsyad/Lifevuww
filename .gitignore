@@ -3,12 +3,10 @@
 
 # User-uploaded content (keep app assets + upload-dir protection)
 assets/images/*
-!assets/images/avatar.jpg
 !assets/images/logo.svg
 !assets/images/.htaccess
 
-# Preview files
-preview-logo.html
+# Design assets
 assets/logo-concepts/
 
 # IDE

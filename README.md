@@ -92,10 +92,14 @@ Setiap kebiasaan dikelompokkan ke dalam 5 pilar atribut kehidupan yang divisuali
      DB_USERNAME=root
      DB_PASSWORD=
      ```
-4. **Import Database:**
-   * Buka **phpMyAdmin** (`http://localhost/phpmyadmin/`).
-   * Buat database baru bernama `habit_tracker_rpg`.
-   * Import file `database.sql` yang berada di root folder proyek ini.
+4. **Setup Database:**
+   * **Instalasi Baru (Database Kosong):**
+     * Buka **phpMyAdmin** (`http://localhost/phpmyadmin/`).
+     * Buat database baru bernama `habit_tracker_rpg`.
+     * Import file `database.sql` yang berada di root folder proyek ini (aman karena menggunakan `CREATE TABLE IF NOT EXISTS`).
+   * **Memperbarui Database Lama (Existing Deployment):**
+     * Jangan import ulang `database.sql` agar data tidak konflik.
+     * Cukup jalankan skrip migrasi bertahap di dalam folder `migrations/` secara berurutan (`001_initial_schema.sql`, `002_rpg_expansion.sql`, `003_hardening_and_indexes.sql`).
 5. **Jalankan Aplikasi:**
    * Buka browser dan akses: `http://localhost/Lifevuww/`
    * Daftarkan akun baru melalui halaman Register, dan mulai petualangan produktivitas Anda!

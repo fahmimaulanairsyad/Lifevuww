@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lifevuww - Logo Comparison & Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #09090b;
+            --bg-surface: #111114;
+            --bg-hover: #18181c;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            --accent: #10b981;
+            --accent-purple: #8b5cf6;
+            --font-sans: 'Geist', -apple-system, sans-serif;
+            --font-mono: 'Geist Mono', monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            padding: 3rem 1.5rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.75rem;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-hover);
+        }
+
+        .card-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            width: fit-content;
+            margin-bottom: 1rem;
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+
+        /* Large Showcase Canvas */
+        .showcase-stage {
+            background: #000000;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2.5rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .showcase-stage svg {
+            width: 130px;
+            height: 130px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        }
+
+        /* Context Previews */
+        .preview-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .context-box {
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.9rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .context-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-family: var(--font-mono);
+            margin-top: 0.5rem;
+        }
+
+        /* Mobile App Icon Simulation */
+        .app-icon-tile {
+            width: 52px;
+            height: 52px;
+            background: #18181c;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .app-icon-tile svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Nav Mockup */
+        .nav-mockup {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 4px 8px;
+        }
+
+        .nav-mockup svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* Scale Ladder */
+        .scale-ladder {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 1rem 0;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+
+        .scale-step {
+            text-align: center;
+        }
+
+        .scale-step span {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Lifevuww — Logo Selection</h1>
+        <p>Pratinjau vektor presisi 100% tajam langsung pada tema gelap Lifevuww. Pilih bentuk yang paling mewakili karakter aplikasimu.</p>
+    </div>
+
+    <div class="grid">
+
+        <!-- OPSI 1: KINETIC BLADE (V-BLADE) -->
+        <div class="card">
+            <span class="card-badge">Opsi 1 · Kinetic Blade</span>
+            <h2 class="card-title">Dual Velocity Blades</h2>
+            <p class="card-desc">Dua sayap vektor aerodinamis bersudut tajam yang meluncur ke atas membentuk siluet V & L. Mewakili kecepatan, momentum streak, dan kenaikan level.</p>
+            
+            <div class="showcase-stage">
+                <!-- SVG Concept 1 Color -->
+                <svg viewBox="0 0 256 256">
+                    <path fill="#10b981" d="M120 36L44 188C40 196 46 206 56 206L84 206C92 206 100 200 104 192L120 156L120 36Z"/>
+                    <path fill="#8b5cf6" d="M136 36L212 188C216 196 210 206 200 206L172 206C164 206 156 200 152 192L136 156L136 36Z"/>
+                    <polygon fill="#fafafa" points="128,100 148,140 108,140"/>
+                </svg>
+            </div>
+
+            <div class="preview-row">
+                <div class="context-box">
+                    <div class="app-icon-tile">
+                        <svg viewBox="0 0 256 256">
+                            <path fill="#10b981" d="M120 36L44 188C40 196 46 206 56 206L84 206C92 206 100 200 104 192L120 156L120 36Z"/>
+                            <path fill="#8b5cf6" d="M136 36L212 188C216 196 210 206 200 206L172 206C164 206 156 200 152 192L136 156L136 36Z"/>
+                            <polygon fill="#fafafa" points="128,100 148,140 108,140"/>
+                        </svg>
+                    </div>
+                    <span class="context-label">App Icon HP</span>
+                </div>
+                <div class="context-box">
+                    <div class="nav-mockup">
+                        <svg viewBox="0 0 256 256">
+                            <path fill="#10b981" d="M120 36L44 188C40 196 46 206 56 206L84 206C92 206 100 200 104 192L120 156L120 36Z"/>
+                            <path fill="#8b5cf6" d="M136 36L212 188C216 196 210 206 200 206L172 206C164 206 156 200 152 192L136 156L136 36Z"/>
+                            <polygon fill="#fafafa" points="128,100 148,140 108,140"/>
+                        </svg>
+                        <span>Lifevuww</span>
+                    </div>
+                    <span class="context-label">Header Sidebar</span>
+                </div>
+            </div>
+
+            <div class="scale-ladder">
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 48px; height: 48px;">
+                        <path fill="#ffffff" d="M120 36L44 188C40 196 46 206 56 206L84 206C92 206 100 200 104 192L120 156L120 36Z"/>
+                        <path fill="#ffffff" d="M136 36L212 188C216 196 210 206 200 206L172 206C164 206 156 200 152 192L136 156L136 36Z"/>
+                        <polygon fill="#ffffff" points="128,100 148,140 108,140"/>
+                    </svg>
+                    <span>48px</span>
+                </div>
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 24px; height: 24px;">
+                        <path fill="#ffffff" d="M120 36L44 188C40 196 46 206 56 206L84 206C92 206 100 200 104 192L120 156L120 36Z"/>
+                        <path fill="#ffffff" d="M136 36L212 188C216 196 210 206 200 206L172 206C164 206 156 200 152 192L136 156L136 36Z"/>
+                        <polygon fill="#ffffff" points="128,100 148,140 108,140"/>
+                    </svg>
+                    <span>24px</span>
+                </div>
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 16px; height: 16px;">
+                        <path fill="#ffffff" d="M120 36L44 188C40 196 46 206 56 206L84 206C92 206 100 200 104 192L120 156L120 36Z"/>
+                        <path fill="#ffffff" d="M136 36L212 188C216 196 210 206 200 206L172 206C164 206 156 200 152 192L136 156L136 36Z"/>
+                        <polygon fill="#ffffff" points="128,100 148,140 108,140"/>
+                    </svg>
+                    <span>16px Favicon</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPSI 2: PRISM CORE (KUBUS ISOMETRIK SAAT INI) -->
+        <div class="card">
+            <span class="card-badge" style="background: rgba(139, 92, 246, 0.12); color: var(--accent-purple); border-color: rgba(139, 92, 246, 0.25);">Opsi 2 · Prism Core (Saat Ini)</span>
+            <h2 class="card-title">The Isometric Cube</h2>
+            <p class="card-desc">Bentuk kubus heksagonal isometrik 3D murni dengan celah 8px. Faset kiri hijau melambangkan habit/kesehatan, faset kanan ungu melambangkan misi/RPG.</p>
+            
+            <div class="showcase-stage">
+                <!-- SVG Concept B Color -->
+                <svg viewBox="0 0 256 256">
+                    <path fill="#52525b" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+                    <polygon fill="#10b981" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+                    <polygon fill="#8b5cf6" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+                </svg>
+            </div>
+
+            <div class="preview-row">
+                <div class="context-box">
+                    <div class="app-icon-tile">
+                        <svg viewBox="0 0 256 256">
+                            <path fill="#52525b" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+                            <polygon fill="#10b981" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+                            <polygon fill="#8b5cf6" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+                        </svg>
+                    </div>
+                    <span class="context-label">App Icon HP</span>
+                </div>
+                <div class="context-box">
+                    <div class="nav-mockup">
+                        <svg viewBox="0 0 256 256">
+                            <path fill="#52525b" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+                            <polygon fill="#10b981" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+                            <polygon fill="#8b5cf6" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+                        </svg>
+                        <span>Lifevuww</span>
+                    </div>
+                    <span class="context-label">Header Sidebar</span>
+                </div>
+            </div>
+
+            <div class="scale-ladder">
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 48px; height: 48px;">
+                        <path fill="#ffffff" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+                        <polygon fill="#ffffff" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+                        <polygon fill="#ffffff" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+                    </svg>
+                    <span>48px</span>
+                </div>
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 24px; height: 24px;">
+                        <path fill="#ffffff" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+                        <polygon fill="#ffffff" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+                        <polygon fill="#ffffff" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+                    </svg>
+                    <span>24px</span>
+                </div>
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 16px; height: 16px;">
+                        <path fill="#ffffff" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+                        <polygon fill="#ffffff" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+                        <polygon fill="#ffffff" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+                    </svg>
+                    <span>16px Favicon</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPSI 3: MONOLITH LOOP -->
+        <div class="card">
+            <span class="card-badge" style="background: rgba(255, 255, 255, 0.08); color: #ffffff; border-color: rgba(255, 255, 255, 0.15);">Opsi 3 · Monolith Loop</span>
+            <h2 class="card-title">Impossible Ribbon</h2>
+            <p class="card-desc">Satu pita geometri isometrik heksagonal yang saling bertaut tanpa ujung (ala Möbius). Simbol disiplin berkelanjutan yang kokoh dan arsitektural.</p>
+            
+            <div class="showcase-stage">
+                <svg viewBox="0 0 256 256">
+                    <polygon fill="#71717a" points="128 32 211 80 178 99 128 70 78 99 45 80"/>
+                    <polygon fill="#10b981" points="45 80 78 99 78 177 128 148 128 186 45 138"/>
+                    <polygon fill="#8b5cf6" points="211 80 211 176 128 224 128 186 178 157 178 99"/>
+                </svg>
+            </div>
+
+            <div class="preview-row">
+                <div class="context-box">
+                    <div class="app-icon-tile">
+                        <svg viewBox="0 0 256 256">
+                            <polygon fill="#71717a" points="128 32 211 80 178 99 128 70 78 99 45 80"/>
+                            <polygon fill="#10b981" points="45 80 78 99 78 177 128 148 128 186 45 138"/>
+                            <polygon fill="#8b5cf6" points="211 80 211 176 128 224 128 186 178 157 178 99"/>
+                        </svg>
+                    </div>
+                    <span class="context-label">App Icon HP</span>
+                </div>
+                <div class="context-box">
+                    <div class="nav-mockup">
+                        <svg viewBox="0 0 256 256">
+                            <polygon fill="#71717a" points="128 32 211 80 178 99 128 70 78 99 45 80"/>
+                            <polygon fill="#10b981" points="45 80 78 99 78 177 128 148 128 186 45 138"/>
+                            <polygon fill="#8b5cf6" points="211 80 211 176 128 224 128 186 178 157 178 99"/>
+                        </svg>
+                        <span>Lifevuww</span>
+                    </div>
+                    <span class="context-label">Header Sidebar</span>
+                </div>
+            </div>
+
+            <div class="scale-ladder">
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 48px; height: 48px;">
+                        <polygon fill="#ffffff" points="128 32 211 80 178 99 128 70 78 99 45 80"/>
+                        <polygon fill="#ffffff" points="45 80 78 99 78 177 128 148 128 186 45 138"/>
+                        <polygon fill="#ffffff" points="211 80 211 176 128 224 128 186 178 157 178 99"/>
+                    </svg>
+                    <span>48px</span>
+                </div>
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 24px; height: 24px;">
+                        <polygon fill="#ffffff" points="128 32 211 80 178 99 128 70 78 99 45 80"/>
+                        <polygon fill="#ffffff" points="45 80 78 99 78 177 128 148 128 186 45 138"/>
+                        <polygon fill="#ffffff" points="211 80 211 176 128 224 128 186 178 157 178 99"/>
+                    </svg>
+                    <span>24px</span>
+                </div>
+                <div class="scale-step">
+                    <svg viewBox="0 0 256 256" style="width: 16px; height: 16px;">
+                        <polygon fill="#ffffff" points="128 32 211 80 178 99 128 70 78 99 45 80"/>
+                        <polygon fill="#ffffff" points="45 80 78 99 78 177 128 148 128 186 45 138"/>
+                        <polygon fill="#ffffff" points="211 80 211 176 128 224 128 186 178 157 178 99"/>
+                    </svg>
+                    <span>16px Favicon</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>
