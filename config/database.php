@@ -45,23 +45,17 @@ try {
     die("Database connection failed. Please check your configuration.");
 }
 
+require_once __DIR__ . '/game.php';
+
 if (!function_exists('calculateLevel')) {
-    // 100 EXP per tingkat: pengguna aktif (~20 EXP/hari) naik ke Level 2
-    // dalam ±5 hari, bukan berbulan-bulan.
     function calculateLevel($exp) {
-        return floor($exp / 100) + 1;
+        return game_calculate_level($exp);
     }
 }
 
 if (!function_exists('calculateRank')) {
     function calculateRank($level) {
-        if ($level >= 30) return 'S-Rank Sovereign';
-        if ($level >= 22) return 'A-Rank Master';
-        if ($level >= 15) return 'B-Rank Elite';
-        if ($level >= 10) return 'C-Rank Vanguard';
-        if ($level >= 6) return 'D-Rank Explorer';
-        if ($level >= 3) return 'E-Rank Rookie';
-        return 'F-Rank Novice';
+        return game_calculate_rank($level);
     }
 }
 
@@ -100,30 +94,17 @@ if (!function_exists('indo_short_date')) {
 }
 
 if (!function_exists('exp_for_difficulty')) {
-    // Single source of truth for EXP rewards. $default preserves each
-    // caller's legacy behavior for unknown input.
     function exp_for_difficulty($difficulty, $default = 5) {
-        return match ($difficulty) {
-            'Easy' => 5,
-            'Medium' => 10,
-            'Hard' => 15,
-            default => $default,
-        };
+        $diffs = game_difficulties();
+        return $diffs[$difficulty]['exp'] ?? $default;
     }
 }
 
 if (!function_exists('skill_id_for_category')) {
-    // Single source of truth for the category -> skill mapping.
-    // Returns [skill_id, skill_name, skill_type] or null.
     function skill_id_for_category($category) {
-        return match ($category) {
-            'Wealth' => [1, 'Wealth', 'Wealth'],
-            'Intelligence' => [2, 'Intelligence', 'Intelligence'],
-            'Physical' => [3, 'Physical', 'Physical'],
-            'Health' => [4, 'Health', 'Health'],
-            'Social' => [5, 'Social', 'Social'],
-            default => null,
-        };
+        $cats = game_categories();
+        if (!isset($cats[$category])) return null;
+        return [$cats[$category]['id'], $category, $category];
     }
 }
 
@@ -139,6 +120,21 @@ if (!function_exists('bump_skill_progress')) {
             ON DUPLICATE KEY UPDATE progress = progress + 1
         ");
         $stmt->execute([$userId, $skillId, $skillName, $skillType]);
+    }
+}
+
+if (!function_exists('revert_skill_progress')) {
+    // Atomic decrement of a user's skill progress on undo.
+    function revert_skill_progress($pdo, $userId, $category) {
+        $map = skill_id_for_category($category);
+        if ($map === null) return;
+        [$skillId] = $map;
+        $stmt = $pdo->prepare("
+            UPDATE skills 
+            SET progress = GREATEST(0, progress - 1) 
+            WHERE user_id = ? AND skill_id = ?
+        ");
+        $stmt->execute([$userId, $skillId]);
     }
 }
 
@@ -251,8 +247,9 @@ if (!function_exists('run_daily_rollover')) {
                     } else {
                         $damage = 0;
                         $missedIds = [];
+                        $diffRules = game_difficulties();
                         foreach ($missed as $h) {
-                            $damage += exp_for_difficulty($h['difficulty'], 5);
+                            $damage += $diffRules[$h['difficulty']]['hp_penalty_habit'] ?? 5;
                             $missedIds[] = (int) $h['habit_id'];
                         }
                         $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")
@@ -282,13 +279,9 @@ if (!function_exists('run_daily_rollover')) {
                 ");
                 $stmtExp->execute([$userId]);
                 $expired = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
+                $diffRules = game_difficulties();
                 foreach ($expired as $q) {
-                    $qd = match ($q['difficulty']) {
-                        'Easy' => 10,
-                        'Medium' => 20,
-                        'Hard' => 30,
-                        default => 10,
-                    };
+                    $qd = $diffRules[$q['difficulty']]['hp_penalty_quest'] ?? 10;
                     $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")
                         ->execute([$qd, $userId]);
                     $pdo->prepare("UPDATE quests SET status = 'Failed' WHERE quest_id = ?")

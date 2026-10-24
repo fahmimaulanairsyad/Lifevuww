@@ -79,6 +79,16 @@
                 isOn
             };
         })();
+
+        function fireConfetti(opts) {
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+            const run = () => { if (typeof confetti === 'function') confetti(opts); };
+            if (typeof confetti === 'function') {
+                run();
+            } else {
+                window.addEventListener('DOMContentLoaded', run, { once: true });
+            }
+        }
     </script>
 
     <!-- Dopamine Toast Notification -->
@@ -104,7 +114,7 @@
 
         <script>
             // Confetti blast + celebration chime
-            confetti({ particleCount: 70, spread: 55, origin: { y: 0.85 } });
+            fireConfetti({ particleCount: 70, spread: 55, origin: { y: 0.85 } });
             LVSound.<?php echo ($toast['type'] === 'quest') ? 'quest' : 'fanfare'; ?>();
 
             // Hilangkan toast setelah 4.5 detik
@@ -157,9 +167,9 @@
             </div>
         </div>
         <script>
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 } }), 250);
-            setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 } }), 400);
+            fireConfetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            setTimeout(() => fireConfetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0 } }), 250);
+            setTimeout(() => fireConfetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1 } }), 400);
             LVSound.levelUp();
         </script>
     <?php endif; ?>

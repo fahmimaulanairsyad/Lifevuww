@@ -56,6 +56,82 @@ try {
         }
     }
 
+    // Handle export data (JSON) - Hak Portabilitas Data (UU PDP)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['export_data'])) {
+        validate_csrf();
+
+        $stmtH = $pdo->prepare("SELECT habit_name, difficulty, reset_period, category, streak, completed_today, created_at FROM habits WHERE user_id = ?");
+        $stmtH->execute([$_SESSION['user_id']]);
+        $habitsData = $stmtH->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtQ = $pdo->prepare("SELECT quest_name, difficulty, exp_reward, duration_days, status, start_date, category FROM quests WHERE user_id = ?");
+        $stmtQ->execute([$_SESSION['user_id']]);
+        $questsData = $stmtQ->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtS = $pdo->prepare("SELECT skill_name, skill_type, progress FROM skills WHERE user_id = ?");
+        $stmtS->execute([$_SESSION['user_id']]);
+        $skillsData = $stmtS->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtHL = $pdo->prepare("SELECT h.habit_name, hl.completion_date, hl.status, hl.exp_reward FROM habit_logs hl JOIN habits h ON hl.habit_id = h.habit_id WHERE hl.user_id = ? ORDER BY hl.log_id DESC LIMIT 100");
+        $stmtHL->execute([$_SESSION['user_id']]);
+        $habitLogsData = $stmtHL->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmtRL = $pdo->prepare("SELECT rl.cost, rl.claimed_at, COALESCE(r.reward_name, 'Hadiah') AS reward_name FROM reward_logs rl LEFT JOIN rewards r ON rl.reward_id = r.reward_id WHERE rl.user_id = ? ORDER BY rl.log_id DESC LIMIT 100");
+        $stmtRL->execute([$_SESSION['user_id']]);
+        $rewardLogsData = $stmtRL->fetchAll(PDO::FETCH_ASSOC);
+
+        $export = [
+            'app' => 'Lifevuww',
+            'version' => '1.0.0',
+            'exported_at' => date('c'),
+            'user' => [
+                'username' => $user['username'],
+                'email' => $user['email'],
+                'level' => $level,
+                'rank' => $rank,
+                'exp' => $totalExp,
+                'hp' => (int) ($user['hp'] ?? 100),
+                'gold' => (int) ($user['gold'] ?? 0),
+                'streak_freeze' => (int) ($user['streak_freeze'] ?? 0),
+                'created_at' => $user['created_at'],
+            ],
+            'habits' => $habitsData,
+            'quests' => $questsData,
+            'skills' => $skillsData,
+            'recent_habit_logs' => $habitLogsData,
+            'recent_reward_claims' => $rewardLogsData
+        ];
+
+        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Disposition: attachment; filename="lifevuww-export-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $user['username']) . '-' . date('Ymd') . '.json"');
+        echo json_encode($export, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        exit();
+    }
+
+    // Handle delete account (Hak Penghapusan / Hak untuk Dilupakan - UU PDP)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
+        validate_csrf();
+        $confirmPassword = $_POST['confirm_delete_password'] ?? '';
+        if (!password_verify($confirmPassword, $user['password'])) {
+            $deleteError = "Kata sandi salah. Penghapusan akun dibatalkan demi keamanan.";
+        } else {
+            $uploadDir = "../assets/images/";
+            $oldPic = basename($user['profile_picture'] ?? '');
+            if ($oldPic !== '' && file_exists($uploadDir . $oldPic)) {
+                unlink($uploadDir . $oldPic);
+            }
+
+            // Hapus pengguna (dan data skills jika FK belum cascade)
+            $pdo->prepare("DELETE FROM skills WHERE user_id = ?")->execute([$_SESSION['user_id']]);
+            $pdo->prepare("DELETE FROM users WHERE user_id = ?")->execute([$_SESSION['user_id']]);
+
+            session_unset();
+            session_destroy();
+            header("Location: ../register.php?account_deleted=1");
+            exit();
+        }
+    }
+
     // Handle reminder time setting
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_reminder'])) {
         validate_csrf();
@@ -342,6 +418,66 @@ require_once __DIR__ . '/../includes/header.php';
             <button type="submit" name="change_password" value="1" class="btn-core btn-primary">Ganti Kata Sandi</button>
         </div>
     </form>
+</div>
+
+<!-- Privasi & Kontrol Data (UU PDP) -->
+<div class="bento-panel mt-3 p-4">
+    <div class="panel-header">
+        <h3 class="panel-title"><i class="fas fa-user-shield text-accent"></i> Privasi & Kontrol Data</h3>
+    </div>
+
+    <?php if (!empty($deleteError)): ?>
+        <div class="p-2 mb-3 text-center" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
+            <?php echo htmlspecialchars($deleteError); ?>
+        </div>
+    <?php endif; ?>
+
+    <p class="text-muted" style="font-size: 0.82rem; line-height: 1.5;">
+        Sesuai prinsip pelindungan data pribadi (UU PDP), kamu memiliki hak penuh atas datamu. Kamu dapat mengunduh seluruh arsip datamu kapan saja atau menghapus akunmu secara permanen.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2 mt-3 pt-2" style="border-top: 1px solid var(--border-hairline);">
+        <form method="POST" action="profile.php" style="margin: 0;">
+            <?php echo csrf_field(); ?>
+            <button type="submit" name="export_data" value="1" class="btn-core btn-outline">
+                <i class="fas fa-file-download text-accent"></i> Ekspor Seluruh Data (JSON)
+            </button>
+        </form>
+
+        <button type="button" class="btn-core btn-ghost text-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+            <i class="fas fa-trash-alt"></i> Hapus Akun Permanen
+        </button>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus Akun -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="profile.php">
+                <?php echo csrf_field(); ?>
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-exclamation-triangle me-2"></i> Hapus Akun Permanen</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body" style="font-size: 0.85rem;">
+                    <p class="text-secondary mb-3">
+                        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Semua kebiasaan, misi, EXP, koin Gold, dan catatan riwayatmu akan dihapus selamanya dari sistem.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label" for="confirm_delete_password">Masukkan kata sandi untuk konfirmasi:</label>
+                        <input type="password" class="form-control" id="confirm_delete_password" name="confirm_delete_password" required placeholder="Kata sandimu">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" name="delete_account" value="1" class="btn-core btn-primary" style="background-color: var(--status-danger) !important; border-color: var(--status-danger) !important; color: #fff !important;">
+                        Ya, Hapus Akun Saya
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <!-- Modal Panduan Pasang Manual -->

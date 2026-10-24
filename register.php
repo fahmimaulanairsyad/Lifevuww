@@ -74,6 +74,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </div>
 
         <div class="bento-panel p-4">
+            <?php if (isset($_GET['account_deleted'])): ?>
+                <div class="p-2 mb-3 text-center" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.8rem;">
+                    <i class="fas fa-check-circle me-1"></i> Akun dan seluruh datamu telah dihapus secara permanen.
+                </div>
+            <?php endif; ?>
             <?php if (isset($error)): ?>
                 <div class="p-2 mb-3 text-center" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
                     <?php echo htmlspecialchars($error); ?>

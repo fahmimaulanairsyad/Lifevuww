@@ -22,23 +22,6 @@ try {
     $expToNextLevel = $nextLevelExp - $totalExp;
     $rank = calculateRank($level);
 
-    // Recent achievements (combined habits and quests)
-    $stmt = $pdo->prepare("
-    (SELECT 'habit' as type, h.habit_name as name, hl.exp_reward, hl.completion_date 
-    FROM habit_logs hl
-    JOIN habits h ON hl.habit_id = h.habit_id
-    WHERE hl.user_id = ?)
-    UNION
-    (SELECT 'quest' as type, q.quest_name as name, ql.exp_reward, ql.completed_at as completion_date 
-    FROM quest_logs ql
-    JOIN quests q ON ql.quest_id = q.quest_id
-    WHERE ql.user_id = ? AND ql.status = 'Completed')
-    ORDER BY completion_date DESC
-    LIMIT 10
-    ");
-    $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
-    $recent_achievements = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
     // Ambil data quest progress
     $stmt = $pdo->prepare("
         SELECT 

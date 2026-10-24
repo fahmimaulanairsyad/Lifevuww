@@ -11,40 +11,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Beli Health Potion (Recovery) — atomic: guard gold di WHERE + cek rowCount
     if (isset($_POST['buy_potion'])) {
-        $potionType = $_POST['potion_type'];
-        $cost = ($potionType === 'full') ? 75 : 25;
-        $healAmount = ($potionType === 'full') ? 100 : 25;
-
-        // Cek apakah HP sudah penuh
-        $curHp = $pdo->prepare("SELECT hp, max_hp FROM users WHERE user_id = ?");
-        $curHp->execute([$userId]);
-        $userHpRow = $curHp->fetch(PDO::FETCH_ASSOC);
-
-        if ($userHpRow && ($userHpRow['hp'] >= $userHpRow['max_hp'])) {
-            $error = "HP kamu sudah penuh, ramuan tidak diperlukan!";
+        $potionType = $_POST['potion_type'] ?? '';
+        $potList = game_potions();
+        if (!isset($potList[$potionType]) || !isset($potList[$potionType]['heal'])) {
+            $error = "Jenis ramuan tidak valid!";
         } else {
-            $pdo->beginTransaction();
-            try {
-                $stmt = $pdo->prepare("UPDATE users SET gold = gold - ?, hp = LEAST(max_hp, hp + ?) WHERE user_id = ? AND gold >= ?");
-                $stmt->execute([$cost, $healAmount, $userId, $cost]);
-                if ($stmt->rowCount() === 0) {
+            $cost = $potList[$potionType]['cost'];
+            $healAmount = $potList[$potionType]['heal'];
+
+            // Cek apakah HP sudah penuh
+            $curHp = $pdo->prepare("SELECT hp, max_hp FROM users WHERE user_id = ?");
+            $curHp->execute([$userId]);
+            $userHpRow = $curHp->fetch(PDO::FETCH_ASSOC);
+
+            if ($userHpRow && ($userHpRow['hp'] >= $userHpRow['max_hp'])) {
+                $error = "HP kamu sudah penuh, ramuan tidak diperlukan!";
+            } else {
+                $pdo->beginTransaction();
+                try {
+                    $stmt = $pdo->prepare("UPDATE users SET gold = gold - ?, hp = LEAST(max_hp, hp + ?) WHERE user_id = ? AND gold >= ?");
+                    $stmt->execute([$cost, $healAmount, $userId, $cost]);
+                    if ($stmt->rowCount() === 0) {
+                        $pdo->rollBack();
+                        $error = "Gold tidak cukup untuk ramuan ini!";
+                    } else {
+                        $pdo->commit();
+                        header("Location: shop.php?success=healed");
+                        exit();
+                    }
+                } catch (Exception $e) {
                     $pdo->rollBack();
-                    $error = "Gold tidak cukup untuk ramuan ini!";
-                } else {
-                    $pdo->commit();
-                    header("Location: shop.php?success=healed");
-                    exit();
+                    $error = "Transaksi gagal.";
                 }
-            } catch (Exception $e) {
-                $pdo->rollBack();
-                $error = "Transaksi gagal.";
             }
         }
     }
 
     // Beli Streak Freeze — atomic
     if (isset($_POST['buy_freeze'])) {
-        $cost = 50;
+        $potList = game_potions();
+        $cost = $potList['freeze']['cost'] ?? 50;
         $pdo->beginTransaction();
         try {
             $stmt = $pdo->prepare("UPDATE users SET gold = gold - ?, streak_freeze = streak_freeze + 1 WHERE user_id = ? AND gold >= ?");

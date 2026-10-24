@@ -52,13 +52,8 @@ function completeHabit($pdo, $userId, $habitId) {
         $stmtStreak->execute([$habitId, $userId]);
         $newStreak = (int) $stmtStreak->fetchColumn();
 
-        // Hitung Multiplier berdasarkan Streak
-        $multiplier = 1.0;
-        if ($newStreak >= 7) {
-            $multiplier = 1.5;
-        } elseif ($newStreak >= 3) {
-            $multiplier = 1.2;
-        }
+        // Hitung Multiplier berdasarkan Streak (sentral via game.php)
+        $multiplier = game_streak_multiplier($newStreak);
 
         $finalExp = floor($habit['exp_reward'] * $multiplier);
         $earnedGold = $finalExp; // Gold yang didapat sama dengan EXP akhir
@@ -68,7 +63,7 @@ function completeHabit($pdo, $userId, $habitId) {
         $stmtUserOld->execute([$userId]);
         $oldUserData = $stmtUserOld->fetch(PDO::FETCH_ASSOC);
         $oldExp = (int) ($oldUserData['exp'] ?? 0);
-        $oldLvl = (int) ($oldUserData['level'] ?? 1);
+        $oldLvl = calculateLevel($oldExp);
 
         $newExpTotal = $oldExp + $finalExp;
         $newLvl = calculateLevel($newExpTotal);
@@ -121,7 +116,7 @@ function completeHabit($pdo, $userId, $habitId) {
 
 
 // Fungsi untuk membatalkan penyelesaian habit hari ini
-function undoHabit($pdo, $userId, $habitId) {
+function undoHabit($pdo, $userId, $habitId): bool {
     try {
         $pdo->beginTransaction();
 
@@ -131,7 +126,7 @@ function undoHabit($pdo, $userId, $habitId) {
 
         if (!$habit) {
             $pdo->rollBack();
-            return;
+            return false;
         }
 
         // Ambil log penyelesaian hari ini
@@ -147,6 +142,28 @@ function undoHabit($pdo, $userId, $habitId) {
         $revertExp = $log ? (int) $log['exp_reward'] : (int) $habit['exp_reward'];
         $revertGold = $revertExp;
 
+        // Ambil data user terkini (FOR UPDATE)
+        $stmtUser = $pdo->prepare("SELECT exp, gold FROM users WHERE user_id = ? FOR UPDATE");
+        $stmtUser->execute([$userId]);
+        $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+        if (!$userData) {
+            $pdo->rollBack();
+            return false;
+        }
+
+        $curGold = (int) ($userData['gold'] ?? 0);
+        if ($curGold < $revertGold) {
+            $pdo->rollBack();
+            $_SESSION['habit_error'] = "Aksi tidak bisa dibatalkan karena Gold reward sudah terpakai.";
+            return false;
+        }
+
+        $curExp = (int) ($userData['exp'] ?? 0);
+        $newExp = max(0, $curExp - $revertExp);
+        $newLevel = calculateLevel($newExp);
+        $newGold = $curGold - $revertGold;
+
         // Revert status completed dan kurangi streak
         $pdo->prepare("
             UPDATE habits 
@@ -154,15 +171,12 @@ function undoHabit($pdo, $userId, $habitId) {
             WHERE habit_id = ? AND user_id = ?
         ")->execute([$habitId, $userId]);
 
-        // Revert EXP dan Gold user
-        $stmtUser = $pdo->prepare("SELECT exp FROM users WHERE user_id = ? FOR UPDATE");
-        $stmtUser->execute([$userId]);
-        $curExp = (int) $stmtUser->fetchColumn();
-        $newExp = max(0, $curExp - $revertExp);
-        $newLevel = calculateLevel($newExp);
+        // Revert EXP dan Gold user serta level
+        $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ? WHERE user_id = ?")
+            ->execute([$newExp, $newGold, $newLevel, $userId]);
 
-        $pdo->prepare("UPDATE users SET exp = ?, gold = GREATEST(0, gold - ?), level = ? WHERE user_id = ?")
-            ->execute([$newExp, $revertGold, $newLevel, $userId]);
+        // Revert progress skill
+        revert_skill_progress($pdo, $userId, $habit['category']);
 
         // Hapus log penyelesaian
         if ($log) {
@@ -170,11 +184,13 @@ function undoHabit($pdo, $userId, $habitId) {
         }
 
         $pdo->commit();
+        return true;
     } catch (Exception $e) {
         if ($pdo->inTransaction()) {
             $pdo->rollBack();
         }
         error_log("undoHabit error: " . $e->getMessage());
+        return false;
     }
 }
 
@@ -202,15 +218,39 @@ function updateHabit($pdo, $userId, $habitId, $habitName, $difficulty, $resetPer
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validate_csrf();
 
+    $validDiffs = array_keys(game_difficulties());
+    $validCats = array_keys(game_categories());
+    $validPeriods = ['daily', 'weekly', 'monthly'];
+
     if (isset($_POST['edit_habit'])) {
-        $habitId = intval($_POST['habit_id']);
-        updateHabit($pdo, $userId, $habitId, $_POST['habit_name'], $_POST['difficulty'], $_POST['reset_period'], $_POST['category']);
+        $habitId = intval($_POST['habit_id'] ?? 0);
+        $name = trim($_POST['habit_name'] ?? '');
+        $diff = $_POST['difficulty'] ?? '';
+        $period = $_POST['reset_period'] ?? '';
+        $cat = $_POST['category'] ?? '';
+
+        if ($habitId <= 0 || mb_strlen($name) < 1 || mb_strlen($name) > 100 || !in_array($diff, $validDiffs, true) || !in_array($cat, $validCats, true) || !in_array($period, $validPeriods, true)) {
+            header("Location: habits.php?error=validation");
+            exit();
+        }
+
+        updateHabit($pdo, $userId, $habitId, $name, $diff, $period, $cat);
         header("Location: habits.php");
         exit();
     }
 
     if (isset($_POST['add_habit']) || (!empty($_POST['habit_name']) && !isset($_POST['edit_habit']))) {
-        addHabit($pdo, $userId, $_POST['habit_name'], $_POST['difficulty'], $_POST['reset_period'], $_POST['category']);
+        $name = trim($_POST['habit_name'] ?? '');
+        $diff = $_POST['difficulty'] ?? '';
+        $period = $_POST['reset_period'] ?? '';
+        $cat = $_POST['category'] ?? '';
+
+        if (mb_strlen($name) < 1 || mb_strlen($name) > 100 || !in_array($diff, $validDiffs, true) || !in_array($cat, $validCats, true) || !in_array($period, $validPeriods, true)) {
+            header("Location: habits.php?error=validation");
+            exit();
+        }
+
+        addHabit($pdo, $userId, $name, $diff, $period, $cat);
         header("Location: habits.php");
         exit();
     }
@@ -222,12 +262,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($_POST['undo_habit']) && !empty($_POST['habit_id'])) {
-        undoHabit($pdo, $userId, intval($_POST['habit_id']));
+        $res = undoHabit($pdo, $userId, intval($_POST['habit_id']));
+        if (!$res && isset($_SESSION['habit_error'])) {
+            header("Location: habits.php?error=gold_used");
+            exit();
+        }
         header("Location: habits.php");
         exit();
     }
 
     if (isset($_POST['install_starter_habits'])) {
+        // Tolak jika pengguna sudah memiliki habit
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM habits WHERE user_id = ?");
+        $stmtCount->execute([$userId]);
+        $existingCount = (int) $stmtCount->fetchColumn();
+
+        if ($existingCount > 0) {
+            header("Location: habits.php?error=starter_exists");
+            exit();
+        }
+
         $starters = [
             ['Minum 2 Liter Air', 'Easy', 'daily', 'Health'],
             ['Membaca Buku 15 Menit', 'Easy', 'daily', 'Intelligence'],
@@ -278,11 +332,7 @@ require_once '../includes/header.php';
                     <div class="mb-3">
                         <label for="category" class="form-label">Kategori / Area atribut</label>
                         <select class="form-select" id="category" name="category" required>
-                            <option value="Intelligence">Intelligence</option>
-                            <option value="Physical">Physical</option>
-                            <option value="Wealth">Wealth</option>
-                            <option value="Health">Health</option>
-                            <option value="Social">Social</option>
+                            <?php echo render_category_options(); ?>
                         </select>
                     </div>
                     
@@ -290,9 +340,7 @@ require_once '../includes/header.php';
                         <div class="col-6">
                             <label for="difficulty" class="form-label">Tingkat kesulitan</label>
                             <select class="form-select" id="difficulty" name="difficulty" required>
-                                <option value="Easy">Mudah (+5 EXP)</option>
-                                <option value="Medium">Sedang (+10 EXP)</option>
-                                <option value="Hard">Sulit (+15 EXP)</option>
+                                <?php echo render_difficulty_options(); ?>
                             </select>
                         </div>
                         <div class="col-6">
@@ -323,6 +371,25 @@ require_once '../includes/header.php';
         <i class="fas fa-plus"></i> Kebiasaan Baru
     </button>
 </div>
+
+<?php if (isset($_GET['error'])): ?>
+    <?php if ($_GET['error'] === 'gold_used'): ?>
+        <div class="alert alert-danger mb-3 d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <div><?php echo htmlspecialchars($_SESSION['habit_error'] ?? 'Aksi tidak bisa dibatalkan karena Gold reward sudah terpakai.'); unset($_SESSION['habit_error']); ?></div>
+        </div>
+    <?php elseif ($_GET['error'] === 'starter_exists'): ?>
+        <div class="alert alert-warning mb-3 d-flex align-items-center" role="alert">
+            <i class="fas fa-info-circle me-2"></i>
+            <div>Paket starter hanya bisa dipasang jika Anda belum memiliki rutinitas aktif.</div>
+        </div>
+    <?php elseif ($_GET['error'] === 'validation'): ?>
+        <div class="alert alert-danger mb-3 d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <div>Input kebiasaan tidak valid. Periksa kembali nama, tingkat kesulitan, dan kategori.</div>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>
 
 <div class="bento-panel">
     <?php if (empty($habits)): ?>
@@ -437,20 +504,14 @@ require_once '../includes/header.php';
                                     <div class="mb-3">
                                         <label for="edit_hcat_<?php echo $habit['habit_id']; ?>" class="form-label">Kategori / Atribut</label>
                                         <select class="form-select" id="edit_hcat_<?php echo $habit['habit_id']; ?>" name="category" required>
-                                            <option value="Intelligence" <?php echo $habit['category'] == 'Intelligence' ? 'selected' : ''; ?>>Intelligence</option>
-                                            <option value="Physical" <?php echo $habit['category'] == 'Physical' ? 'selected' : ''; ?>>Physical</option>
-                                            <option value="Wealth" <?php echo $habit['category'] == 'Wealth' ? 'selected' : ''; ?>>Wealth</option>
-                                            <option value="Health" <?php echo $habit['category'] == 'Health' ? 'selected' : ''; ?>>Health</option>
-                                            <option value="Social" <?php echo $habit['category'] == 'Social' ? 'selected' : ''; ?>>Social</option>
+                                            <?php echo render_category_options($habit['category']); ?>
                                         </select>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <label for="edit_hdiff_<?php echo $habit['habit_id']; ?>" class="form-label">Tingkat kesulitan</label>
                                             <select class="form-select" id="edit_hdiff_<?php echo $habit['habit_id']; ?>" name="difficulty" required>
-                                                <option value="Easy" <?php echo $habit['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Mudah (+5 EXP)</option>
-                                                <option value="Medium" <?php echo $habit['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Sedang (+10 EXP)</option>
-                                                <option value="Hard" <?php echo $habit['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Sulit (+15 EXP)</option>
+                                                <?php echo render_difficulty_options($habit['difficulty']); ?>
                                             </select>
                                         </div>
                                         <div class="col-6">

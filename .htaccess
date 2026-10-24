@@ -2,7 +2,7 @@
 Options -Indexes
 
 # Protect sensitive environment and SQL files
-<FilesMatch "^(\.env|\.git|database\.sql)">
+<FilesMatch "(^\.env|\.sql$|^\.git)">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

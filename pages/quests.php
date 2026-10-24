@@ -7,22 +7,29 @@ enforce_login();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validate_csrf();
 
+    $validDiffs = array_keys(game_difficulties());
+    $validCats = array_keys(game_categories());
+
     // Edit Quest
     if (isset($_POST['edit_quest'])) {
-        $questId = intval($_POST['quest_id']);
-        $quest_name = $_POST['quest_name'];
-        $difficulty = $_POST['difficulty'];
-        $start_date = $_POST['start_date'];
-        $category = $_POST['category'];
+        $questId = intval($_POST['quest_id'] ?? 0);
+        $quest_name = trim($_POST['quest_name'] ?? '');
+        $difficulty = $_POST['difficulty'] ?? '';
+        $start_date = trim($_POST['start_date'] ?? '');
+        $category = $_POST['category'] ?? '';
+
+        if ($questId <= 0 || mb_strlen($quest_name) < 1 || mb_strlen($quest_name) > 150 || !in_array($difficulty, $validDiffs, true) || !in_array($category, $validCats, true)) {
+            header("Location: quests.php?error=validation");
+            exit();
+        }
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date)) {
+            $start_date = date('Y-m-d');
+        }
 
         $expReward = exp_for_difficulty($difficulty);
-
-        $durationDays = match ($difficulty) {
-            'Easy' => 7,
-            'Medium' => 14,
-            'Hard' => 21,
-            default => 7,
-        };
+        $diffs = game_difficulties();
+        $durationDays = $diffs[$difficulty]['duration_days'] ?? 7;
 
         try {
             $stmt = $pdo->prepare("
@@ -66,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmtUserOld->execute([$_SESSION['user_id']]);
                 $oldUserData = $stmtUserOld->fetch(PDO::FETCH_ASSOC);
                 $oldExp = (int) ($oldUserData['exp'] ?? 0);
-                $oldLvl = (int) ($oldUserData['level'] ?? 1);
+                $oldLvl = calculateLevel($oldExp);
 
                 // Tambahkan EXP dan Gold ke pengguna
                 $expReward = $quest['exp_reward'];
@@ -140,19 +147,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (isset($_POST['quest_name'])) {
-        $quest_name = $_POST['quest_name'];
-        $difficulty = $_POST['difficulty'];
-        $start_date = $_POST['start_date'];
-        $category = $_POST['category'];
+        $quest_name = trim($_POST['quest_name'] ?? '');
+        $difficulty = $_POST['difficulty'] ?? '';
+        $start_date = trim($_POST['start_date'] ?? '');
+        $category = $_POST['category'] ?? '';
+
+        if (mb_strlen($quest_name) < 1 || mb_strlen($quest_name) > 150 || !in_array($difficulty, $validDiffs, true) || !in_array($category, $validCats, true)) {
+            header("Location: quests.php?error=validation");
+            exit();
+        }
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date)) {
+            $start_date = date('Y-m-d');
+        }
 
         $expReward = exp_for_difficulty($difficulty, 0);
-
-        $durationDays = match ($difficulty) {
-            'Easy' => 7,
-            'Medium' => 14,
-            'Hard' => 21,
-            default => 7,
-        };
+        $diffs = game_difficulties();
+        $durationDays = $diffs[$difficulty]['duration_days'] ?? 7;
 
         try {
             if ($expReward === 0) {
@@ -204,11 +215,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <div class="mb-3">
                         <label for="category" class="form-label">Kategori / Atribut</label>
                         <select class="form-select" id="category" name="category" required>
-                            <option value="Intelligence">Intelligence</option>
-                            <option value="Physical">Physical</option>
-                            <option value="Wealth">Wealth</option>
-                            <option value="Health">Health</option>
-                            <option value="Social">Social</option>
+                            <?php echo render_category_options(); ?>
                         </select>
                     </div>
                     
@@ -216,9 +223,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <div class="col-6">
                             <label for="difficulty" class="form-label">Tingkat kesulitan</label>
                             <select class="form-select" id="difficulty" name="difficulty" required>
-                                <option value="Easy">Mudah (+5 EXP)</option>
-                                <option value="Medium">Sedang (+10 EXP)</option>
-                                <option value="Hard">Sulit (+15 EXP)</option>
+                                <?php echo render_difficulty_options(); ?>
                             </select>
                         </div>
                         <div class="col-6">
@@ -246,6 +251,13 @@ require_once __DIR__ . '/../includes/header.php';
     </button>
 </div>
 
+<?php if (isset($_GET['error']) && $_GET['error'] === 'validation'): ?>
+    <div class="alert alert-danger mb-3 d-flex align-items-center" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <div>Input misi tidak valid. Periksa kembali nama misi, tingkat kesulitan, dan kategori.</div>
+    </div>
+<?php endif; ?>
+
 <div class="bento-panel">
     <?php if (empty($quests)): ?>
         <div class="text-center py-5 text-muted">
@@ -260,12 +272,7 @@ require_once __DIR__ . '/../includes/header.php';
                 $deadline = date('Y-m-d', strtotime("$startDate + $duration days"));
                 $today = date('Y-m-d');
                 $daysLeft = (int) ceil((strtotime($deadline) - strtotime($today)) / 86400);
-                $hpPenalty = match ($quest['difficulty']) {
-                    'Easy' => 10,
-                    'Medium' => 20,
-                    'Hard' => 30,
-                    default => 10,
-                };
+                $hpPenalty = hp_penalty_for_quest($quest['difficulty']);
             ?>
                 <div class="data-row">
                     <div class="data-main">
@@ -337,20 +344,14 @@ require_once __DIR__ . '/../includes/header.php';
                                     <div class="mb-3">
                                         <label for="edit_qcat_<?php echo $quest['quest_id']; ?>" class="form-label">Kategori / Atribut</label>
                                         <select class="form-select" id="edit_qcat_<?php echo $quest['quest_id']; ?>" name="category" required>
-                                            <option value="Intelligence" <?php echo $quest['category'] == 'Intelligence' ? 'selected' : ''; ?>>Intelligence</option>
-                                            <option value="Physical" <?php echo $quest['category'] == 'Physical' ? 'selected' : ''; ?>>Physical</option>
-                                            <option value="Wealth" <?php echo $quest['category'] == 'Wealth' ? 'selected' : ''; ?>>Wealth</option>
-                                            <option value="Health" <?php echo $quest['category'] == 'Health' ? 'selected' : ''; ?>>Health</option>
-                                            <option value="Social" <?php echo $quest['category'] == 'Social' ? 'selected' : ''; ?>>Social</option>
+                                            <?php echo render_category_options($quest['category']); ?>
                                         </select>
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <label for="edit_qdiff_<?php echo $quest['quest_id']; ?>" class="form-label">Tingkat kesulitan</label>
                                             <select class="form-select" id="edit_qdiff_<?php echo $quest['quest_id']; ?>" name="difficulty" required>
-                                                <option value="Easy" <?php echo $quest['difficulty'] == 'Easy' ? 'selected' : ''; ?>>Mudah (+5 EXP)</option>
-                                                <option value="Medium" <?php echo $quest['difficulty'] == 'Medium' ? 'selected' : ''; ?>>Sedang (+10 EXP)</option>
-                                                <option value="Hard" <?php echo $quest['difficulty'] == 'Hard' ? 'selected' : ''; ?>>Sulit (+15 EXP)</option>
+                                                <?php echo render_difficulty_options($quest['difficulty']); ?>
                                             </select>
                                         </div>
                                         <div class="col-6">

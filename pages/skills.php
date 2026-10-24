@@ -47,17 +47,10 @@ arsort($stat_data);
                     <div class="data-row" style="padding: 0.65rem 0;">
                         <div class="data-main">
                             <?php
-                            $icon = match($category) {
-                                'Wealth' => 'fa-coins text-warning',
-                                'Intelligence' => 'fa-brain text-accent',
-                                'Physical' => 'fa-dumbbell text-danger',
-                                'Health' => 'fa-heart text-accent',
-                                'Social' => 'fa-users text-muted',
-                                default => 'fa-circle text-muted'
-                            };
+                            $catInfo = game_categories()[$category] ?? ['icon' => 'fa-circle', 'color' => 'text-muted'];
                             ?>
                             <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
-                                <i class="fas <?php echo $icon; ?>"></i>
+                                <i class="fas <?php echo $catInfo['icon'] . ' ' . $catInfo['color']; ?>"></i>
                             </div>
                             <div class="data-title" style="font-size: 0.85rem;"><?php echo htmlspecialchars($category); ?></div>
                         </div>
