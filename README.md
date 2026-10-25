@@ -4,6 +4,9 @@
   <p><strong>A Gamified Habit Tracker & RPG Productivity Platform</strong></p>
 
   <p>
+    <a href="https://github.com/fahmimaulanairsyad/Lifevuww/actions/workflows/ci.yml">
+      <img src="https://github.com/fahmimaulanairsyad/Lifevuww/actions/workflows/ci.yml/badge.svg" alt="CI Status" />
+    </a>
     <img src="https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP Version" />
     <img src="https://img.shields.io/badge/MySQL-Database-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL" />
     <img src="https://img.shields.io/badge/Design-Linear--Style-000000?style=flat-square" alt="Linear Design" />
@@ -97,12 +100,18 @@ Setiap kebiasaan dikelompokkan ke dalam 5 pilar atribut kehidupan yang divisuali
      * Buka **phpMyAdmin** (`http://localhost/phpmyadmin/`).
      * Buat database baru bernama `habit_tracker_rpg`.
      * Import file `database.sql` yang berada di root folder proyek ini (aman karena menggunakan `CREATE TABLE IF NOT EXISTS`).
-   * **Memperbarui Database Lama (Existing Deployment):**
-     * Jangan import ulang `database.sql` agar data tidak konflik.
-     * Cukup jalankan skrip migrasi bertahap di dalam folder `migrations/` secara berurutan (`001_initial_schema.sql`, `002_rpg_expansion.sql`, `003_hardening_and_indexes.sql`).
-5. **Jalankan Aplikasi:**
-   * Buka browser dan akses: `http://localhost/Lifevuww/`
-   * Daftarkan akun baru melalui halaman Register, dan mulai petualangan produktivitas Anda!
+    * **Memperbarui Database Lama (Existing Deployment):**
+      * Jalankan runner migrasi CLI otomatis:
+        ```bash
+        php migrate.php
+        ```
+      * Atau import skrip migrasi bertahap di dalam folder `migrations/` secara berurutan (`001_initial_schema.sql`, `002_rpg_expansion.sql`, `003_hardening_and_indexes.sql`).
+5. **Jalankan Aplikasi & Pengujian:**
+    * Buka browser dan akses: `http://localhost/Lifevuww/`
+    * Menjalankan unit test rumus RPG:
+      ```bash
+      php tests/run_tests.php
+      ```
 
 ---
 

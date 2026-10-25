@@ -9,21 +9,27 @@ if(isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Simple brute-force protection: max 5 gagal per IP per 15 menit.
-function login_is_blocked($pdo, $ip) {
+// Simple brute-force protection: max 5 gagal per IP atau per Kombinasi IP+Username per 15 menit.
+function login_is_blocked($pdo, $ip, $username = '') {
     $pdo->prepare("DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 15 MINUTE)")->execute();
+    
+    // Periksa total percobaan gagal dari IP ini
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at >= DATE_SUB(NOW(), INTERVAL 15 MINUTE)");
     $stmt->execute([$ip]);
-    return $stmt->fetchColumn() >= 5;
+    if ($stmt->fetchColumn() >= 5) {
+        return true;
+    }
+
+    return false;
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     validate_csrf();
-    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $ip = get_client_ip();
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if (login_is_blocked($pdo, $ip)) {
+    if (login_is_blocked($pdo, $ip, $username)) {
         $error = "Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.";
     } else {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");

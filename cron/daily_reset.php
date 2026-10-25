@@ -9,7 +9,16 @@ require_once __DIR__ . '/../config/database.php';
 
 $token = $_ENV['CRON_TOKEN'] ?? '';
 $isCli = (php_sapi_name() === 'cli');
-$given = $_GET['token'] ?? '';
+
+// Token bisa dikirim via Header HTTP (X-Cron-Token / Bearer Authorization)
+// atau via query string ?token= untuk kemudahan trigger external cron.
+$headerToken = $_SERVER['HTTP_X_CRON_TOKEN'] ?? '';
+if (empty($headerToken) && !empty($_SERVER['HTTP_AUTHORIZATION'])) {
+    if (preg_match('/Bearer\s+(\S+)/i', $_SERVER['HTTP_AUTHORIZATION'], $matches)) {
+        $headerToken = $matches[1];
+    }
+}
+$given = !empty($headerToken) ? $headerToken : ($_GET['token'] ?? '');
 
 if (!$isCli && ($token === '' || !hash_equals($token, $given))) {
     http_response_code(403);

@@ -78,6 +78,31 @@ if (!function_exists('csrf_field')) {
     }
 }
 
+if (!function_exists('get_client_ip')) {
+    // Deteksi IP klien dengan dukungan Cloudflare & Reverse Proxy terpercaya
+    function get_client_ip(): string {
+        $headers = [
+            'HTTP_CF_CONNECTING_IP',
+            'HTTP_X_REAL_IP',
+            'HTTP_X_FORWARDED_FOR',
+            'REMOTE_ADDR'
+        ];
+        foreach ($headers as $h) {
+            if (!empty($_SERVER[$h])) {
+                $raw = $_SERVER[$h];
+                if (str_contains($raw, ',')) {
+                    $parts = explode(',', $raw);
+                    $raw = trim($parts[0]);
+                }
+                if (filter_var($raw, FILTER_VALIDATE_IP)) {
+                    return $raw;
+                }
+            }
+        }
+        return '127.0.0.1';
+    }
+}
+
 if (!function_exists('indo_short_date')) {
     // Format tanggal ringkas Bahasa Indonesia: "Sab, 19 Sep" / "19 Sep 2026 • 11:08"
     function indo_short_date($dateKey, $withYearTime = false) {
