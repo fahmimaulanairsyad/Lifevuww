@@ -1074,6 +1074,48 @@ html.is-apk #btn-install-app {
     display: none !important;
 }
 
+/* Quick Category Filter Pills */
+.filter-pills-category {
+    display: flex;
+    gap: 0.45rem;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.25rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.filter-pills-category::-webkit-scrollbar {
+    display: none;
+}
+
+.btn-filter-pill {
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-hairline);
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    padding: 0.32rem 0.75rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.btn-filter-pill:hover {
+    color: var(--text-primary);
+    border-color: var(--border-subtle);
+}
+
+.btn-filter-pill.active {
+    background-color: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+    font-weight: 500;
+}
+
 /* ==========================================================
    LANDING PAGE STYLES
    ========================================================== */

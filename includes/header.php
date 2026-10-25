@@ -104,6 +104,12 @@ secure_session_start();
                     'reminder' => $reminderShort
                 ];
             }
+            // Data level & EXP untuk sidebar dan mobile header
+            $navExp = (int) ($navUser['exp'] ?? 0);
+            $navLevel = calculateLevel($navExp);
+            $navNextExp = $navLevel * 100;
+            $navCurBase = ($navLevel - 1) * 100;
+            $navExpPct = min(100, max(0, (($navExp - $navCurBase) / max(1, ($navNextExp - $navCurBase))) * 100));
         ?>
         <!-- Dedicated Mobile Top App Bar -->
         <header class="mobile-top-bar">
@@ -112,6 +118,9 @@ secure_session_start();
                 <span class="mobile-brand-title">Lifevuww</span>
             </a>
             <div class="mobile-vitals">
+                <span class="mobile-chip font-mono text-accent" style="border-color: rgba(16, 185, 129, 0.25); background-color: var(--accent-dim);">
+                    Lv.<?php echo $navLevel; ?>
+                </span>
                 <span class="mobile-chip hp">
                     <i class="fas fa-heart"></i> <?php echo $navUser['hp'] ?? 100; ?>
                 </span>
@@ -131,14 +140,25 @@ secure_session_start();
             </div>
             
             <div class="sidebar-vitals">
+                <!-- HP -->
                 <div class="vitals-row">
                     <span class="vitals-label"><i class="fas fa-heart text-danger me-1"></i> HP</span>
                     <span class="vitals-value font-mono text-danger"><?php echo $navUser['hp'] ?? 100; ?> / <?php echo $navUser['max_hp'] ?? 100; ?></span>
                 </div>
-                <div class="vitals-track mb-3">
+                <div class="vitals-track mb-2">
                     <div class="vitals-fill" style="width: <?php echo min(100, max(0, (($navUser['hp'] ?? 100) / ($navUser['max_hp'] ?? 100)) * 100)); ?>%; background-color: var(--status-danger);"></div>
                 </div>
+
+                <!-- EXP Progress Bar -->
+                <div class="vitals-row">
+                    <span class="vitals-label"><i class="fas fa-bolt text-accent me-1"></i> Tingkat <?php echo $navLevel; ?></span>
+                    <span class="vitals-value font-mono text-accent" style="font-size: 0.72rem;"><?php echo $navExp; ?> / <?php echo $navNextExp; ?> EXP</span>
+                </div>
+                <div class="vitals-track mb-3">
+                    <div class="vitals-fill" style="width: <?php echo $navExpPct; ?>%; background-color: var(--accent);"></div>
+                </div>
                 
+                <!-- Gold -->
                 <div class="vitals-row">
                     <span class="vitals-label"><i class="fas fa-coins text-warning me-1"></i> Gold</span>
                     <span class="vitals-value font-mono text-warning"><?php echo number_format($navUser['gold'] ?? 0); ?></span>

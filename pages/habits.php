@@ -410,9 +410,18 @@ require_once '../includes/header.php';
             </div>
         </div>
     <?php else: ?>
+        <div class="filter-pills-category">
+            <button type="button" class="btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
+            <button type="button" class="btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
+            <button type="button" class="btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
+            <button type="button" class="btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
+            <button type="button" class="btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
+            <button type="button" class="btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
+        </div>
+
         <div class="data-list">
             <?php foreach ($habits as $habit): ?>
-                <div class="data-row">
+                <div class="data-row" data-category="<?php echo htmlspecialchars($habit['category']); ?>">
                     <div class="data-main">
                         <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $habit['completed_today'] ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem;">
                             <i class="fas <?php echo $habit['completed_today'] ? 'fa-check' : 'fa-circle'; ?>"></i>
@@ -455,7 +464,7 @@ require_once '../includes/header.php';
                                 <?php echo csrf_field(); ?>
                                 <input type="hidden" name="undo_habit" value="1">
                                 <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                                <button type="submit" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.55rem;" title="Batalkan penyelesaian hari ini" aria-label="Batalkan penyelesaian <?php echo htmlspecialchars($habit['habit_name']); ?>">
+                                <button type="submit" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.55rem;" title="Batalkan penyelesaian hari ini" aria-label="Batalkan penyelesaian <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Batalkan penyelesaian kebiasaan ini? EXP dan Gold akan ditarik kembali." data-confirm-title="Batalkan Kebiasaan">
                                     <i class="fas fa-undo"></i>
                                 </button>
                             </form>
@@ -477,7 +486,7 @@ require_once '../includes/header.php';
                         <form method="POST" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>">
+                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Hapus kebiasaan ini secara permanen?" data-confirm-title="Hapus Kebiasaan">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>

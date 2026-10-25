@@ -242,6 +242,25 @@
     </script>
     <?php endif; ?>
 
+    <!-- Reusable Dark Confirmation Modal -->
+    <div class="modal fade" id="lvConfirmModal" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.8);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
+            <div class="modal-content p-3" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius);">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <div id="lvConfirmIcon" style="width: 32px; height: 32px; border-radius: 50%; background-color: var(--status-warning-dim); color: var(--status-warning); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h5 class="modal-title mb-0" id="lvConfirmTitle" style="font-size: 0.95rem; font-weight: 600;">Konfirmasi</h5>
+                </div>
+                <p id="lvConfirmMsg" class="text-secondary mb-3" style="font-size: 0.84rem; line-height: 1.5;"></p>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn-core btn-primary" id="lvConfirmBtn">Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS for Modals -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
@@ -419,6 +438,78 @@
             }
         })();
 
+        /* ============ Reusable Dark Confirmation Dialog ============ */
+        window.showConfirmDialog = function(title, message, onConfirm, opts = {}) {
+            const modalEl = document.getElementById('lvConfirmModal');
+            if (!modalEl || typeof bootstrap === 'undefined') {
+                if (confirm(message)) onConfirm();
+                return;
+            }
+            document.getElementById('lvConfirmTitle').textContent = title || 'Konfirmasi';
+            document.getElementById('lvConfirmMsg').textContent = message || 'Apakah kamu yakin?';
+            const btn = document.getElementById('lvConfirmBtn');
+            btn.className = opts.danger ? 'btn-core btn-accent' : 'btn-core btn-primary';
+            btn.textContent = opts.confirmText || 'Lanjutkan';
+
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+
+            const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            newBtn.addEventListener('click', function() {
+                bsModal.hide();
+                onConfirm();
+            });
+            bsModal.show();
+        };
+
+        // Declarative data-confirm interceptor
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('[data-confirm]');
+            if (!target) return;
+            const form = target.closest('form');
+            if (!form) return;
+            if (target.dataset.confirmed) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const msg = target.getAttribute('data-confirm');
+            const title = target.getAttribute('data-confirm-title') || 'Konfirmasi Tindakan';
+            window.showConfirmDialog(title, msg, function() {
+                target.dataset.confirmed = '1';
+                if (target.name) {
+                    const hidden = document.createElement('input');
+                    hidden.type = 'hidden';
+                    hidden.name = target.name;
+                    hidden.value = target.value || '1';
+                    form.appendChild(hidden);
+                }
+                form.submit();
+            });
+        }, true);
+
+        /* ============ Quick Attribute Filter Pills ============ */
+        document.addEventListener('click', function(e) {
+            const pill = e.target.closest('.btn-filter-pill');
+            if (!pill) return;
+            const container = pill.closest('.filter-pills-category');
+            if (!container) return;
+            const filterCat = pill.getAttribute('data-filter');
+
+            container.querySelectorAll('.btn-filter-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+
+            const panel = container.closest('.bento-panel') || document;
+            panel.querySelectorAll('.data-row[data-category]').forEach(row => {
+                const cat = row.getAttribute('data-category');
+                if (filterCat === 'all' || cat === filterCat) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
         /* ============ Bridge diagnostic readout (profile) ============ */
         (function () {
             const el = document.getElementById('bridge-status');
@@ -431,7 +522,22 @@
             const hasPlugin = !!(hasCap && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications);
             const hasSW = ('serviceWorker' in navigator);
             const hasNotif = ('Notification' in window);
-            el.textContent = `bridge:${hasCap ? plat : 'no'} plugin:${hasPlugin ? 'yes' : 'no'} sw:${hasSW ? 'yes' : 'no'} notif:${hasNotif ? 'yes' : 'no'}`;
+
+            const badge = (label, active, activeText = 'Aktif', inactiveText = 'Tidak') => `
+                <span class="badge-status ${active ? 'accent' : ''} font-mono" style="font-size: 0.68rem; margin: 2px;">
+                    <i class="fas fa-circle me-1" style="font-size: 0.45rem; color: ${active ? 'var(--accent)' : 'var(--text-muted)'};"></i>
+                    ${label}: ${active ? activeText : inactiveText}
+                </span>
+            `;
+
+            el.innerHTML = `
+                <div class="d-flex flex-wrap gap-1 align-items-center">
+                    ${badge('Service Worker', hasSW)}
+                    ${badge('Notifikasi Browser', hasNotif)}
+                    ${badge('Capacitor Bridge', hasCap, plat, 'Web')}
+                    ${badge('Plugin Notifikasi', hasPlugin, 'Tersedia', 'Tidak')}
+                </div>
+            `;
         })();
 
         /* ============ Notification permission buttons (profile) ============ */

@@ -214,7 +214,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="potion_type" value="minor">
-                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 25 || $isHpFull) ? 'disabled' : ''; ?> onclick="return confirm('Beli Ramuan HP Minor seharga 25 Gold?');">
+                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 25 || $isHpFull) ? 'disabled' : ''; ?> data-confirm="Beli Ramuan HP Minor seharga 25 Gold?" data-confirm-title="Beli Ramuan">
                         <?php if ($isHpFull): ?>
                             <i class="fas fa-check text-accent me-1"></i> HP Penuh
                         <?php else: ?>
@@ -240,7 +240,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="potion_type" value="full">
-                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 75 || $isHpFull) ? 'disabled' : ''; ?> onclick="return confirm('Beli Elixir HP Penuh seharga 75 Gold?');">
+                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 75 || $isHpFull) ? 'disabled' : ''; ?> data-confirm="Beli Elixir HP Penuh seharga 75 Gold?" data-confirm-title="Beli Ramuan">
                         <?php if ($isHpFull): ?>
                             <i class="fas fa-check text-accent me-1"></i> HP Penuh
                         <?php else: ?>
@@ -265,7 +265,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 </div>
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
-                    <button type="submit" name="buy_freeze" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < 50 ? 'disabled' : ''; ?> onclick="return confirm('Beli Perisai Streak Freeze seharga 50 Gold?');">
+                    <button type="submit" name="buy_freeze" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < 50 ? 'disabled' : ''; ?> data-confirm="Beli Perisai Streak Freeze seharga 50 Gold?" data-confirm-title="Beli Perisai">
                         <i class="fas fa-coins text-warning me-1"></i> 50 Gold
                     </button>
                 </form>
@@ -305,7 +305,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                         <form method="POST" action="shop.php">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="reward_id" value="<?php echo $reward['reward_id']; ?>">
-                            <button type="submit" name="buy_reward" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < $reward['cost'] ? 'disabled' : ''; ?> onclick="return confirm('Tukar <?php echo number_format($reward['cost']); ?> Gold untuk hadiah ini?');">
+                            <button type="submit" name="buy_reward" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < $reward['cost'] ? 'disabled' : ''; ?> data-confirm="Tukar <?php echo number_format($reward['cost']); ?> Gold untuk hadiah '<?php echo htmlspecialchars($reward['reward_name']); ?>'?" data-confirm-title="Tukar Hadiah">
                                 <i class="fas fa-coins text-warning mx-1"></i> <?php echo number_format($reward['cost']); ?> Gold
                             </button>
                         </form>

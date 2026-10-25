@@ -366,6 +366,15 @@ require_once __DIR__ . '/../includes/header.php';
             <p class="mb-0">Belum ada misi berjalan. Mulai petualangan baru!</p>
         </div>
     <?php else: ?>
+        <div class="filter-pills-category">
+            <button type="button" class="btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
+            <button type="button" class="btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
+            <button type="button" class="btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
+            <button type="button" class="btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
+            <button type="button" class="btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
+            <button type="button" class="btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
+        </div>
+
         <div class="data-list">
             <?php foreach ($quests as $quest): 
                 $startDate = $quest['start_date'] ?? date('Y-m-d');
@@ -375,7 +384,7 @@ require_once __DIR__ . '/../includes/header.php';
                 $daysLeft = (int) ceil((strtotime($deadline) - strtotime($today)) / 86400);
                 $hpPenalty = hp_penalty_for_quest($quest['difficulty']);
             ?>
-                <div class="data-row">
+                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>">
                     <div class="data-main">
                         <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem;">
                             <i class="fas <?php echo $quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'; ?>"></i>
@@ -418,7 +427,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <form method="POST" action="quests.php" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
-                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>">
+                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-confirm="Hapus misi ini secara permanen?" data-confirm-title="Hapus Misi">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -504,7 +513,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <form method="POST" action="quests.php" style="margin: 0;">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="quest_id" value="<?php echo $done['quest_id']; ?>">
-                        <button type="submit" name="undo_quest" value="1" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Batalkan penyelesaian misi">
+                        <button type="submit" name="undo_quest" value="1" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Batalkan penyelesaian misi" data-confirm="Batalkan penyelesaian misi ini? EXP dan Gold reward akan ditarik kembali." data-confirm-title="Batalkan Misi">
                             <i class="fas fa-undo me-1"></i> Batalkan
                         </button>
                     </form>

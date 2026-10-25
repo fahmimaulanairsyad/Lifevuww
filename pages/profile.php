@@ -110,6 +110,34 @@ try {
         exit();
     }
 
+    // Handle export data (CSV) - Hak Portabilitas Data (UU PDP)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['export_csv'])) {
+        validate_csrf();
+
+        $stmtH = $pdo->prepare("SELECT habit_name, category, difficulty, reset_period, streak, completed_today, created_at FROM habits WHERE user_id = ?");
+        $stmtH->execute([$_SESSION['user_id']]);
+        $habitsData = $stmtH->fetchAll(PDO::FETCH_ASSOC);
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="lifevuww-habits-' . preg_replace('/[^a-zA-Z0-9_-]/', '_', $user['username']) . '-' . date('Ymd') . '.csv"');
+        
+        $output = fopen('php://output', 'w');
+        fputcsv($output, ['Nama Kebiasaan', 'Kategori', 'Kesulitan', 'Periode Reset', 'Streak Hari', 'Selesai Hari Ini', 'Dibuat Pada']);
+        foreach ($habitsData as $row) {
+            fputcsv($output, [
+                $row['habit_name'],
+                $row['category'],
+                $row['difficulty'],
+                $row['reset_period'],
+                $row['streak'],
+                $row['completed_today'] ? 'Ya' : 'Belum',
+                $row['created_at']
+            ]);
+        }
+        fclose($output);
+        exit();
+    }
+
     // Handle delete account (Hak Penghapusan / Hak untuk Dilupakan - UU PDP)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
         validate_csrf();
@@ -454,7 +482,14 @@ require_once __DIR__ . '/../includes/header.php';
         <form method="POST" action="profile.php" style="margin: 0;">
             <?php echo csrf_field(); ?>
             <button type="submit" name="export_data" value="1" class="btn-core btn-outline">
-                <i class="fas fa-file-download text-accent"></i> Ekspor Seluruh Data (JSON)
+                <i class="fas fa-file-code text-accent"></i> Ekspor Lengkap (JSON)
+            </button>
+        </form>
+
+        <form method="POST" action="profile.php" style="margin: 0;">
+            <?php echo csrf_field(); ?>
+            <button type="submit" name="export_csv" value="1" class="btn-core btn-outline">
+                <i class="fas fa-file-csv text-warning"></i> Ekspor Kebiasaan (CSV)
             </button>
         </form>
 
