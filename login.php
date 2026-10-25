@@ -138,8 +138,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body style="background-color: var(--bg-base); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem;">
     
     <div style="width: 100%; max-width: 380px;">
+        <div class="mb-3">
+            <a href="index.php" class="d-inline-flex align-items-center gap-2" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none; transition: color 0.15s ease;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+            </a>
+        </div>
+
         <div class="text-center mb-4">
-            <img src="assets/images/logo.svg" alt="Lifevuww Logo" style="width: 44px; height: 44px; margin-bottom: 1rem;">
+            <a href="index.php" title="Kembali ke Beranda">
+                <img src="assets/images/logo.svg" alt="Lifevuww Logo" style="width: 44px; height: 44px; margin-bottom: 1rem;">
+            </a>
             <h1 style="font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em;">Selamat Datang di Lifevuww</h1>
             <p style="color: var(--text-secondary); font-size: 0.85rem;">Masuk untuk mengakses sistem progres hidupmu</p>
         </div>
