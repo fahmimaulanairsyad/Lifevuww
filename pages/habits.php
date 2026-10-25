@@ -70,9 +70,9 @@ function completeHabit($pdo, $userId, $habitId) {
         $oldRank = calculateRank($oldLvl);
         $newRank = calculateRank($newLvl);
 
-        // Tambahkan EXP dan Gold ke pengguna serta update level
-        $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ? WHERE user_id = ?")
-            ->execute([$finalExp, $earnedGold, $newLvl, $userId]);
+        // Tambahkan EXP dan Gold ke pengguna serta update level dan rank
+        $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ?, rank = ? WHERE user_id = ?")
+            ->execute([$finalExp, $earnedGold, $newLvl, $newRank, $userId]);
 
         // Cek jika naik tingkat / rank
         if ($newLvl > $oldLvl) {
@@ -162,6 +162,7 @@ function undoHabit($pdo, $userId, $habitId): bool {
         $curExp = (int) ($userData['exp'] ?? 0);
         $newExp = max(0, $curExp - $revertExp);
         $newLevel = calculateLevel($newExp);
+        $newRank = calculateRank($newLevel);
         $newGold = $curGold - $revertGold;
 
         // Revert status completed dan kurangi streak
@@ -171,9 +172,9 @@ function undoHabit($pdo, $userId, $habitId): bool {
             WHERE habit_id = ? AND user_id = ?
         ")->execute([$habitId, $userId]);
 
-        // Revert EXP dan Gold user serta level
-        $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ? WHERE user_id = ?")
-            ->execute([$newExp, $newGold, $newLevel, $userId]);
+        // Revert EXP dan Gold user serta level dan rank
+        $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ?, rank = ? WHERE user_id = ?")
+            ->execute([$newExp, $newGold, $newLevel, $newRank, $userId]);
 
         // Revert progress skill
         revert_skill_progress($pdo, $userId, $habit['category']);

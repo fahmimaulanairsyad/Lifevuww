@@ -79,27 +79,32 @@ if (!function_exists('csrf_field')) {
 }
 
 if (!function_exists('get_client_ip')) {
-    // Deteksi IP klien dengan dukungan Cloudflare & Reverse Proxy terpercaya
+    // Deteksi IP klien aman. Hanya mempercayai header reverse proxy/Cloudflare jika TRUST_PROXY=true
     function get_client_ip(): string {
-        $headers = [
-            'HTTP_CF_CONNECTING_IP',
-            'HTTP_X_REAL_IP',
-            'HTTP_X_FORWARDED_FOR',
-            'REMOTE_ADDR'
-        ];
-        foreach ($headers as $h) {
-            if (!empty($_SERVER[$h])) {
-                $raw = $_SERVER[$h];
-                if (str_contains($raw, ',')) {
-                    $parts = explode(',', $raw);
-                    $raw = trim($parts[0]);
-                }
-                if (filter_var($raw, FILTER_VALIDATE_IP)) {
-                    return $raw;
+        $trustProxy = filter_var($_ENV['TRUST_PROXY'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        if ($trustProxy) {
+            $headers = [
+                'HTTP_CF_CONNECTING_IP',
+                'HTTP_X_REAL_IP',
+                'HTTP_X_FORWARDED_FOR'
+            ];
+            foreach ($headers as $h) {
+                if (!empty($_SERVER[$h])) {
+                    $raw = $_SERVER[$h];
+                    if (str_contains($raw, ',')) {
+                        $parts = explode(',', $raw);
+                        $raw = trim($parts[0]);
+                    }
+                    if (filter_var($raw, FILTER_VALIDATE_IP)) {
+                        return $raw;
+                    }
                 }
             }
         }
-        return '127.0.0.1';
+
+        $remote = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+        return filter_var($remote, FILTER_VALIDATE_IP) ? $remote : '127.0.0.1';
     }
 }
 

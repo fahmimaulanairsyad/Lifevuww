@@ -92,6 +92,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $pdo->beginTransaction();
 
+                // Ambil detail quest terlebih dahulu (FOR UPDATE)
+                $stmt = $pdo->prepare("SELECT quest_name, exp_reward, category, difficulty, subtasks FROM quests WHERE quest_id = ? AND user_id = ? FOR UPDATE");
+                $stmt->execute([$questId, $_SESSION['user_id']]);
+                $quest = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$quest) {
+                    $pdo->rollBack();
+                    header("Location: quests.php");
+                    exit();
+                }
+
+                // Cek apakah Boss Quest memiliki subtasks yang belum selesai
+                $questSubs = !empty($quest['subtasks']) ? json_decode($quest['subtasks'], true) : [];
+                if (is_array($questSubs) && count($questSubs) > 0) {
+                    $hasUnfinished = false;
+                    foreach ($questSubs as $st) {
+                        if (empty($st['done'])) {
+                            $hasUnfinished = true;
+                            break;
+                        }
+                    }
+                    if ($hasUnfinished) {
+                        $pdo->rollBack();
+                        $_SESSION['quest_error'] = "Semua fase Boss Quest wajib dituntaskan (HP Boss 0%) sebelum dapat menyelesaikan misi!";
+                        header("Location: quests.php?error=boss_not_defeated");
+                        exit();
+                    }
+                }
+
                 // Klaim atomik: hanya misi 'In Progress' milik user ini yang bisa diselesaikan,
                 // dan hanya SEKALI. Replay POST / misi 'Failed' / klik ganda tidak memberi hadiah.
                 $claim = $pdo->prepare("UPDATE quests SET status = 'Completed' WHERE quest_id = ? AND user_id = ? AND status = 'In Progress'");
@@ -102,13 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     exit();
                 }
 
-                // Ambil detail quest
-                $stmt = $pdo->prepare("SELECT quest_name, exp_reward, category, difficulty, subtasks FROM quests WHERE quest_id = ? AND user_id = ?");
-                $stmt->execute([$questId, $_SESSION['user_id']]);
-                $quest = $stmt->fetch(PDO::FETCH_ASSOC);
-
                 // Cek apakah Boss Quest (Hard atau memiliki subtasks)
-                $questSubs = !empty($quest['subtasks']) ? json_decode($quest['subtasks'], true) : [];
                 $isBoss = ($quest['difficulty'] === 'Hard' || (!empty($questSubs) && count($questSubs) > 0));
                 $multiplier = $isBoss ? 1.5 : 1.0;
 
@@ -128,8 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $oldRank = calculateRank($oldLvl);
                 $newRank = calculateRank($newLvl);
 
-                $stmt = $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ? WHERE user_id = ?");
-                $stmt->execute([$expReward, $goldReward, $newLvl, $_SESSION['user_id']]);
+                $stmt = $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ?, rank = ? WHERE user_id = ?");
+                $stmt->execute([$expReward, $goldReward, $newLvl, $newRank, $_SESSION['user_id']]);
 
                 if ($newLvl > $oldLvl) {
                     $_SESSION['level_up'] = [
@@ -222,14 +245,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $newExp = max(0, $curExp - $revertExp);
                 $newGold = (int)$userData['gold'] - $revertGold;
                 $newLevel = calculateLevel($newExp);
+                $newRank = calculateRank($newLevel);
 
                 // Kembalikan status misi menjadi 'In Progress'
                 $pdo->prepare("UPDATE quests SET status = 'In Progress' WHERE quest_id = ? AND user_id = ?")
                     ->execute([$questId, $_SESSION['user_id']]);
 
-                // Kurangi EXP, Gold, dan perbarui level
-                $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ? WHERE user_id = ?")
-                    ->execute([$newExp, $newGold, $newLevel, $_SESSION['user_id']]);
+                // Kurangi EXP, Gold, dan perbarui level serta rank
+                $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ?, rank = ? WHERE user_id = ?")
+                    ->execute([$newExp, $newGold, $newLevel, $newRank, $_SESSION['user_id']]);
 
                 // Revert progress skill
                 revert_skill_progress($pdo, $_SESSION['user_id'], $quest['category']);
@@ -411,6 +435,11 @@ require_once __DIR__ . '/../includes/header.php';
             <i class="fas fa-exclamation-circle me-2"></i>
             <div><?php echo htmlspecialchars($_SESSION['quest_error'] ?? 'Aksi tidak bisa dibatalkan karena Gold reward misi sudah terpakai.'); unset($_SESSION['quest_error']); ?></div>
         </div>
+    <?php elseif ($_GET['error'] === 'boss_not_defeated'): ?>
+        <div class="alert alert-danger mb-3 d-flex align-items-center" role="alert">
+            <i class="fas fa-skull-crossbones me-2"></i>
+            <div><?php echo htmlspecialchars($_SESSION['quest_error'] ?? 'Semua fase Boss Quest wajib dituntaskan (HP Boss 0%) terlebih dahulu.'); unset($_SESSION['quest_error']); ?></div>
+        </div>
     <?php endif; ?>
 <?php elseif (isset($_GET['success']) && $_GET['success'] === 'undone'): ?>
     <div class="alert alert-info mb-3 d-flex align-items-center" role="status">
@@ -522,6 +551,10 @@ require_once __DIR__ . '/../includes/header.php';
                         
                         <?php if ($quest['status'] === 'Completed'): ?>
                             <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
+                        <?php elseif ($totalSub > 0 && $doneSub < $totalSub): ?>
+                            <button type="button" class="btn-core btn-outline font-mono text-danger" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; opacity: 0.65; cursor: not-allowed;" title="Kalahkan semua fase Boss Quest terlebih dahulu">
+                                <i class="fas fa-lock me-1"></i> Lawan Boss
+                            </button>
                         <?php else: ?>
                             <form method="POST" action="quests.php" style="margin: 0;">
                                 <?php echo csrf_field(); ?>

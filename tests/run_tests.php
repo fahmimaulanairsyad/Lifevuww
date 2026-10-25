@@ -5,6 +5,11 @@
  * Tidak membutuhkan dependensi eksternal (PHPUnit/Pest), berjalan di lingkungan PHP apa pun.
  */
 
+if (php_sapi_name() !== 'cli') {
+    http_response_code(403);
+    exit("Akses ditolak: Test suite hanya dapat dijalankan melalui CLI.\n");
+}
+
 require_once __DIR__ . '/../config/game.php';
 
 $total = 0;

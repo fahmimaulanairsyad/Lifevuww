@@ -66,15 +66,30 @@ try {
         echo "Menjalankan migrasi: $base ... ";
         $sql = file_get_contents($file);
 
-        try {
-            $pdo->exec($sql);
+        $statements = array_filter(array_map('trim', explode(';', $sql)));
+        $migrationErrors = [];
+        foreach ($statements as $stmtSql) {
+            if (empty($stmtSql)) continue;
+            try {
+                $pdo->exec($stmtSql);
+            } catch (Exception $stmtEx) {
+                // Abaikan error duplikasi jika kolom, key, atau tabel sudah ada sebelumnya (idempotent)
+                $msg = $stmtEx->getMessage();
+                if (stripos($msg, 'duplicate') !== false || stripos($msg, 'already exists') !== false) {
+                    continue;
+                }
+                $migrationErrors[] = $msg;
+            }
+        }
+
+        if (empty($migrationErrors)) {
             $stmt = $pdo->prepare("INSERT INTO schema_migrations (migration) VALUES (?)");
             $stmt->execute([$base]);
             echo "BERHASIL\n";
             $count++;
-        } catch (Exception $e) {
+        } else {
             echo "GAGAL!\n";
-            echo "Error: " . $e->getMessage() . "\n";
+            echo "Error: " . implode("; ", $migrationErrors) . "\n";
             exit(1);
         }
     }
