@@ -134,8 +134,8 @@ function status_badge($status) {
     </div>
 
     <!-- Heatmap Grid -->
-    <div class="heatmap-wrapper" id="heatmapWrapper" style="padding-bottom: 0.35rem;">
-        <div class="heatmap-track">
+    <div class="heatmap-wrapper" id="heatmapWrapper" style="overflow-x: auto; padding: 0.25rem 0;">
+        <div class="heatmap-track" style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center; max-width: 100%;">
             <?php foreach ($heatDays as $hd): 
                 $cnt = $hd['count'];
                 $bg = 'var(--bg-surface-hover)';
@@ -154,7 +154,7 @@ function status_badge($status) {
             ?>
                 <div class="heatmap-cell" 
                      title="<?php echo htmlspecialchars($tooltip); ?>" 
-                     style="width: 16px; height: 16px; border-radius: 3px; background-color: <?php echo $bg; ?>; border: 1px solid <?php echo $border; ?>; cursor: pointer;">
+                     style="display: inline-block; width: 16px; height: 16px; border-radius: 3px; background-color: <?php echo $bg; ?>; border: 1px solid <?php echo $border; ?>; cursor: pointer; flex-shrink: 0;">
                 </div>
             <?php endforeach; ?>
         </div>

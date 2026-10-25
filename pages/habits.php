@@ -410,13 +410,13 @@ require_once '../includes/header.php';
             </div>
         </div>
     <?php else: ?>
-        <div class="filter-pills-category">
-            <button type="button" class="btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
-            <button type="button" class="btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
-            <button type="button" class="btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
-            <button type="button" class="btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
-            <button type="button" class="btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
-            <button type="button" class="btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
+        <div class="filter-pills-category" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 1.25rem;">
+            <button type="button" class="btn-core btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
+            <button type="button" class="btn-core btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
+            <button type="button" class="btn-core btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
+            <button type="button" class="btn-core btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
+            <button type="button" class="btn-core btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
+            <button type="button" class="btn-core btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
         </div>
 
         <div class="data-list">

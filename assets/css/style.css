@@ -320,12 +320,17 @@ a:hover {
 }
 .heatmap-track {
     display: flex;
-    gap: 5px;
     flex-wrap: wrap;
-    min-width: 480px;
+    gap: 6px;
+    align-items: center;
+    max-width: 100%;
 }
 .heatmap-cell {
-    transition: transform 0.1s ease, border-color 0.1s ease;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    transition: transform 0.12s ease, border-color 0.12s ease;
     flex-shrink: 0;
 }
 .heatmap-cell:hover {
@@ -446,6 +451,56 @@ a:hover {
 .btn-ghost:hover {
     color: var(--text-primary) !important;
     background-color: var(--bg-surface-hover) !important;
+}
+
+/* Category Filter Pills */
+.filter-pills-category {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.25rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.filter-pills-category::-webkit-scrollbar {
+    display: none;
+}
+
+.btn-filter-pill {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    background-color: var(--bg-surface-hover) !important;
+    border: 1px solid var(--border-hairline) !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.78rem !important;
+    font-family: var(--font-sans) !important;
+    padding: 0.35rem 0.85rem !important;
+    border-radius: 9999px !important;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    outline: none !important;
+    box-shadow: none !important;
+    line-height: 1.2;
+}
+
+.btn-filter-pill:hover {
+    color: var(--text-primary) !important;
+    border-color: var(--border-subtle) !important;
+    background-color: var(--bg-surface-hover) !important;
+}
+
+.btn-filter-pill.active {
+    background-color: var(--accent-dim) !important;
+    color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    font-weight: 600;
 }
 
 /* Forms & Inputs */
@@ -1092,48 +1147,6 @@ html.is-apk textarea {
 html.is-apk .web-only,
 html.is-apk #btn-install-app {
     display: none !important;
-}
-
-/* Quick Category Filter Pills */
-.filter-pills-category {
-    display: flex;
-    gap: 0.45rem;
-    overflow-x: auto;
-    padding-bottom: 0.4rem;
-    margin-bottom: 1.25rem;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.filter-pills-category::-webkit-scrollbar {
-    display: none;
-}
-
-.btn-filter-pill {
-    background-color: var(--bg-surface-hover);
-    border: 1px solid var(--border-hairline);
-    color: var(--text-muted);
-    font-size: 0.76rem;
-    padding: 0.32rem 0.75rem;
-    border-radius: 9999px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: all 0.15s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-}
-
-.btn-filter-pill:hover {
-    color: var(--text-primary);
-    border-color: var(--border-subtle);
-}
-
-.btn-filter-pill.active {
-    background-color: var(--accent-dim);
-    color: var(--accent);
-    border-color: var(--accent);
-    font-weight: 500;
 }
 
 /* ==========================================================

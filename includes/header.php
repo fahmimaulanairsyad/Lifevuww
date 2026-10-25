@@ -22,7 +22,17 @@ secure_session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=8" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261025_02" rel="stylesheet">
+    <style>
+        /* Scoped resilience styles for filters & heatmap */
+        .filter-pills-category { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 1.25rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+        .filter-pills-category::-webkit-scrollbar { display: none; }
+        .btn-filter-pill { appearance: none !important; -webkit-appearance: none !important; background-color: var(--bg-surface-hover) !important; border: 1px solid var(--border-hairline) !important; color: var(--text-secondary) !important; font-size: 0.78rem !important; font-family: var(--font-sans) !important; padding: 0.35rem 0.85rem !important; border-radius: 9999px !important; cursor: pointer; white-space: nowrap; transition: all 0.15s ease; display: inline-flex; align-items: center; gap: 0.4rem; outline: none !important; box-shadow: none !important; line-height: 1.2; }
+        .btn-filter-pill:hover { color: var(--text-primary) !important; border-color: var(--border-subtle) !important; background-color: var(--bg-surface-hover) !important; }
+        .btn-filter-pill.active { background-color: var(--accent-dim) !important; color: var(--accent) !important; border-color: var(--accent) !important; font-weight: 600; }
+        .heatmap-track { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; align-items: center !important; max-width: 100% !important; }
+        .heatmap-cell { display: inline-block !important; width: 16px !important; height: 16px !important; border-radius: 3px !important; flex-shrink: 0 !important; }
+    </style>
     <!-- Platform Tagging (Desktop vs Mobile vs APK) -->
     <script>
         (function() {
