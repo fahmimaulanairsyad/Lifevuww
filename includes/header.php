@@ -128,6 +128,9 @@ secure_session_start();
                 <span class="mobile-brand-title">Lifevuww</span>
             </a>
             <div class="mobile-vitals">
+                <button type="button" class="btn-core btn-ghost p-1 d-md-none text-muted" onclick="window.openCommandPalette && window.openCommandPalette();" aria-label="Buka Menu Cepat">
+                    <i class="fas fa-search"></i>
+                </button>
                 <span class="mobile-chip font-mono text-accent" style="border-color: rgba(16, 185, 129, 0.25); background-color: var(--accent-dim);">
                     Lv.<?php echo $navLevel; ?>
                 </span>
@@ -173,6 +176,14 @@ secure_session_start();
                     <span class="vitals-label"><i class="fas fa-coins text-warning me-1"></i> Gold</span>
                     <span class="vitals-value font-mono text-warning"><?php echo number_format($navUser['gold'] ?? 0); ?></span>
                 </div>
+            </div>
+
+            <!-- Command Palette Trigger (Desktop) -->
+            <div class="px-2 pt-1 pb-1 d-none d-md-block">
+                <button type="button" class="btn-command-palette-trigger w-100 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 0.4rem 0.65rem; color: var(--text-muted); font-size: 0.75rem; cursor: pointer;" onclick="window.openCommandPalette && window.openCommandPalette();">
+                    <span><i class="fas fa-search me-1 text-muted"></i> Menu Cepat</span>
+                    <kbd class="font-mono" style="background: var(--bg-base); border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.65rem;">Ctrl+K</kbd>
+                </button>
             </div>
 
             <nav class="sidebar-nav">

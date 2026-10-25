@@ -66,19 +66,13 @@ try {
         echo "Menjalankan migrasi: $base ... ";
         $sql = file_get_contents($file);
 
-        // Eksekusi migrasi dalam transaksi
-        $pdo->beginTransaction();
         try {
             $pdo->exec($sql);
             $stmt = $pdo->prepare("INSERT INTO schema_migrations (migration) VALUES (?)");
             $stmt->execute([$base]);
-            $pdo->commit();
             echo "BERHASIL\n";
             $count++;
         } catch (Exception $e) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
             echo "GAGAL!\n";
             echo "Error: " . $e->getMessage() . "\n";
             exit(1);

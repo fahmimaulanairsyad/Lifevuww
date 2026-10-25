@@ -1155,6 +1155,38 @@ html.is-apk #btn-install-app {
     display: none !important;
 }
 
+/* Command Palette (Linear Style) */
+.cp-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.8rem;
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-size: 0.84rem;
+    cursor: pointer;
+    transition: background-color 0.12s ease, color 0.12s ease;
+    text-decoration: none;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+}
+.cp-item:hover, .cp-item.active {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-primary);
+    border-color: var(--border-subtle);
+}
+.cp-item.active {
+    border-left: 2px solid var(--accent);
+}
+.cp-category-header {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0.4rem 0.6rem 0.2rem 0.6rem;
+    font-weight: 600;
+}
+
 /* ==========================================================
    LANDING PAGE STYLES
    ========================================================== */

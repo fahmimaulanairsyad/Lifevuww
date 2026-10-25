@@ -153,3 +153,98 @@ function render_difficulty_options(?string $selected = null): string {
     }
     return $html;
 }
+
+// --- 7. Sistem Lencana & Prestasi Karakter (Zero-Migration Achievements) ---
+function game_achievements(array $stats): array {
+    $level = (int) ($stats['level'] ?? 1);
+    $gold = (int) ($stats['gold'] ?? 0);
+    $hp = (int) ($stats['hp'] ?? 100);
+    $freeze = (int) ($stats['streak_freeze'] ?? 0);
+    $maxStreak = (int) ($stats['max_streak'] ?? 0);
+    $habitsDone = (int) ($stats['completed_habits'] ?? 0);
+    $questsDone = (int) ($stats['completed_quests'] ?? 0);
+    $totalTasks = (int) ($stats['total_tasks'] ?? ($habitsDone + $questsDone));
+
+    $badges = [
+        [
+            'id' => 'first_blood',
+            'title' => 'Langkah Pertama',
+            'desc' => 'Menuntaskan minimal 1 rutinitas atau misi petualangan.',
+            'icon' => 'fa-shoe-prints',
+            'target' => 1,
+            'current' => min(1, $totalTasks),
+            'color' => 'text-accent'
+        ],
+        [
+            'id' => 'flame_keeper',
+            'title' => 'Penjaga Api',
+            'desc' => 'Membangun streak konsistensi 7 hari berturut-turut.',
+            'icon' => 'fa-fire',
+            'target' => 7,
+            'current' => min(7, $maxStreak),
+            'color' => 'text-warning'
+        ],
+        [
+            'id' => 'centurion',
+            'title' => 'Disiplin Baja',
+            'desc' => 'Membangun rekor streak spektakuler 30 hari.',
+            'icon' => 'fa-shield-alt',
+            'target' => 30,
+            'current' => min(30, $maxStreak),
+            'color' => 'text-accent'
+        ],
+        [
+            'id' => 'treasury_master',
+            'title' => 'Saudagar Emas',
+            'desc' => 'Mengumpulkan kekayaan saldo 200 Gold.',
+            'icon' => 'fa-coins',
+            'target' => 200,
+            'current' => min(200, $gold),
+            'color' => 'text-warning'
+        ],
+        [
+            'id' => 'awakened_hunter',
+            'title' => 'Kebangkitan Karakter',
+            'desc' => 'Mencapai Tingkat 5 atau lebih tinggi.',
+            'icon' => 'fa-bolt',
+            'target' => 5,
+            'current' => min(5, $level),
+            'color' => 'text-accent'
+        ],
+        [
+            'id' => 'aegis_bearer',
+            'title' => 'Perisai Abadi',
+            'desc' => 'Memiliki HP penuh (100 HP) dan minimal 1 Perisai Streak Freeze.',
+            'icon' => 'fa-snowflake',
+            'target' => 1,
+            'current' => ($hp >= 100 && $freeze >= 1) ? 1 : 0,
+            'color' => 'text-info'
+        ],
+        [
+            'id' => 'quest_master',
+            'title' => 'Penakluk Misi',
+            'desc' => 'Menyelesaikan minimal 5 misi petualangan.',
+            'icon' => 'fa-scroll',
+            'target' => 5,
+            'current' => min(5, $questsDone),
+            'color' => 'text-accent'
+        ],
+        [
+            'id' => 'sovereign_champion',
+            'title' => 'Kedaulatan Disiplin',
+            'desc' => 'Menuntaskan akumulasi 50 aktivitas produktif seumur hidup.',
+            'icon' => 'fa-trophy',
+            'target' => 50,
+            'current' => min(50, $totalTasks),
+            'color' => 'text-warning'
+        ]
+    ];
+
+    foreach ($badges as &$b) {
+        $b['unlocked'] = ($b['current'] >= $b['target']);
+        $b['progress_pct'] = (int) min(100, round(($b['current'] / max(1, $b['target'])) * 100));
+    }
+    unset($b);
+
+    return $badges;
+}

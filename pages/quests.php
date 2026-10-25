@@ -27,6 +27,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $start_date = date('Y-m-d');
         }
 
+        $rawSubtasks = trim($_POST['subtasks'] ?? '');
+        $subtasksJson = null;
+        if (!empty($rawSubtasks)) {
+            $stmtCurr = $pdo->prepare("SELECT subtasks FROM quests WHERE quest_id = ? AND user_id = ?");
+            $stmtCurr->execute([$questId, $_SESSION['user_id']]);
+            $currList = json_decode($stmtCurr->fetchColumn() ?: '[]', true) ?: [];
+            $doneMap = [];
+            foreach ($currList as $item) {
+                if (isset($item['title'])) $doneMap[$item['title']] = !empty($item['done']);
+            }
+
+            $lines = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $rawSubtasks)));
+            if (!empty($lines)) {
+                $formatted = array_map(fn($t) => ['title' => $t, 'done' => !empty($doneMap[$t])], $lines);
+                $subtasksJson = json_encode(array_values($formatted), JSON_UNESCAPED_UNICODE);
+            }
+        }
+
         $expReward = exp_for_difficulty($difficulty);
         $diffs = game_difficulties();
         $durationDays = $diffs[$difficulty]['duration_days'] ?? 7;
@@ -34,16 +52,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $stmt = $pdo->prepare("
                 UPDATE quests 
-                SET quest_name = ?, difficulty = ?, start_date = ?, exp_reward = ?, duration_days = ?, category = ? 
+                SET quest_name = ?, difficulty = ?, start_date = ?, exp_reward = ?, duration_days = ?, category = ?, subtasks = ? 
                 WHERE quest_id = ? AND user_id = ?
             ");
-            $stmt->execute([$quest_name, $difficulty, $start_date, $expReward, $durationDays, $category, $questId, $_SESSION['user_id']]);
+            $stmt->execute([$quest_name, $difficulty, $start_date, $expReward, $durationDays, $category, $subtasksJson, $questId, $_SESSION['user_id']]);
             header("Location: quests.php");
             exit();
         } catch (PDOException $e) {
             error_log("Quest update error: " . $e->getMessage());
             die("Error updating quest.");
         }
+    }
+
+    // Toggle subtask checklist
+    if (isset($_POST['toggle_subtask'])) {
+        $questId = intval($_POST['quest_id'] ?? 0);
+        $subIndex = intval($_POST['subtask_index'] ?? -1);
+
+        if ($questId > 0 && $subIndex >= 0) {
+            $stmt = $pdo->prepare("SELECT subtasks FROM quests WHERE quest_id = ? AND user_id = ?");
+            $stmt->execute([$questId, $_SESSION['user_id']]);
+            $raw = $stmt->fetchColumn();
+            $list = json_decode($raw ?: '[]', true) ?: [];
+            if (isset($list[$subIndex])) {
+                $list[$subIndex]['done'] = empty($list[$subIndex]['done']);
+                $newJson = json_encode(array_values($list), JSON_UNESCAPED_UNICODE);
+                $pdo->prepare("UPDATE quests SET subtasks = ? WHERE quest_id = ? AND user_id = ?")
+                    ->execute([$newJson, $questId, $_SESSION['user_id']]);
+            }
+        }
+        header("Location: quests.php");
+        exit();
     }
 
     if (isset($_POST['complete_quest'])) {
@@ -64,9 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 // Ambil detail quest
-                $stmt = $pdo->prepare("SELECT quest_name, exp_reward, category FROM quests WHERE quest_id = ? AND user_id = ?");
+                $stmt = $pdo->prepare("SELECT quest_name, exp_reward, category, difficulty, subtasks FROM quests WHERE quest_id = ? AND user_id = ?");
                 $stmt->execute([$questId, $_SESSION['user_id']]);
                 $quest = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                // Cek apakah Boss Quest (Hard atau memiliki subtasks)
+                $questSubs = !empty($quest['subtasks']) ? json_decode($quest['subtasks'], true) : [];
+                $isBoss = ($quest['difficulty'] === 'Hard' || (!empty($questSubs) && count($questSubs) > 0));
+                $multiplier = $isBoss ? 1.5 : 1.0;
 
                 // Ambil data user lama untuk deteksi Level Up & Rank Up
                 $stmtUserOld = $pdo->prepare("SELECT exp, level FROM users WHERE user_id = ? FOR UPDATE");
@@ -75,9 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $oldExp = (int) ($oldUserData['exp'] ?? 0);
                 $oldLvl = calculateLevel($oldExp);
 
-                // Tambahkan EXP dan Gold ke pengguna
-                $expReward = $quest['exp_reward'];
-                $goldReward = $expReward * 2; // Quest memberikan Gold lebih banyak (x2)
+                // Tambahkan EXP dan Gold ke pengguna (dengan bonus boss 1.5x jika applicable)
+                $expReward = (int) floor($quest['exp_reward'] * $multiplier);
+                $goldReward = (int) ($expReward * 2); // Quest memberikan Gold lebih banyak (x2)
 
                 $newExpTotal = $oldExp + $expReward;
                 $newLvl = calculateLevel($newExpTotal);
@@ -239,6 +283,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $start_date = date('Y-m-d');
         }
 
+        $rawSubtasks = trim($_POST['subtasks'] ?? '');
+        $subtasksJson = null;
+        if (!empty($rawSubtasks)) {
+            $lines = array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $rawSubtasks)));
+            if (!empty($lines)) {
+                $formatted = array_map(fn($t) => ['title' => $t, 'done' => false], $lines);
+                $subtasksJson = json_encode(array_values($formatted), JSON_UNESCAPED_UNICODE);
+            }
+        }
+
         $expReward = exp_for_difficulty($difficulty, 0);
         $diffs = game_difficulties();
         $durationDays = $diffs[$difficulty]['duration_days'] ?? 7;
@@ -248,8 +302,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception("Invalid difficulty level, EXP reward cannot be zero.");
             }
 
-            $stmt = $pdo->prepare("INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $quest_name, $difficulty, $start_date, $expReward, $durationDays, 'In Progress', $category]);
+            $stmt = $pdo->prepare("INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category, subtasks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$_SESSION['user_id'], $quest_name, $difficulty, $start_date, $expReward, $durationDays, 'In Progress', $category, $subtasksJson]);
 
             header("Location: quests.php");
             exit();
@@ -319,6 +373,12 @@ require_once __DIR__ . '/../includes/header.php';
                             <label for="startDate" class="form-label">Tanggal mulai</label>
                             <input type="date" class="form-control" id="startDate" name="start_date" required>
                         </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        <label for="subtasks" class="form-label">Sub-langkah / Target Kecil Boss (Opsional)</label>
+                        <textarea class="form-control" id="subtasks" name="subtasks" rows="3" placeholder="Langkah 1: Riset materi&#10;Langkah 2: Kerjakan draft&#10;Langkah 3: Review & Submit" style="font-size: 0.8rem;"></textarea>
+                        <div class="text-muted mt-1" style="font-size: 0.72rem;">Misi dengan sub-langkah otomatis menjadi <strong>Boss Quest</strong> (bonus 1.5x EXP & Gold). Pisahkan tiap langkah dengan baris baru.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -393,14 +453,28 @@ require_once __DIR__ . '/../includes/header.php';
                 $today = date('Y-m-d');
                 $daysLeft = (int) ceil((strtotime($deadline) - strtotime($today)) / 86400);
                 $hpPenalty = hp_penalty_for_quest($quest['difficulty']);
+
+                $subtasks = !empty($quest['subtasks']) ? json_decode($quest['subtasks'], true) : [];
+                $isBoss = ($quest['difficulty'] === 'Hard' || (!empty($subtasks) && count($subtasks) > 0));
+                $totalSub = is_array($subtasks) ? count($subtasks) : 0;
+                $doneSub = $totalSub > 0 ? count(array_filter($subtasks, fn($s) => !empty($s['done']))) : 0;
+                $bossHpPct = $totalSub > 0 ? round((($totalSub - $doneSub) / $totalSub) * 100) : 100;
+                $finalExp = $isBoss ? (int) floor($quest['exp_reward'] * 1.5) : (int) $quest['exp_reward'];
             ?>
-                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>" data-deadline="<?php echo $daysLeft; ?>" data-exp="<?php echo (int) $quest['exp_reward']; ?>" data-id="<?php echo (int) $quest['quest_id']; ?>">
+                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>" data-deadline="<?php echo $daysLeft; ?>" data-exp="<?php echo $finalExp; ?>" data-id="<?php echo (int) $quest['quest_id']; ?>">
                     <div class="data-main">
-                        <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem;">
-                            <i class="fas <?php echo $quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'; ?>"></i>
+                        <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isBoss ? 'var(--status-danger)' : ($quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'); ?>; font-size: 0.8rem;">
+                            <i class="fas <?php echo $isBoss ? 'fa-dragon' : ($quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'); ?>"></i>
                         </div>
-                        <div>
-                            <div class="data-title"><?php echo htmlspecialchars($quest['quest_name']); ?></div>
+                        <div style="flex: 1;">
+                            <div class="data-title d-flex align-items-center flex-wrap gap-2">
+                                <span><?php echo htmlspecialchars($quest['quest_name']); ?></span>
+                                <?php if ($isBoss): ?>
+                                    <span class="badge-status danger font-mono" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">
+                                        <i class="fas fa-skull me-1"></i> BOSS QUEST
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                             <div class="data-meta">
                                 <span class="badge-status"><?php echo htmlspecialchars($quest['category']); ?></span>
                                 <span class="badge-status font-mono"><?php echo htmlspecialchars($quest['difficulty']); ?></span>
@@ -409,12 +483,41 @@ require_once __DIR__ . '/../includes/header.php';
                                 </span>
                                 <span class="text-danger font-mono" title="Penalti jika gagal"><i class="fas fa-heart text-danger"></i> -<?php echo $hpPenalty; ?> HP</span>
                             </div>
+
+                            <!-- Boss Quest HP Bar & Subtask Checklist -->
+                            <?php if ($totalSub > 0): ?>
+                                <div class="mt-2 p-2" style="background-color: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.18); border-radius: var(--radius); max-width: 520px;">
+                                    <div class="d-flex justify-content-between align-items-center font-mono text-danger mb-1" style="font-size: 0.72rem;">
+                                        <span><i class="fas fa-shield-virus me-1"></i> Sisa HP Boss</span>
+                                        <span><?php echo $bossHpPct; ?>% (<?php echo ($totalSub - $doneSub); ?>/<?php echo $totalSub; ?> Fase)</span>
+                                    </div>
+                                    <div class="vitals-track" style="height: 5px; background-color: rgba(255,255,255,0.06); margin-bottom: 0.5rem;">
+                                        <div class="vitals-fill" style="width: <?php echo $bossHpPct; ?>%; background-color: var(--status-danger);"></div>
+                                    </div>
+                                    <div class="d-flex flex-column gap-1">
+                                        <?php foreach ($subtasks as $idx => $st): ?>
+                                            <form method="POST" action="quests.php" class="d-flex align-items-center gap-2 m-0">
+                                                <?php echo csrf_field(); ?>
+                                                <input type="hidden" name="toggle_subtask" value="1">
+                                                <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
+                                                <input type="hidden" name="subtask_index" value="<?php echo $idx; ?>">
+                                                <label class="d-flex align-items-center gap-2 m-0" style="cursor: pointer;">
+                                                    <input type="checkbox" onchange="this.form.submit()" <?php echo !empty($st['done']) ? 'checked' : ''; ?> style="accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;">
+                                                    <span style="font-size: 0.78rem; <?php echo !empty($st['done']) ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-primary);'; ?>">
+                                                        <?php echo htmlspecialchars($st['title'] ?? ''); ?>
+                                                    </span>
+                                                </label>
+                                            </form>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                     
                     <div class="data-actions">
                         <div class="font-mono text-accent me-2" style="font-size: 0.82rem; font-weight: 500;">
-                            +<?php echo $quest['exp_reward']; ?> EXP
+                            +<?php echo $finalExp; ?> EXP<?php echo $isBoss ? ' <span class="badge-status accent font-mono" style="font-size: 0.6rem;">1.5x</span>' : ''; ?>
                         </div>
                         
                         <?php if ($quest['status'] === 'Completed'): ?>
@@ -478,6 +581,17 @@ require_once __DIR__ . '/../includes/header.php';
                                             <label for="edit_qdate_<?php echo $quest['quest_id']; ?>" class="form-label">Tanggal mulai</label>
                                             <input type="date" class="form-control" id="edit_qdate_<?php echo $quest['quest_id']; ?>" name="start_date" value="<?php echo htmlspecialchars($quest['start_date']); ?>" required>
                                         </div>
+                                    </div>
+                                    <?php
+                                    $editSubs = !empty($quest['subtasks']) ? json_decode($quest['subtasks'], true) : [];
+                                    $editSubText = '';
+                                    if (is_array($editSubs)) {
+                                        $editSubText = implode("\n", array_map(fn($item) => $item['title'] ?? '', $editSubs));
+                                    }
+                                    ?>
+                                    <div class="mb-3 mt-3">
+                                        <label for="edit_subtasks_<?php echo $quest['quest_id']; ?>" class="form-label">Sub-langkah / Target Kecil Boss (Opsional)</label>
+                                        <textarea class="form-control" id="edit_subtasks_<?php echo $quest['quest_id']; ?>" name="subtasks" rows="3" placeholder="Pisahkan tiap langkah dengan baris baru" style="font-size: 0.8rem;"><?php echo htmlspecialchars($editSubText); ?></textarea>
                                     </div>
                                 </div>
                                 <div class="modal-footer">

@@ -242,6 +242,26 @@
     </script>
     <?php endif; ?>
 
+    <!-- Linear Command Palette Modal (Ctrl+K / Cmd+K) -->
+    <div class="modal fade" id="lvCommandPalette" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
+            <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: calc(var(--radius) * 1.5); overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85);">
+                <div class="p-3 d-flex align-items-center gap-2" style="border-bottom: 1px solid var(--border-hairline);">
+                    <i class="fas fa-search text-muted"></i>
+                    <input type="text" id="cpSearchInput" class="form-control border-0 p-0 shadow-none font-sans" placeholder="Ketik perintah atau nama modul..." autocomplete="off" style="background: transparent !important; color: var(--text-primary); font-size: 0.92rem; outline: none !important;">
+                    <kbd class="font-mono text-muted" style="font-size: 0.65rem; background: var(--bg-surface-hover); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-hairline);">ESC</kbd>
+                </div>
+                <div id="cpResultsList" class="p-2" style="max-height: 320px; overflow-y: auto;">
+                    <!-- Commands rendered dynamically via JS -->
+                </div>
+                <div class="p-2 px-3 d-flex justify-content-between align-items-center" style="border-top: 1px solid var(--border-hairline); background-color: var(--bg-surface-hover); font-size: 0.72rem; color: var(--text-muted);">
+                    <span>Gunakan <kbd style="font-size: 0.65rem;">↑</kbd> <kbd style="font-size: 0.65rem;">↓</kbd> untuk memilih, <kbd style="font-size: 0.65rem;">Enter</kbd> untuk eksekusi</span>
+                    <span class="font-mono text-accent">Lifevuww v2.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Reusable Dark Confirmation Modal -->
     <div class="modal fade" id="lvConfirmModal" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.8);">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
@@ -531,10 +551,11 @@
             }
         });
 
-        /* ============ Fast Client-Side Sorting (Habits & Quests) ============ */
+        /* ============ Fast Client-Side Sorting (Habits & Quests) with LocalStorage ============ */
         document.addEventListener('change', function(e) {
             if (e.target.id === 'sortQuests') {
                 const val = e.target.value;
+                localStorage.setItem('lv_quests_sort', val);
                 const panel = e.target.closest('.bento-panel') || document;
                 const list = panel.querySelector('.data-list');
                 if (!list) return;
@@ -554,6 +575,7 @@
 
             if (e.target.id === 'sortHabits') {
                 const val = e.target.value;
+                localStorage.setItem('lv_habits_sort', val);
                 const panel = e.target.closest('.bento-panel') || document;
                 const list = panel.querySelector('.data-list');
                 if (!list) return;
@@ -572,13 +594,20 @@
             }
         });
 
-        /* ============ Quick Attribute Filter Pills ============ */
+        /* ============ Quick Attribute Filter Pills with LocalStorage ============ */
         document.addEventListener('click', function(e) {
             const pill = e.target.closest('.btn-filter-pill');
             if (!pill) return;
             const container = pill.closest('.filter-pills-category');
             if (!container) return;
             const filterCat = pill.getAttribute('data-filter');
+
+            // Save to LocalStorage
+            if (window.location.pathname.indexOf('habits.php') !== -1) {
+                localStorage.setItem('lv_habits_filter', filterCat);
+            } else if (window.location.pathname.indexOf('quests.php') !== -1) {
+                localStorage.setItem('lv_quests_filter', filterCat);
+            }
 
             container.querySelectorAll('.btn-filter-pill').forEach(p => p.classList.remove('active'));
             pill.classList.add('active');
@@ -606,6 +635,184 @@
                 }
             }
         });
+
+        // Auto-restore filter & sort state on load
+        (function restoreFiltersAndSort() {
+            const isHabits = window.location.pathname.indexOf('habits.php') !== -1;
+            const isQuests = window.location.pathname.indexOf('quests.php') !== -1;
+
+            if (isHabits) {
+                const savedFilter = localStorage.getItem('lv_habits_filter');
+                if (savedFilter && savedFilter !== 'all') {
+                    const pill = document.querySelector(`.btn-filter-pill[data-filter="${savedFilter}"]`);
+                    if (pill) pill.click();
+                }
+                const savedSort = localStorage.getItem('lv_habits_sort');
+                const sortSel = document.getElementById('sortHabits');
+                if (savedSort && sortSel) {
+                    sortSel.value = savedSort;
+                    sortSel.dispatchEvent(new Event('change'));
+                }
+            }
+
+            if (isQuests) {
+                const savedFilter = localStorage.getItem('lv_quests_filter');
+                if (savedFilter && savedFilter !== 'all') {
+                    const pill = document.querySelector(`.btn-filter-pill[data-filter="${savedFilter}"]`);
+                    if (pill) pill.click();
+                }
+                const savedSort = localStorage.getItem('lv_quests_sort');
+                const sortSel = document.getElementById('sortQuests');
+                if (savedSort && sortSel) {
+                    sortSel.value = savedSort;
+                    sortSel.dispatchEvent(new Event('change'));
+                }
+            }
+        })();
+
+        /* ============ Linear Command Palette Logic (Ctrl+K) ============ */
+        (function () {
+            const commands = [
+                { title: 'Dasbor', category: 'Navigasi', icon: 'fa-home', url: 'dashboard.php', keywords: 'home dasbor utama' },
+                { title: 'Kebiasaan & Rutinitas', category: 'Navigasi', icon: 'fa-check-square', url: 'habits.php', keywords: 'habit kebiasaan rutinitas checklist' },
+                { title: 'Misi & Petualangan', category: 'Navigasi', icon: 'fa-map-signs', url: 'quests.php', keywords: 'quest misi petualangan boss target' },
+                { title: 'Keahlian & Radar Karakter', category: 'Navigasi', icon: 'fa-book-open', url: 'skills.php', keywords: 'skill keahlian radar atribut stats' },
+                { title: 'Toko Hadiah & Ramuan', category: 'Navigasi', icon: 'fa-store', url: 'shop.php', keywords: 'shop toko belanja potion ramuan reward' },
+                { title: 'Riwayat & Heatmap Konsistensi', category: 'Navigasi', icon: 'fa-history', url: 'history.php', keywords: 'history riwayat log heatmap catatan' },
+                { title: 'Profil & Kredensial', category: 'Navigasi', icon: 'fa-user-circle', url: 'profile.php', keywords: 'profil profile akun settings kata sandi backup' },
+                { title: 'Buat Kebiasaan Baru', category: 'Aksi Cepat', icon: 'fa-plus', action: 'add_habit', keywords: 'tambah buat habit kebiasaan baru' },
+                { title: 'Buat Misi Baru', category: 'Aksi Cepat', icon: 'fa-plus-circle', action: 'add_quest', keywords: 'tambah buat misi quest baru boss' },
+                { title: 'Toggle Efek Suara (On/Off)', category: 'Preferensi', icon: 'fa-volume-up', action: 'toggle_sound', keywords: 'suara sound audio mute senyap toggle' }
+            ];
+
+            let activeIdx = 0;
+            let filtered = [...commands];
+
+            function renderCommands() {
+                const listEl = document.getElementById('cpResultsList');
+                if (!listEl) return;
+                if (filtered.length === 0) {
+                    listEl.innerHTML = '<div class="text-center py-4 text-muted" style="font-size: 0.82rem;"><i class="fas fa-search me-1"></i> Tidak ada perintah yang cocok.</div>';
+                    return;
+                }
+
+                let currentCat = '';
+                let html = '';
+                filtered.forEach((cmd, idx) => {
+                    if (cmd.category !== currentCat) {
+                        currentCat = cmd.category;
+                        html += `<div class="cp-category-header">${currentCat}</div>`;
+                    }
+                    const isAct = idx === activeIdx;
+                    html += `
+                        <div class="cp-item ${isAct ? 'active' : ''}" data-idx="${idx}">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 24px; text-align: center; color: var(--text-muted); font-size: 0.85rem;"><i class="fas ${cmd.icon}"></i></div>
+                                <span>${cmd.title}</span>
+                            </div>
+                            <span class="font-mono text-muted" style="font-size: 0.7rem;"><i class="fas fa-arrow-turn-down me-1"></i>Pilih</span>
+                        </div>
+                    `;
+                });
+                listEl.innerHTML = html;
+            }
+
+            function executeCommand(cmd) {
+                if (!cmd) return;
+                const modalEl = document.getElementById('lvCommandPalette');
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const bsModal = bootstrap.Modal.getInstance(modalEl);
+                    if (bsModal) bsModal.hide();
+                }
+
+                if (cmd.url) {
+                    window.location.href = cmd.url;
+                } else if (cmd.action === 'add_habit') {
+                    if (window.location.pathname.indexOf('habits.php') !== -1) {
+                        const m = document.getElementById('addHabitModal');
+                        if (m && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(m).show();
+                    } else {
+                        window.location.href = 'habits.php';
+                    }
+                } else if (cmd.action === 'add_quest') {
+                    if (window.location.pathname.indexOf('quests.php') !== -1) {
+                        const m = document.getElementById('addQuestModal');
+                        if (m && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(m).show();
+                    } else {
+                        window.location.href = 'quests.php';
+                    }
+                } else if (cmd.action === 'toggle_sound') {
+                    LVSound.toggle();
+                    document.querySelectorAll('.btn-sound-toggle').forEach(btn => {
+                        const on = LVSound.isOn();
+                        btn.querySelector('i').className = on ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+                        btn.querySelector('span').textContent = on ? 'Suara nyala' : 'Senyap';
+                    });
+                }
+            }
+
+            window.openCommandPalette = function () {
+                const modalEl = document.getElementById('lvCommandPalette');
+                if (!modalEl || typeof bootstrap === 'undefined') return;
+                const input = document.getElementById('cpSearchInput');
+                if (input) input.value = '';
+                filtered = [...commands];
+                activeIdx = 0;
+                renderCommands();
+
+                const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                bsModal.show();
+                setTimeout(() => { if (input) input.focus(); }, 150);
+            };
+
+            // Global Keyboard Shortcut: Ctrl+K or Cmd+K
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+                    e.preventDefault();
+                    window.openCommandPalette();
+                }
+            });
+
+            // Input filter & Arrow key listeners inside Command Palette
+            const searchInput = document.getElementById('cpSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    const q = this.value.toLowerCase().trim();
+                    filtered = commands.filter(c => 
+                        c.title.toLowerCase().includes(q) || 
+                        c.category.toLowerCase().includes(q) || 
+                        c.keywords.toLowerCase().includes(q)
+                    );
+                    activeIdx = 0;
+                    renderCommands();
+                });
+
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        activeIdx = (activeIdx + 1) % Math.max(1, filtered.length);
+                        renderCommands();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        activeIdx = (activeIdx - 1 + filtered.length) % Math.max(1, filtered.length);
+                        renderCommands();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        executeCommand(filtered[activeIdx]);
+                    }
+                });
+            }
+
+            // Click listener for command items
+            document.addEventListener('click', function(e) {
+                const item = e.target.closest('.cp-item');
+                if (!item) return;
+                const idx = parseInt(item.getAttribute('data-idx'), 10);
+                if (filtered[idx]) {
+                    executeCommand(filtered[idx]);
+                }
+            });
+        })();
 
         /* ============ Bridge diagnostic readout (profile) ============ */
         (function () {

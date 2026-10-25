@@ -157,12 +157,18 @@ if (!function_exists('ensure_demo_user')) {
                 }
 
                 if ($questCount < 1) {
+                    $demoSubtasks = json_encode([
+                        ['title' => 'Pemanasan & Jogging 1 KM', 'done' => true],
+                        ['title' => 'Lari Konstan 3 KM', 'done' => false],
+                        ['title' => 'Sprint 1 KM & Pendinginan', 'done' => false]
+                    ], JSON_UNESCAPED_UNICODE);
+
                     $stmtQ = $pdo->prepare("
-                        INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category)
-                        VALUES (?, ?, ?, CURDATE(), ?, ?, 'In Progress', ?)
+                        INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category, subtasks)
+                        VALUES (?, ?, ?, CURDATE(), ?, ?, 'In Progress', ?, ?)
                     ");
-                    $stmtQ->execute([$demoId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence']);
-                    $stmtQ->execute([$demoId, 'Lari 5K Tanpa Henti', 'Hard', 15, 21, 'Physical']);
+                    $stmtQ->execute([$demoId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence', null]);
+                    $stmtQ->execute([$demoId, 'Lari 5K Tanpa Henti (Boss Quest)', 'Hard', 15, 21, 'Physical', $demoSubtasks]);
                 }
             }
             return $demoId;
@@ -209,12 +215,18 @@ if (!function_exists('ensure_demo_user')) {
         }
 
         // Tambahkan quest demo
+        $demoSubtasks = json_encode([
+            ['title' => 'Pemanasan & Jogging 1 KM', 'done' => true],
+            ['title' => 'Lari Konstan 3 KM', 'done' => false],
+            ['title' => 'Sprint 1 KM & Pendinginan', 'done' => false]
+        ], JSON_UNESCAPED_UNICODE);
+
         $stmtQ = $pdo->prepare("
-            INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category)
-            VALUES (?, ?, ?, CURDATE(), ?, ?, 'In Progress', ?)
+            INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category, subtasks)
+            VALUES (?, ?, ?, CURDATE(), ?, ?, 'In Progress', ?, ?)
         ");
-        $stmtQ->execute([$userId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence']);
-        $stmtQ->execute([$userId, 'Lari 5K Tanpa Henti', 'Hard', 15, 21, 'Physical']);
+        $stmtQ->execute([$userId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence', null]);
+        $stmtQ->execute([$userId, 'Lari 5K Tanpa Henti (Boss Quest)', 'Hard', 15, 21, 'Physical', $demoSubtasks]);
 
         return $userId;
     }

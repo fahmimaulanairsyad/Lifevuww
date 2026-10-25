@@ -77,6 +77,33 @@ assert_test("Ramuan minor memulihkan 25 HP", ($potions['minor']['heal'] ?? 0) ==
 assert_test("Elixir memulihkan 100 HP", ($potions['full']['heal'] ?? 0) === 100);
 assert_test("Perisai streak freeze terdaftar", isset($potions['freeze']));
 
+echo "\n7. Pengujian Sistem Lencana & Pencapaian (game_achievements):\n";
+$mockStats = [
+    'level' => 5,
+    'exp' => 450,
+    'gold' => 250,
+    'hp' => 100,
+    'streak_freeze' => 1,
+    'max_streak' => 8,
+    'completed_habits' => 10,
+    'completed_quests' => 6,
+    'total_tasks' => 16
+];
+$ach = game_achievements($mockStats);
+assert_test("Total ada 8 lencana pencapaian", count($ach) === 8);
+$unlockedMap = [];
+foreach ($ach as $item) {
+    $unlockedMap[$item['id']] = $item['unlocked'];
+}
+assert_test("Lencana 'Langkah Pertama' terbuka untuk 16 tugas", $unlockedMap['first_blood'] === true);
+assert_test("Lencana 'Penjaga Api' terbuka untuk streak 8 hari", $unlockedMap['flame_keeper'] === true);
+assert_test("Lencana 'Disiplin Baja' terkunci untuk streak 8 hari (target 30)", $unlockedMap['centurion'] === false);
+assert_test("Lencana 'Saudagar Emas' terbuka untuk 250 gold", $unlockedMap['treasury_master'] === true);
+assert_test("Lencana 'Kebangkitan Karakter' terbuka untuk level 5", $unlockedMap['awakened_hunter'] === true);
+assert_test("Lencana 'Perisai Abadi' terbuka untuk 100 HP + 1 perisai", $unlockedMap['aegis_bearer'] === true);
+assert_test("Lencana 'Penakluk Misi' terbuka untuk 6 misi", $unlockedMap['quest_master'] === true);
+assert_test("Lencana 'Kedaulatan Disiplin' terkunci untuk 16 tugas (target 50)", $unlockedMap['sovereign_champion'] === false);
+
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";
 if ($failed > 0) {

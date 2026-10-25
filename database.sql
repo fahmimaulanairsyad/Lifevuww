@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS `quests` (
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
   `category` varchar(255) DEFAULT NULL,
+  `subtasks` text DEFAULT NULL,
   PRIMARY KEY (`quest_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `quests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
