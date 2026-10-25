@@ -520,6 +520,58 @@
             }, { variant, confirmText });
         }, true);
 
+        // Keyboard Shortcut: Escape to close confirmation modal
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                const modalEl = document.getElementById('lvConfirmModal');
+                if (modalEl && modalEl.classList.contains('show') && typeof bootstrap !== 'undefined') {
+                    const bsModal = bootstrap.Modal.getInstance(modalEl);
+                    if (bsModal) bsModal.hide();
+                }
+            }
+        });
+
+        /* ============ Fast Client-Side Sorting (Habits & Quests) ============ */
+        document.addEventListener('change', function(e) {
+            if (e.target.id === 'sortQuests') {
+                const val = e.target.value;
+                const panel = e.target.closest('.bento-panel') || document;
+                const list = panel.querySelector('.data-list');
+                if (!list) return;
+                const rows = Array.from(list.querySelectorAll('.data-row'));
+                rows.sort((a, b) => {
+                    if (val === 'deadline') {
+                        return (parseInt(a.dataset.deadline) || 9999) - (parseInt(b.dataset.deadline) || 9999);
+                    } else if (val === 'exp-desc') {
+                        return (parseInt(b.dataset.exp) || 0) - (parseInt(a.dataset.exp) || 0);
+                    } else if (val === 'newest') {
+                        return (parseInt(b.dataset.id) || 0) - (parseInt(a.dataset.id) || 0);
+                    }
+                    return 0;
+                });
+                rows.forEach(r => list.appendChild(r));
+            }
+
+            if (e.target.id === 'sortHabits') {
+                const val = e.target.value;
+                const panel = e.target.closest('.bento-panel') || document;
+                const list = panel.querySelector('.data-list');
+                if (!list) return;
+                const rows = Array.from(list.querySelectorAll('.data-row'));
+                rows.sort((a, b) => {
+                    if (val === 'streak-desc') {
+                        return (parseInt(b.dataset.streak) || 0) - (parseInt(a.dataset.streak) || 0);
+                    } else if (val === 'exp-desc') {
+                        return (parseInt(b.dataset.exp) || 0) - (parseInt(a.dataset.exp) || 0);
+                    } else if (val === 'newest') {
+                        return (parseInt(b.dataset.id) || 0) - (parseInt(a.dataset.id) || 0);
+                    }
+                    return (parseInt(a.dataset.id) || 0) - (parseInt(b.dataset.id) || 0);
+                });
+                rows.forEach(r => list.appendChild(r));
+            }
+        });
+
         /* ============ Quick Attribute Filter Pills ============ */
         document.addEventListener('click', function(e) {
             const pill = e.target.closest('.btn-filter-pill');

@@ -366,13 +366,23 @@ require_once __DIR__ . '/../includes/header.php';
             <p class="mb-0">Belum ada misi berjalan. Mulai petualangan baru!</p>
         </div>
     <?php else: ?>
-        <div class="filter-pills-category" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 1.25rem;">
-            <button type="button" class="btn-core btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="filter-pills-category" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 0;">
+                <button type="button" class="btn-core btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
+            </div>
+            <div class="d-flex align-items-center gap-1 ms-auto">
+                <label for="sortQuests" class="text-muted" style="font-size: 0.74rem; white-space: nowrap;"><i class="fas fa-sort me-1"></i>Urutkan:</label>
+                <select id="sortQuests" class="form-select form-select-sm font-mono" style="font-size: 0.76rem; width: auto; padding-right: 1.75rem; background-color: var(--bg-surface-hover); border-color: var(--border-hairline);">
+                    <option value="deadline">Deadline Terdekat</option>
+                    <option value="exp-desc">EXP Terbanyak</option>
+                    <option value="newest">Terbaru</option>
+                </select>
+            </div>
         </div>
 
         <div class="data-list">
@@ -384,7 +394,7 @@ require_once __DIR__ . '/../includes/header.php';
                 $daysLeft = (int) ceil((strtotime($deadline) - strtotime($today)) / 86400);
                 $hpPenalty = hp_penalty_for_quest($quest['difficulty']);
             ?>
-                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>">
+                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>" data-deadline="<?php echo $daysLeft; ?>" data-exp="<?php echo (int) $quest['exp_reward']; ?>" data-id="<?php echo (int) $quest['quest_id']; ?>">
                     <div class="data-main">
                         <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem;">
                             <i class="fas <?php echo $quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'; ?>"></i>

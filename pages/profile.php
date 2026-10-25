@@ -587,7 +587,11 @@ require_once __DIR__ . '/../includes/header.php';
             </button>
         </form>
 
-        <?php if (($user['username'] ?? '') !== 'DemoPlayer'): ?>
+        <?php if (($user['username'] ?? '') === 'DemoPlayer'): ?>
+            <button type="button" class="btn-core btn-outline" disabled title="Fitur Impor Cadangan dinonaktifkan untuk mode Demo" style="opacity: 0.6; cursor: not-allowed;">
+                <i class="fas fa-file-upload text-accent"></i> Impor Cadangan (JSON) <span class="badge-status font-mono ms-1" style="font-size: 0.65rem;">Terkunci</span>
+            </button>
+        <?php else: ?>
             <button type="button" class="btn-core btn-outline" data-bs-toggle="modal" data-bs-target="#importBackupModal">
                 <i class="fas fa-file-upload text-accent"></i> Impor Cadangan (JSON)
             </button>

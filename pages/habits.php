@@ -410,18 +410,29 @@ require_once '../includes/header.php';
             </div>
         </div>
     <?php else: ?>
-        <div class="filter-pills-category" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 1.25rem;">
-            <button type="button" class="btn-core btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
-            <button type="button" class="btn-core btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="filter-pills-category" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 0;">
+                <button type="button" class="btn-core btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Health"><i class="fas fa-heart"></i> Health</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
+                <button type="button" class="btn-core btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
+            </div>
+            <div class="d-flex align-items-center gap-1 ms-auto">
+                <label for="sortHabits" class="text-muted" style="font-size: 0.74rem; white-space: nowrap;"><i class="fas fa-sort me-1"></i>Urutkan:</label>
+                <select id="sortHabits" class="form-select form-select-sm font-mono" style="font-size: 0.76rem; width: auto; padding-right: 1.75rem; background-color: var(--bg-surface-hover); border-color: var(--border-hairline);">
+                    <option value="default">Bawaan</option>
+                    <option value="streak-desc">Streak Tertinggi</option>
+                    <option value="exp-desc">EXP Terbanyak</option>
+                    <option value="newest">Terbaru</option>
+                </select>
+            </div>
         </div>
 
         <div class="data-list">
             <?php foreach ($habits as $habit): ?>
-                <div class="data-row" data-category="<?php echo htmlspecialchars($habit['category']); ?>">
+                <div class="data-row" data-category="<?php echo htmlspecialchars($habit['category']); ?>" data-streak="<?php echo (int) ($habit['streak'] ?? 0); ?>" data-exp="<?php echo (int) $habit['exp_reward']; ?>" data-id="<?php echo (int) $habit['habit_id']; ?>">
                     <div class="data-main">
                         <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $habit['completed_today'] ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem;">
                             <i class="fas <?php echo $habit['completed_today'] ? 'fa-check' : 'fa-circle'; ?>"></i>
