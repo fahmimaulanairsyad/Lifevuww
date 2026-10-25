@@ -68,7 +68,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261025_02" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261025_03" rel="stylesheet">
+    <style>
+        .password-field-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+        .password-field-wrapper .form-control { padding-right: 2.5rem !important; }
+        .btn-toggle-password { position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); background: none !important; background-color: transparent !important; border: none !important; color: var(--text-muted, #71717a) !important; font-size: 0.85rem; cursor: pointer; padding: 0.35rem; line-height: 1; display: flex; align-items: center; justify-content: center; z-index: 2; outline: none !important; box-shadow: none !important; appearance: none; -webkit-appearance: none; }
+        .btn-toggle-password:hover { color: var(--text-primary, #fafafa) !important; }
+    </style>
     <script>
         (function() {
             var isCap = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
@@ -121,9 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 </div>
                 <div class="mb-3">
                     <label for="reg_password" class="form-label">Kata sandi</label>
-                    <div class="password-field-wrapper">
-                        <input type="password" id="reg_password" name="password" class="form-control" required placeholder="••••••••">
-                        <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('reg_password', this)" aria-label="Tampilkan atau sembunyikan kata sandi">
+                    <div class="password-field-wrapper" style="position: relative; display: flex; align-items: center; width: 100%;">
+                        <input type="password" id="reg_password" name="password" class="form-control" required placeholder="••••••••" style="padding-right: 2.5rem !important;">
+                        <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('reg_password', this)" aria-label="Tampilkan atau sembunyikan kata sandi" style="position: absolute; right: 0.6rem; top: 50%; transform: translateY(-50%); background: none !important; border: none !important; color: var(--text-muted, #71717a); cursor: pointer; padding: 0.35rem; display: flex; align-items: center; justify-content: center; z-index: 2;">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>

@@ -544,9 +544,10 @@ a:hover {
     right: 0.6rem;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--text-muted);
+    background: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    color: var(--text-muted) !important;
     font-size: 0.85rem;
     cursor: pointer;
     padding: 0.35rem;
@@ -555,15 +556,20 @@ a:hover {
     align-items: center;
     justify-content: center;
     transition: color 0.15s ease;
+    z-index: 2;
+    outline: none !important;
+    box-shadow: none !important;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .btn-toggle-password:hover {
-    color: var(--text-primary);
+    color: var(--text-primary) !important;
 }
 
 .btn-toggle-password:focus {
-    outline: none;
-    color: var(--accent);
+    outline: none !important;
+    color: var(--accent) !important;
 }
 
 input[type="date"] {
