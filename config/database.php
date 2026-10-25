@@ -103,6 +103,72 @@ if (!function_exists('get_client_ip')) {
     }
 }
 
+if (!function_exists('ensure_demo_user')) {
+    // Memastikan akun demo tersedia dengan data sampel habit & quest
+    function ensure_demo_user(PDO $pdo): int {
+        $demoUsername = 'DemoPlayer';
+        $demoEmail = 'demo_player@example.com';
+
+        $stmt = $pdo->prepare("SELECT user_id FROM users WHERE username = ?");
+        $stmt->execute([$demoUsername]);
+        $existingId = $stmt->fetchColumn();
+
+        if ($existingId) {
+            return (int) $existingId;
+        }
+
+        // Gunakan ID tetap / eksplisit untuk menghindari lock auto-increment
+        $stmtMax = $pdo->query("SELECT COALESCE(MAX(user_id), 0) + 1 FROM users");
+        $targetId = max(999, (int) $stmtMax->fetchColumn());
+
+        // Buat akun demo baru dengan saldo awal & level 5
+        $demoPass = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("
+            INSERT INTO users (user_id, username, password, email, rank, level, exp, hp, max_hp, gold, streak_freeze, last_daily_check)
+            VALUES (?, ?, ?, ?, 'D-Rank Explorer', 5, 450, 90, 100, 125, 1, CURDATE())
+        ");
+        $stmt->execute([$targetId, $demoUsername, $demoPass, $demoEmail]);
+        $userId = $targetId;
+
+        // Tambahkan kebiasaan demo
+        $starters = [
+            ['Membaca 20 Halaman Buku', 'Easy', 'daily', 'Intelligence', 4, 1],
+            ['Workout 30 Menit', 'Medium', 'daily', 'Physical', 6, 0],
+            ['Minum 2.5 Liter Air', 'Easy', 'daily', 'Health', 12, 1],
+            ['Review Pengeluaran Harian', 'Easy', 'daily', 'Wealth', 3, 0],
+            ['Hubungi Teman / Keluarga', 'Easy', 'weekly', 'Social', 1, 0]
+        ];
+
+        $stmtH = $pdo->prepare("
+            INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, streak, completed_today, last_reset)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        ");
+
+        foreach ($starters as $s) {
+            $exp = exp_for_difficulty($s[1]);
+            $stmtH->execute([$userId, $s[0], $s[1], $exp, $s[2], $s[3], $s[4], $s[5]]);
+            $habitId = (int) $pdo->lastInsertId();
+
+            if ($s[5] === 1) {
+                // Catat log untuk habit yang sudah selesai
+                $pdo->prepare("INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward) VALUES (?, ?, CURDATE(), 'Completed', ?)")
+                    ->execute([$habitId, $userId, $exp]);
+                bump_skill_progress($pdo, $userId, $s[3]);
+            }
+        }
+
+        // Tambahkan quest demo
+        $stmtQ = $pdo->prepare("
+            INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category)
+            VALUES (?, ?, ?, CURDATE(), ?, ?, 'In Progress', ?)
+        ");
+        $stmtQ->execute([$userId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence']);
+        $stmtQ->execute([$userId, 'Lari 5K Tanpa Henti', 'Hard', 15, 21, 'Physical']);
+
+        return $userId;
+    }
+}
+
 if (!function_exists('indo_short_date')) {
     // Format tanggal ringkas Bahasa Indonesia: "Sab, 19 Sep" / "19 Sep 2026 • 11:08"
     function indo_short_date($dateKey, $withYearTime = false) {

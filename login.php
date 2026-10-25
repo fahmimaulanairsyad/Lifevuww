@@ -9,7 +9,7 @@ if(isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Simple brute-force protection: max 5 gagal per IP atau per Kombinasi IP+Username per 15 menit.
+// Simple brute-force protection: max 5 gagal per IP per 15 menit.
 function login_is_blocked($pdo, $ip, $username = '') {
     $pdo->prepare("DELETE FROM login_attempts WHERE attempted_at < DATE_SUB(NOW(), INTERVAL 15 MINUTE)")->execute();
     
@@ -23,32 +23,58 @@ function login_is_blocked($pdo, $ip, $username = '') {
     return false;
 }
 
+$username = '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     validate_csrf();
     $ip = get_client_ip();
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
 
-    if (login_is_blocked($pdo, $ip, $username)) {
-        $error = "Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.";
+    // 1-Click Guest/Demo Login handler
+    if (isset($_POST['login_demo'])) {
+        try {
+            $demoId = ensure_demo_user($pdo);
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE user_id = ?");
+            $stmt->execute([$demoId]);
+            $demoUser = $stmt->fetch();
+
+            if ($demoUser) {
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = $demoUser['user_id'];
+                $_SESSION['username'] = $demoUser['username'];
+                $_SESSION['level'] = $demoUser['level'];
+                $_SESSION['last_activity'] = time();
+                header("Location: pages/dashboard.php");
+                exit();
+            }
+        } catch (Exception $e) {
+            error_log("Demo login error: " . $e->getMessage());
+            $error = "Gagal memuat akun demo. Silakan coba lagi.";
+        }
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
 
-        if ($user && password_verify($password, $user['password'])) {
-            // Catatan: percobaan gagal TIDAK dihapus saat login sukses. Kalau dihapus,
-            // penyerang cukup login ke akun miliknya sendiri di sela tebakan untuk mereset limit.
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $user['user_id'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['level'] = $user['level'];
-            $_SESSION['last_activity'] = time();
-            header("Location: pages/dashboard.php");
-            exit();
+        if (login_is_blocked($pdo, $ip, $username)) {
+            $error = "Terlalu banyak percobaan gagal. Coba lagi dalam 15 menit.";
         } else {
-            $pdo->prepare("INSERT INTO login_attempts (ip, attempted_at) VALUES (?, NOW())")->execute([$ip]);
-            $error = "Nama pengguna atau kata sandi salah";
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+            $stmt->execute([$username]);
+            $user = $stmt->fetch();
+
+            if ($user && password_verify($password, $user['password'])) {
+                // Catatan: percobaan gagal TIDAK dihapus saat login sukses. Kalau dihapus,
+                // penyerang cukup login ke akun miliknya sendiri di sela tebakan untuk mereset limit.
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['username'] = $user['username'];
+                $_SESSION['level'] = $user['level'];
+                $_SESSION['last_activity'] = time();
+                header("Location: pages/dashboard.php");
+                exit();
+            } else {
+                $pdo->prepare("INSERT INTO login_attempts (ip, attempted_at) VALUES (?, NOW())")->execute([$ip]);
+                $error = "Nama pengguna atau kata sandi salah";
+            }
         }
     }
 }
@@ -60,6 +86,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Masuk - Lifevuww</title>
+    <meta name="description" content="Lifevuww adalah platform gamified habit tracker berbasis RPG. Bangun kebiasaan positif, tingkatkan level karaktermu, dan capai potensi terbaikmu.">
+    
+    <!-- OpenGraph & Social Cards -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://lifevuww.42web.io/login.php">
+    <meta property="og:title" content="Lifevuww - Gamified Habit Tracker RPG">
+    <meta property="og:description" content="Ubah rutinitas harianmu menjadi petualangan RPG yang seru dan terukur.">
+    <meta property="og:image" content="assets/images/logo.svg">
+    <meta name="twitter:card" content="summary">
+
     <!-- Favicon -->
     <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
     <!-- PWA -->
@@ -69,9 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=7" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
+    <link href="assets/css/style.css?v=8" rel="stylesheet">
     <script>
         (function() {
             var isCap = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
@@ -80,6 +118,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             if (isMobile) { root.classList.add('is-mobile'); } else { root.classList.add('is-desktop'); }
             if (isCap) { root.classList.add('is-apk'); }
         })();
+
+        // Register Service Worker from public page for seamless install
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js').catch(function(err) {
+                    console.warn('SW registration failed:', err);
+                });
+            });
+        }
     </script>
 </head>
 <body style="background-color: var(--bg-base); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem;">
@@ -88,34 +135,75 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="text-center mb-4">
             <img src="assets/images/logo.svg" alt="Lifevuww Logo" style="width: 44px; height: 44px; margin-bottom: 1rem;">
             <h1 style="font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em;">Selamat Datang di Lifevuww</h1>
-            <p class="text-muted" style="font-size: 0.82rem;">Masuk untuk mengakses sistem progres hidupmu</p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">Masuk untuk mengakses sistem progres hidupmu</p>
         </div>
 
         <div class="bento-panel p-4">
             <?php if (isset($error)): ?>
-                <div class="p-2 mb-3 text-center" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
+                <div class="p-2 mb-3 text-center" role="alert" aria-live="assertive" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
                     <?php echo htmlspecialchars($error); ?>
                 </div>
             <?php endif; ?>
 
-            <form method="POST">
+            <form method="POST" id="loginForm">
                 <?php echo csrf_field(); ?>
                 <div class="mb-3">
                     <label for="login_username" class="form-label">Nama pengguna</label>
-                    <input type="text" id="login_username" name="username" class="form-control" required autofocus placeholder="Masukkan nama penggunamu">
+                    <input type="text" id="login_username" name="username" class="form-control" required autofocus placeholder="Masukkan nama penggunamu" value="<?php echo htmlspecialchars($username); ?>">
                 </div>
                 <div class="mb-4">
                     <label for="login_password" class="form-label">Kata sandi</label>
-                    <input type="password" id="login_password" name="password" class="form-control" required placeholder="••••••••">
+                    <div class="password-field-wrapper">
+                        <input type="password" id="login_password" name="password" class="form-control" required placeholder="••••••••">
+                        <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('login_password', this)" aria-label="Tampilkan atau sembunyikan kata sandi">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
                 </div>
-                <button type="submit" class="btn-core btn-primary w-100" style="padding: 0.65rem;">Masuk</button>
+                <button type="submit" id="btnSubmitLogin" class="btn-core btn-primary w-100" style="padding: 0.65rem;">
+                    <span class="btn-text">Masuk</span>
+                </button>
+            </form>
+
+            <div class="d-flex align-items-center my-3" style="gap: 0.75rem;">
+                <hr style="flex: 1; border-color: var(--border-hairline); margin: 0;">
+                <span style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">atau</span>
+                <hr style="flex: 1; border-color: var(--border-hairline); margin: 0;">
+            </div>
+
+            <!-- 1-Click Demo Login -->
+            <form method="POST" id="demoLoginForm">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="login_demo" value="1">
+                <button type="submit" class="btn-core btn-outline w-100" style="padding: 0.6rem; font-size: 0.82rem;">
+                    <i class="fas fa-play text-accent me-1"></i> Coba Akun Demo (Guest Mode)
+                </button>
             </form>
         </div>
 
-        <p class="text-center mt-3" style="color: var(--text-muted); font-size: 0.8rem;">
+        <p class="text-center mt-3" style="color: var(--text-secondary); font-size: 0.82rem;">
             Belum punya akun? <a href="register.php" style="color: var(--text-primary); font-weight: 500;">Daftar di sini</a>
         </p>
     </div>
 
+    <script>
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function() {
+            const btn = document.getElementById('btnSubmitLogin');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Memproses...';
+        });
+    </script>
 </body>
 </html>

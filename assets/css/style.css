@@ -448,9 +448,47 @@ a:hover {
 
 .form-label {
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     font-weight: 500;
     margin-bottom: 0.35rem;
+}
+
+/* Password with Toggle Wrapper */
+.password-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-field-wrapper .form-control {
+    padding-right: 2.5rem !important;
+}
+
+.btn-toggle-password {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0.35rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease;
+}
+
+.btn-toggle-password:hover {
+    color: var(--text-primary);
+}
+
+.btn-toggle-password:focus {
+    outline: none;
+    color: var(--accent);
 }
 
 input[type="date"] {
