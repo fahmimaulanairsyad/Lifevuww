@@ -41,7 +41,9 @@ try {
         $new = $_POST['new_password'] ?? '';
         $conf = $_POST['confirm_password'] ?? '';
 
-        if (!password_verify($cur, $user['password'])) {
+        if (($user['username'] ?? '') === 'DemoPlayer') {
+            $passError = "Akun Demo bersifat publik untuk peninjau portofolio, kata sandi tidak dapat diubah.";
+        } elseif (!password_verify($cur, $user['password'])) {
             $passError = "Kata sandi saat ini salah.";
         } elseif (strlen($new) < 8) {
             $passError = "Kata sandi baru minimal 8 karakter.";
@@ -112,7 +114,9 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
         validate_csrf();
         $confirmPassword = $_POST['confirm_delete_password'] ?? '';
-        if (!password_verify($confirmPassword, $user['password'])) {
+        if (($user['username'] ?? '') === 'DemoPlayer') {
+            $deleteError = "Akun Demo tidak dapat dihapus.";
+        } elseif (!password_verify($confirmPassword, $user['password'])) {
             $deleteError = "Kata sandi salah. Penghapusan akun dibatalkan demi keamanan.";
         } else {
             $uploadDir = "../assets/images/";
@@ -356,7 +360,10 @@ require_once __DIR__ . '/../includes/header.php';
                 </button>
             </div>
             <div class="text-muted mt-1" style="font-size: 0.72rem;">Paling baik setelah Lifevuww dipasang ke layar utama.</div>
-            <div class="text-muted font-mono mt-1" id="bridge-status" style="font-size: 0.68rem;">bridge:…</div>
+            <details class="mt-2" style="font-size: 0.72rem;">
+                <summary class="text-muted" style="cursor: pointer;"><i class="fas fa-terminal me-1"></i> Info Teknis & Diagnostik</summary>
+                <div class="text-muted font-mono p-2 mt-1" id="bridge-status" style="font-size: 0.68rem; background: var(--bg-surface-hover); border-radius: var(--radius); border: 1px solid var(--border-hairline);">bridge:…</div>
+            </details>
         </div>
     </div>
 
@@ -398,26 +405,33 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="profile.php">
-        <?php echo csrf_field(); ?>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label" for="current_password">Kata sandi saat ini</label>
-                <input type="password" class="form-control" id="current_password" name="current_password" required autocomplete="current-password">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="new_password">Kata sandi baru (min. 8)</label>
-                <input type="password" class="form-control" id="new_password" name="new_password" required autocomplete="new-password">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label" for="confirm_password">Ulangi kata sandi baru</label>
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required autocomplete="new-password">
-            </div>
+    <?php if (($user['username'] ?? '') === 'DemoPlayer'): ?>
+        <div class="p-3 text-center" style="background-color: var(--bg-surface-hover); border-radius: var(--radius); border: 1px solid var(--border-hairline);">
+            <i class="fas fa-info-circle text-accent me-1"></i>
+            <span style="font-size: 0.85rem; color: var(--text-secondary);">Akun Demo bersifat publik untuk peninjau portofolio. Kata sandi dikunci dan tidak dapat diubah.</span>
         </div>
-        <div class="mt-3">
-            <button type="submit" name="change_password" value="1" class="btn-core btn-primary">Ganti Kata Sandi</button>
-        </div>
-    </form>
+    <?php else: ?>
+        <form method="POST" action="profile.php">
+            <?php echo csrf_field(); ?>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="current_password">Kata sandi saat ini</label>
+                    <input type="password" class="form-control" id="current_password" name="current_password" required autocomplete="current-password">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="new_password">Kata sandi baru (min. 8)</label>
+                    <input type="password" class="form-control" id="new_password" name="new_password" required autocomplete="new-password">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="confirm_password">Ulangi kata sandi baru</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required autocomplete="new-password">
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" name="change_password" value="1" class="btn-core btn-primary">Ganti Kata Sandi</button>
+            </div>
+        </form>
+    <?php endif; ?>
 </div>
 
 <!-- Privasi & Kontrol Data (UU PDP) -->
@@ -444,9 +458,15 @@ require_once __DIR__ . '/../includes/header.php';
             </button>
         </form>
 
-        <button type="button" class="btn-core btn-ghost text-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
-            <i class="fas fa-trash-alt"></i> Hapus Akun Permanen
-        </button>
+        <?php if (($user['username'] ?? '') === 'DemoPlayer'): ?>
+            <span class="text-muted d-inline-flex align-items-center" style="font-size: 0.78rem;">
+                <i class="fas fa-lock me-1"></i> Fitur hapus akun dinonaktifkan untuk mode Demo.
+            </span>
+        <?php else: ?>
+            <button type="button" class="btn-core btn-ghost text-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                <i class="fas fa-trash-alt"></i> Hapus Akun Permanen
+            </button>
+        <?php endif; ?>
     </div>
 </div>
 

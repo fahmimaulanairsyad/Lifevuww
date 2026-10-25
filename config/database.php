@@ -114,7 +114,58 @@ if (!function_exists('ensure_demo_user')) {
         $existingId = $stmt->fetchColumn();
 
         if ($existingId) {
-            return (int) $existingId;
+            $demoId = (int) $existingId;
+            // Cek apakah quest atau habit sudah habis/dihapus pengunjung sebelumnya
+            $stmtHabitCount = $pdo->prepare("SELECT COUNT(*) FROM habits WHERE user_id = ?");
+            $stmtHabitCount->execute([$demoId]);
+            $habitCount = (int) $stmtHabitCount->fetchColumn();
+
+            $stmtQuestCount = $pdo->prepare("SELECT COUNT(*) FROM quests WHERE user_id = ? AND status = 'In Progress'");
+            $stmtQuestCount->execute([$demoId]);
+            $questCount = (int) $stmtQuestCount->fetchColumn();
+
+            // Jika kebiasaan < 3 atau quest aktif < 1, re-seed otomatis agar pengunjung baru selalu mendapati data lengkap
+            if ($habitCount < 3 || $questCount < 1) {
+                // Pulihkan status vitals
+                $pdo->prepare("UPDATE users SET hp = 90, max_hp = 100, gold = GREATEST(125, gold), streak_freeze = GREATEST(1, streak_freeze) WHERE user_id = ?")
+                    ->execute([$demoId]);
+
+                if ($habitCount < 3) {
+                    $pdo->prepare("DELETE FROM habit_logs WHERE user_id = ?")->execute([$demoId]);
+                    $pdo->prepare("DELETE FROM habits WHERE user_id = ?")->execute([$demoId]);
+                    $starters = [
+                        ['Membaca 20 Halaman Buku', 'Easy', 'daily', 'Intelligence', 4, 1],
+                        ['Workout 30 Menit', 'Medium', 'daily', 'Physical', 6, 0],
+                        ['Minum 2.5 Liter Air', 'Easy', 'daily', 'Health', 12, 1],
+                        ['Review Pengeluaran Harian', 'Easy', 'daily', 'Wealth', 3, 0],
+                        ['Hubungi Teman / Keluarga', 'Easy', 'weekly', 'Social', 1, 0]
+                    ];
+                    $stmtH = $pdo->prepare("
+                        INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, streak, completed_today, last_reset)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                    ");
+                    foreach ($starters as $s) {
+                        $exp = exp_for_difficulty($s[1]);
+                        $stmtH->execute([$demoId, $s[0], $s[1], $exp, $s[2], $s[3], $s[4], $s[5]]);
+                        $habitId = (int) $pdo->lastInsertId();
+                        if ($s[5] === 1) {
+                            $pdo->prepare("INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward) VALUES (?, ?, CURDATE(), 'Completed', ?)")
+                                ->execute([$habitId, $demoId, $exp]);
+                            bump_skill_progress($pdo, $demoId, $s[3]);
+                        }
+                    }
+                }
+
+                if ($questCount < 1) {
+                    $stmtQ = $pdo->prepare("
+                        INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category)
+                        VALUES (?, ?, ?, CURDATE(), ?, ?, 'In Progress', ?)
+                    ");
+                    $stmtQ->execute([$demoId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence']);
+                    $stmtQ->execute([$demoId, 'Lari 5K Tanpa Henti', 'Hard', 15, 21, 'Physical']);
+                }
+            }
+            return $demoId;
         }
 
         // Gunakan ID tetap / eksplisit untuk menghindari lock auto-increment
@@ -267,7 +318,10 @@ if (!function_exists('enforce_login')) {
 
         if (isset($pdo)) {
             try {
-                run_daily_rollover($pdo, (int) $_SESSION['user_id']);
+                $rolloverRes = run_daily_rollover($pdo, (int) $_SESSION['user_id']);
+                if (!empty($rolloverRes['rolled'])) {
+                    $_SESSION['morning_report'] = $rolloverRes;
+                }
             } catch (Exception $e) {
                 error_log("Rollover failed for user " . (int) $_SESSION['user_id'] . ": " . $e->getMessage());
             }

@@ -69,10 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Tambah Reward — harga minimal 1 Gold (cegah cost negatif/nol)
+    // Tambah Reward — harga minimal 1 Gold, maksimal 99.999 Gold
     if (isset($_POST['add_reward'])) {
         $name = trim($_POST['reward_name'] ?? '');
-        $cost = max(1, intval($_POST['cost'] ?? 0));
+        $cost = min(99999, max(1, intval($_POST['cost'] ?? 0)));
         $icon = $_POST['icon'] ?? 'fa-gift';
 
         if ($name === '') {
@@ -214,7 +214,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="potion_type" value="minor">
-                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 25 || $isHpFull) ? 'disabled' : ''; ?>>
+                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 25 || $isHpFull) ? 'disabled' : ''; ?> onclick="return confirm('Beli Ramuan HP Minor seharga 25 Gold?');">
                         <?php if ($isHpFull): ?>
                             <i class="fas fa-check text-accent me-1"></i> HP Penuh
                         <?php else: ?>
@@ -240,7 +240,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="potion_type" value="full">
-                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 75 || $isHpFull) ? 'disabled' : ''; ?>>
+                    <button type="submit" name="buy_potion" class="btn-core btn-outline w-100 font-mono" <?php echo ($userGold < 75 || $isHpFull) ? 'disabled' : ''; ?> onclick="return confirm('Beli Elixir HP Penuh seharga 75 Gold?');">
                         <?php if ($isHpFull): ?>
                             <i class="fas fa-check text-accent me-1"></i> HP Penuh
                         <?php else: ?>
@@ -265,7 +265,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 </div>
                 <form method="POST" action="shop.php" class="m-0">
                     <?php echo csrf_field(); ?>
-                    <button type="submit" name="buy_freeze" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < 50 ? 'disabled' : ''; ?>>
+                    <button type="submit" name="buy_freeze" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < 50 ? 'disabled' : ''; ?> onclick="return confirm('Beli Perisai Streak Freeze seharga 50 Gold?');">
                         <i class="fas fa-coins text-warning me-1"></i> 50 Gold
                     </button>
                 </form>
@@ -305,7 +305,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                         <form method="POST" action="shop.php">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="reward_id" value="<?php echo $reward['reward_id']; ?>">
-                            <button type="submit" name="buy_reward" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < $reward['cost'] ? 'disabled' : ''; ?>>
+                            <button type="submit" name="buy_reward" class="btn-core btn-outline w-100 font-mono" <?php echo $userGold < $reward['cost'] ? 'disabled' : ''; ?> onclick="return confirm('Tukar <?php echo number_format($reward['cost']); ?> Gold untuk hadiah ini?');">
                                 <i class="fas fa-coins text-warning mx-1"></i> <?php echo number_format($reward['cost']); ?> Gold
                             </button>
                         </form>
@@ -380,7 +380,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                     <div class="row g-2">
                         <div class="col-6">
                             <label for="add_rew_cost" class="form-label">Harga (Gold)</label>
-                            <input type="number" class="form-control font-mono" id="add_rew_cost" name="cost" min="1" placeholder="100" required>
+                            <input type="number" class="form-control font-mono" id="add_rew_cost" name="cost" min="1" max="99999" placeholder="100" required>
                         </div>
                         <div class="col-6">
                             <label for="add_rew_icon" class="form-label">Ikon</label>

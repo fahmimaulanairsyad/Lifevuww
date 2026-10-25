@@ -114,6 +114,48 @@ try {
     </div>
 </div>
 
+<?php if (isset($_SESSION['morning_report'])): 
+    $mReport = $_SESSION['morning_report'];
+    unset($_SESSION['morning_report']);
+?>
+    <div class="alert alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between p-3" role="status" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius);">
+        <div class="d-flex align-items-center gap-3">
+            <?php if (!empty($mReport['damage']) && $mReport['damage'] > 0): ?>
+                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-heart-broken"></i>
+                </div>
+                <div>
+                    <strong style="font-size: 0.88rem; color: var(--text-primary); display: block;">Laporan Hari Baru</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        Ada rutinitas kemarin yang terlewat. Kamu menerima penalti <span class="text-danger font-mono">-<?php echo (int) $mReport['damage']; ?> HP</span>.
+                    </div>
+                </div>
+            <?php elseif (!empty($mReport['frozen'])): ?>
+                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: var(--status-info-dim); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--status-info); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-snowflake"></i>
+                </div>
+                <div>
+                    <strong style="font-size: 0.88rem; color: var(--text-primary); display: block;">Laporan Hari Baru</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        Perisai Streak Freeze berhasil melindungi HP dan streak rutinitasmu dari hari kemarin!
+                    </div>
+                </div>
+            <?php else: ?>
+                <div style="width: 32px; height: 32px; border-radius: 50%; background-color: var(--accent-dim); border: 1px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <div>
+                    <strong style="font-size: 0.88rem; color: var(--text-primary); display: block;">Laporan Hari Baru</strong>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                        Selamat datang kembali! Seluruh rutinitas kemarin berhasil kamu tuntaskan tanpa penalti.
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+    </div>
+<?php endif; ?>
+
 <!-- Primary Tactical Console -->
 <div class="row g-3 mb-4">
     <!-- Character Core Status -->

@@ -130,6 +130,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Undo penyelesaian quest
+    if (isset($_POST['undo_quest'])) {
+        $questId = intval($_POST['quest_id'] ?? 0);
+
+        if ($questId > 0) {
+            try {
+                $pdo->beginTransaction();
+
+                // Pastikan quest berstatus Completed dan milik user ini
+                $stmt = $pdo->prepare("SELECT quest_name, exp_reward, category FROM quests WHERE quest_id = ? AND user_id = ? AND status = 'Completed' FOR UPDATE");
+                $stmt->execute([$questId, $_SESSION['user_id']]);
+                $quest = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$quest) {
+                    $pdo->rollBack();
+                    header("Location: quests.php");
+                    exit();
+                }
+
+                // Ambil log quest penyelesaian terakhir
+                $stmtLog = $pdo->prepare("
+                    SELECT log_id, exp_reward 
+                    FROM quest_logs 
+                    WHERE quest_id = ? AND user_id = ? AND status = 'Completed'
+                    ORDER BY log_id DESC LIMIT 1
+                ");
+                $stmtLog->execute([$questId, $_SESSION['user_id']]);
+                $log = $stmtLog->fetch(PDO::FETCH_ASSOC);
+
+                $revertExp = $log ? (int) $log['exp_reward'] : (int) $quest['exp_reward'];
+                $revertGold = $revertExp * 2;
+
+                // Cek apakah gold mencukupi (anti-exploit)
+                $stmtUser = $pdo->prepare("SELECT exp, gold FROM users WHERE user_id = ? FOR UPDATE");
+                $stmtUser->execute([$_SESSION['user_id']]);
+                $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+                if (!$userData || (int)$userData['gold'] < $revertGold) {
+                    $pdo->rollBack();
+                    $_SESSION['quest_error'] = "Aksi tidak bisa dibatalkan karena Gold reward misi sudah terpakai.";
+                    header("Location: quests.php?error=gold_used");
+                    exit();
+                }
+
+                $curExp = (int) $userData['exp'];
+                $newExp = max(0, $curExp - $revertExp);
+                $newGold = (int)$userData['gold'] - $revertGold;
+                $newLevel = calculateLevel($newExp);
+
+                // Kembalikan status misi menjadi 'In Progress'
+                $pdo->prepare("UPDATE quests SET status = 'In Progress' WHERE quest_id = ? AND user_id = ?")
+                    ->execute([$questId, $_SESSION['user_id']]);
+
+                // Kurangi EXP, Gold, dan perbarui level
+                $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ? WHERE user_id = ?")
+                    ->execute([$newExp, $newGold, $newLevel, $_SESSION['user_id']]);
+
+                // Revert progress skill
+                revert_skill_progress($pdo, $_SESSION['user_id'], $quest['category']);
+
+                // Hapus log penyelesaian
+                if ($log) {
+                    $pdo->prepare("DELETE FROM quest_logs WHERE log_id = ?")->execute([$log['log_id']]);
+                }
+
+                $pdo->commit();
+                header("Location: quests.php?success=undone");
+                exit();
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                error_log("Quest undo error: " . $e->getMessage());
+                die("Error undoing quest.");
+            }
+        }
+    }
+
     if (isset($_POST['delete_quest'])) {
         $questId = $_POST['quest_id'] ?? null;
 
@@ -181,11 +259,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
-// Ambil misi 'In Progress' (setelah semua handler POST, sebelum ada output)
+// Ambil misi 'In Progress' dan misi selesai hari ini (setelah semua handler POST, sebelum ada output)
 try {
     $stmt = $pdo->prepare("SELECT * FROM quests WHERE user_id = ? AND status = 'In Progress'");
     $stmt->execute([$_SESSION['user_id']]);
     $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Ambil misi yang baru diselesaikan hari ini untuk opsi Undo
+    $stmtDone = $pdo->prepare("
+        SELECT q.*, ql.completed_at, ql.log_id, ql.exp_reward as logged_exp 
+        FROM quests q 
+        JOIN quest_logs ql ON q.quest_id = ql.quest_id 
+        WHERE q.user_id = ? AND q.status = 'Completed' AND DATE(ql.completed_at) = CURDATE()
+        ORDER BY ql.completed_at DESC
+    ");
+    $stmtDone->execute([$_SESSION['user_id']]);
+    $completedQuests = $stmtDone->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     error_log("Error fetching quests: " . $e->getMessage());
     die("Error loading quests. Please try again later.");
@@ -251,10 +340,22 @@ require_once __DIR__ . '/../includes/header.php';
     </button>
 </div>
 
-<?php if (isset($_GET['error']) && $_GET['error'] === 'validation'): ?>
-    <div class="alert alert-danger mb-3 d-flex align-items-center" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        <div>Input misi tidak valid. Periksa kembali nama misi, tingkat kesulitan, dan kategori.</div>
+<?php if (isset($_GET['error'])): ?>
+    <?php if ($_GET['error'] === 'validation'): ?>
+        <div class="alert alert-danger mb-3 d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <div>Input misi tidak valid. Periksa kembali nama misi, tingkat kesulitan, dan kategori.</div>
+        </div>
+    <?php elseif ($_GET['error'] === 'gold_used'): ?>
+        <div class="alert alert-danger mb-3 d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <div><?php echo htmlspecialchars($_SESSION['quest_error'] ?? 'Aksi tidak bisa dibatalkan karena Gold reward misi sudah terpakai.'); unset($_SESSION['quest_error']); ?></div>
+        </div>
+    <?php endif; ?>
+<?php elseif (isset($_GET['success']) && $_GET['success'] === 'undone'): ?>
+    <div class="alert alert-info mb-3 d-flex align-items-center" role="status">
+        <i class="fas fa-undo me-2"></i>
+        <div>Penyelesaian misi berhasil dibatalkan dan status misi kembali berjalan.</div>
     </div>
 <?php endif; ?>
 
@@ -372,5 +473,46 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     <?php endif; ?>
 </div>
+
+<?php if (!empty($completedQuests)): ?>
+<div class="panel-header mt-4 mb-2" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem;">
+    <h3 class="panel-title" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
+        <i class="fas fa-check-double text-accent me-1"></i> Misi Diselesaikan Hari Ini
+    </h3>
+</div>
+
+<div class="bento-panel">
+    <div class="data-list">
+        <?php foreach ($completedQuests as $done): ?>
+            <div class="data-row">
+                <div class="data-main">
+                    <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 0.8rem;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div>
+                        <div class="data-title" style="text-decoration: line-through; color: var(--text-muted);"><?php echo htmlspecialchars($done['quest_name']); ?></div>
+                        <div class="data-meta">
+                            <span class="badge-status"><?php echo htmlspecialchars($done['category']); ?></span>
+                            <span class="badge-status accent font-mono"><i class="fas fa-check"></i> Tuntas Hari Ini</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-actions">
+                    <div class="font-mono text-accent me-2" style="font-size: 0.82rem;">
+                        +<?php echo $done['logged_exp'] ?? $done['exp_reward']; ?> EXP
+                    </div>
+                    <form method="POST" action="quests.php" style="margin: 0;">
+                        <?php echo csrf_field(); ?>
+                        <input type="hidden" name="quest_id" value="<?php echo $done['quest_id']; ?>">
+                        <button type="submit" name="undo_quest" value="1" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Batalkan penyelesaian misi">
+                            <i class="fas fa-undo me-1"></i> Batalkan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <?php require_once("../includes/footer.php"); ?>
