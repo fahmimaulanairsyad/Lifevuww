@@ -427,7 +427,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <form method="POST" action="quests.php" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
-                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-confirm="Hapus misi ini secara permanen?" data-confirm-title="Hapus Misi">
+                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-confirm="Hapus misi ini secara permanen?" data-confirm-title="Hapus Misi" data-confirm-variant="danger" data-confirm-btn="Hapus">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -480,6 +480,11 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             <?php endforeach; ?>
         </div>
+
+        <div class="filter-empty-state text-center py-4 text-muted" style="display: none;">
+            <i class="fas fa-filter fa-2x mb-2" style="opacity: 0.3;"></i>
+            <p class="mb-0" style="font-size: 0.85rem;">Tidak ada misi berjalan di kategori <span class="filter-empty-cat-name text-accent font-mono"></span>.</p>
+        </div>
     <?php endif; ?>
 </div>
 
@@ -513,7 +518,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <form method="POST" action="quests.php" style="margin: 0;">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="quest_id" value="<?php echo $done['quest_id']; ?>">
-                        <button type="submit" name="undo_quest" value="1" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Batalkan penyelesaian misi" data-confirm="Batalkan penyelesaian misi ini? EXP dan Gold reward akan ditarik kembali." data-confirm-title="Batalkan Misi">
+                        <button type="submit" name="undo_quest" value="1" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.65rem; font-size: 0.78rem;" title="Batalkan penyelesaian misi" data-confirm="Batalkan penyelesaian misi ini? EXP dan Gold reward akan ditarik kembali." data-confirm-title="Batalkan Misi" data-confirm-variant="warning" data-confirm-btn="Ya, Batalkan">
                             <i class="fas fa-undo me-1"></i> Batalkan
                         </button>
                     </form>

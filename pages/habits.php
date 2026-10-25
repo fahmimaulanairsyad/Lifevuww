@@ -464,7 +464,7 @@ require_once '../includes/header.php';
                                 <?php echo csrf_field(); ?>
                                 <input type="hidden" name="undo_habit" value="1">
                                 <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                                <button type="submit" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.55rem;" title="Batalkan penyelesaian hari ini" aria-label="Batalkan penyelesaian <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Batalkan penyelesaian kebiasaan ini? EXP dan Gold akan ditarik kembali." data-confirm-title="Batalkan Kebiasaan">
+                                <button type="submit" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.55rem;" title="Batalkan penyelesaian hari ini" aria-label="Batalkan penyelesaian <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Batalkan penyelesaian kebiasaan ini? EXP dan Gold akan ditarik kembali." data-confirm-title="Batalkan Kebiasaan" data-confirm-variant="warning" data-confirm-btn="Ya, Batalkan">
                                     <i class="fas fa-undo"></i>
                                 </button>
                             </form>
@@ -486,7 +486,7 @@ require_once '../includes/header.php';
                         <form method="POST" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Hapus kebiasaan ini secara permanen?" data-confirm-title="Hapus Kebiasaan">
+                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Hapus kebiasaan ini secara permanen?" data-confirm-title="Hapus Kebiasaan" data-confirm-variant="danger" data-confirm-btn="Hapus">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
@@ -542,6 +542,11 @@ require_once '../includes/header.php';
                     </div>
                 </div>
             <?php endforeach; ?>
+        </div>
+
+        <div class="filter-empty-state text-center py-4 text-muted" style="display: none;">
+            <i class="fas fa-filter fa-2x mb-2" style="opacity: 0.3;"></i>
+            <p class="mb-0" style="font-size: 0.85rem;">Tidak ada kebiasaan di kategori <span class="filter-empty-cat-name text-accent font-mono"></span>.</p>
         </div>
     <?php endif; ?>
 </div>

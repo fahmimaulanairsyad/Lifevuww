@@ -134,8 +134,8 @@ function status_badge($status) {
     </div>
 
     <!-- Heatmap Grid -->
-    <div class="heatmap-wrapper" style="overflow-x: auto; padding-bottom: 0.25rem;">
-        <div style="display: flex; gap: 5px; flex-wrap: wrap; max-width: 100%;">
+    <div class="heatmap-wrapper" id="heatmapWrapper" style="padding-bottom: 0.35rem;">
+        <div class="heatmap-track">
             <?php foreach ($heatDays as $hd): 
                 $cnt = $hd['count'];
                 $bg = 'var(--bg-surface-hover)';
@@ -159,6 +159,14 @@ function status_badge($status) {
             <?php endforeach; ?>
         </div>
     </div>
+    <script>
+        (function() {
+            const hw = document.getElementById('heatmapWrapper');
+            if (hw && hw.scrollWidth > hw.clientWidth) {
+                hw.scrollLeft = hw.scrollWidth;
+            }
+        })();
+    </script>
 
     <!-- Legend -->
     <div class="d-flex justify-content-between align-items-center mt-3 pt-2" style="border-top: 1px solid var(--border-hairline); font-size: 0.72rem; color: var(--text-muted);">

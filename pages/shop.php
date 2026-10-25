@@ -289,7 +289,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                     <form method="POST" action="shop.php" style="position: absolute; top: 0.75rem; right: 0.75rem;">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="reward_id" value="<?php echo $reward['reward_id']; ?>">
-                        <button type="submit" name="delete_reward" class="btn-core btn-ghost p-1" title="Hapus hadiah" aria-label="Hapus hadiah <?php echo htmlspecialchars($reward['reward_name']); ?>">
+                        <button type="submit" name="delete_reward" class="btn-core btn-ghost p-1" title="Hapus hadiah" aria-label="Hapus hadiah <?php echo htmlspecialchars($reward['reward_name']); ?>" data-confirm="Hapus hadiah '<?php echo htmlspecialchars($reward['reward_name']); ?>'?" data-confirm-title="Hapus Hadiah" data-confirm-variant="danger" data-confirm-btn="Hapus">
                             <i class="fas fa-times" style="font-size: 0.75rem;"></i>
                         </button>
                     </form>

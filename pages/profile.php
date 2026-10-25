@@ -138,6 +138,94 @@ try {
         exit();
     }
 
+    // Handle import / restore data (JSON) - Hak Portabilitas Data (UU PDP)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_data'])) {
+        validate_csrf();
+        if (($user['username'] ?? '') === 'DemoPlayer') {
+            $error = "Akun Demo bersifat publik dan tidak dapat melakukan pemulihan data.";
+        } elseif (!isset($_FILES['backup_file']) || $_FILES['backup_file']['error'] !== UPLOAD_ERR_OK) {
+            $error = "Gagal mengunggah berkas backup JSON.";
+        } elseif ($_FILES['backup_file']['size'] > 5 * 1024 * 1024) {
+            $error = "Ukuran berkas melebihi batas maksimal (5MB).";
+        } else {
+            $content = file_get_contents($_FILES['backup_file']['tmp_name']);
+            $data = json_decode($content, true);
+            if (!$data || !is_array($data) || ($data['app'] ?? '') !== 'Lifevuww') {
+                $error = "Format berkas tidak valid. Harap unggah berkas cadangan resmi Lifevuww (.json).";
+            } else {
+                $pdo->beginTransaction();
+                try {
+                    $importedHabits = 0;
+                    $importedQuests = 0;
+                    $validCats = array_keys(game_categories());
+                    $validDiffs = array_keys(game_difficulties());
+                    $validPeriods = ['daily', 'weekly', 'monthly'];
+
+                    // Restore habits
+                    if (!empty($data['habits']) && is_array($data['habits'])) {
+                        $stmtCheckH = $pdo->prepare("SELECT COUNT(*) FROM habits WHERE user_id = ? AND habit_name = ?");
+                        $stmtInsH = $pdo->prepare("
+                            INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, streak, completed_today, last_reset)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())
+                        ");
+                        foreach ($data['habits'] as $h) {
+                            $name = trim($h['habit_name'] ?? '');
+                            $diff = $h['difficulty'] ?? 'Easy';
+                            $cat = $h['category'] ?? 'Health';
+                            $period = strtolower($h['reset_period'] ?? 'daily');
+                            $streak = max(0, intval($h['streak'] ?? 0));
+
+                            if ($name === '' || !in_array($diff, $validDiffs, true) || !in_array($cat, $validCats, true) || !in_array($period, $validPeriods, true)) {
+                                continue;
+                            }
+
+                            $stmtCheckH->execute([$_SESSION['user_id'], $name]);
+                            if ($stmtCheckH->fetchColumn() == 0) {
+                                $exp = exp_for_difficulty($diff);
+                                $stmtInsH->execute([$_SESSION['user_id'], $name, $diff, $exp, $period, $cat, $streak]);
+                                $importedHabits++;
+                            }
+                        }
+                    }
+
+                    // Restore quests
+                    if (!empty($data['quests']) && is_array($data['quests'])) {
+                        $stmtCheckQ = $pdo->prepare("SELECT COUNT(*) FROM quests WHERE user_id = ? AND quest_name = ?");
+                        $stmtInsQ = $pdo->prepare("
+                            INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category)
+                            VALUES (?, ?, ?, CURDATE(), ?, ?, 'In Progress', ?)
+                        ");
+                        foreach ($data['quests'] as $q) {
+                            $name = trim($q['quest_name'] ?? '');
+                            $diff = $q['difficulty'] ?? 'Easy';
+                            $cat = $q['category'] ?? 'Intelligence';
+                            $dur = max(1, intval($q['duration_days'] ?? 7));
+
+                            if ($name === '' || !in_array($diff, $validDiffs, true) || !in_array($cat, $validCats, true)) {
+                                continue;
+                            }
+
+                            $stmtCheckQ->execute([$_SESSION['user_id'], $name]);
+                            if ($stmtCheckQ->fetchColumn() == 0) {
+                                $exp = exp_for_difficulty($diff);
+                                $stmtInsQ->execute([$_SESSION['user_id'], $name, $diff, $exp, $dur, $cat]);
+                                $importedQuests++;
+                            }
+                        }
+                    }
+
+                    $pdo->commit();
+                    $importSuccess = "Berhasil memulihkan data: {$importedHabits} kebiasaan dan {$importedQuests} misi baru berhasil ditambahkan.";
+                } catch (Exception $e) {
+                    if ($pdo->inTransaction()) {
+                        $pdo->rollBack();
+                    }
+                    $error = "Terjadi kesalahan saat memulihkan data: " . $e->getMessage();
+                }
+            }
+        }
+    }
+
     // Handle delete account (Hak Penghapusan / Hak untuk Dilupakan - UU PDP)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_account'])) {
         validate_csrf();
@@ -259,6 +347,12 @@ require_once __DIR__ . '/../includes/header.php';
 <?php if (!empty($error)): ?>
     <div class="p-2 mb-3 text-center" role="alert" style="background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--status-danger); border-radius: var(--radius); font-size: 0.8rem;">
         <?php echo htmlspecialchars($error); ?>
+    </div>
+<?php endif; ?>
+
+<?php if (!empty($importSuccess)): ?>
+    <div class="p-2 mb-3 text-center" role="status" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.8rem;">
+        <i class="fas fa-check-circle me-1"></i> <?php echo htmlspecialchars($importSuccess); ?>
     </div>
 <?php endif; ?>
 
@@ -493,6 +587,12 @@ require_once __DIR__ . '/../includes/header.php';
             </button>
         </form>
 
+        <?php if (($user['username'] ?? '') !== 'DemoPlayer'): ?>
+            <button type="button" class="btn-core btn-outline" data-bs-toggle="modal" data-bs-target="#importBackupModal">
+                <i class="fas fa-file-upload text-accent"></i> Impor Cadangan (JSON)
+            </button>
+        <?php endif; ?>
+
         <?php if (($user['username'] ?? '') === 'DemoPlayer'): ?>
             <span class="text-muted d-inline-flex align-items-center" style="font-size: 0.78rem;">
                 <i class="fas fa-lock me-1"></i> Fitur hapus akun dinonaktifkan untuk mode Demo.
@@ -502,6 +602,36 @@ require_once __DIR__ . '/../includes/header.php';
                 <i class="fas fa-trash-alt"></i> Hapus Akun Permanen
             </button>
         <?php endif; ?>
+    </div>
+</div>
+
+<!-- Modal Impor Data Backup -->
+<div class="modal fade" id="importBackupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="profile.php" enctype="multipart/form-data">
+                <?php echo csrf_field(); ?>
+                <div class="modal-header">
+                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-file-upload me-2 text-accent"></i> Impor / Pulihkan Cadangan Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body" style="font-size: 0.85rem;">
+                    <p class="text-secondary mb-3">
+                        Pilih berkas cadangan resmi Lifevuww berformat <code>.json</code> untuk memulihkan kebiasaan dan misi yang belum ada di akunmu.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label" for="backup_file">Pilih berkas .json cadangan:</label>
+                        <input type="file" class="form-control" id="backup_file" name="backup_file" accept=".json,application/json" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" name="import_data" value="1" class="btn-core btn-primary">
+                        <i class="fas fa-upload me-1"></i> Pulihkan Sekarang
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

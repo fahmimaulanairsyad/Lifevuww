@@ -448,8 +448,35 @@
             document.getElementById('lvConfirmTitle').textContent = title || 'Konfirmasi';
             document.getElementById('lvConfirmMsg').textContent = message || 'Apakah kamu yakin?';
             const btn = document.getElementById('lvConfirmBtn');
-            btn.className = opts.danger ? 'btn-core btn-accent' : 'btn-core btn-primary';
-            btn.textContent = opts.confirmText || 'Lanjutkan';
+            const iconEl = document.getElementById('lvConfirmIcon');
+
+            const variant = opts.variant || (opts.danger ? 'danger' : 'primary');
+            if (variant === 'danger') {
+                btn.className = 'btn-core';
+                btn.style.backgroundColor = 'var(--status-danger)';
+                btn.style.borderColor = 'var(--status-danger)';
+                btn.style.color = '#ffffff';
+                iconEl.style.backgroundColor = 'var(--status-danger-dim)';
+                iconEl.style.color = 'var(--status-danger)';
+                iconEl.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            } else if (variant === 'gold' || variant === 'warning') {
+                btn.className = 'btn-core font-mono';
+                btn.style.backgroundColor = 'var(--status-warning)';
+                btn.style.borderColor = 'var(--status-warning)';
+                btn.style.color = '#000000';
+                iconEl.style.backgroundColor = 'var(--status-warning-dim)';
+                iconEl.style.color = 'var(--status-warning)';
+                iconEl.innerHTML = '<i class="fas fa-coins"></i>';
+            } else {
+                btn.className = 'btn-core btn-primary';
+                btn.style.backgroundColor = '';
+                btn.style.borderColor = '';
+                btn.style.color = '';
+                iconEl.style.backgroundColor = 'var(--accent-dim)';
+                iconEl.style.color = 'var(--accent)';
+                iconEl.innerHTML = '<i class="fas fa-question-circle"></i>';
+            }
+            btn.textContent = opts.confirmText || (variant === 'danger' ? 'Hapus' : (variant === 'gold' ? 'Beli Sekarang' : 'Lanjutkan'));
 
             const newBtn = btn.cloneNode(true);
             btn.parentNode.replaceChild(newBtn, btn);
@@ -475,6 +502,11 @@
 
             const msg = target.getAttribute('data-confirm');
             const title = target.getAttribute('data-confirm-title') || 'Konfirmasi Tindakan';
+            const variant = target.getAttribute('data-confirm-variant') || 
+                (target.classList.contains('text-danger') || (target.name && target.name.indexOf('delete') !== -1) ? 'danger' : 
+                ((target.name && (target.name.indexOf('buy') !== -1 || target.name.indexOf('potion') !== -1)) ? 'gold' : 'primary'));
+            const confirmText = target.getAttribute('data-confirm-btn');
+
             window.showConfirmDialog(title, msg, function() {
                 target.dataset.confirmed = '1';
                 if (target.name) {
@@ -485,7 +517,7 @@
                     form.appendChild(hidden);
                 }
                 form.submit();
-            });
+            }, { variant, confirmText });
         }, true);
 
         /* ============ Quick Attribute Filter Pills ============ */
@@ -500,14 +532,27 @@
             pill.classList.add('active');
 
             const panel = container.closest('.bento-panel') || document;
+            let visibleCount = 0;
             panel.querySelectorAll('.data-row[data-category]').forEach(row => {
                 const cat = row.getAttribute('data-category');
                 if (filterCat === 'all' || cat === filterCat) {
                     row.style.display = '';
+                    visibleCount++;
                 } else {
                     row.style.display = 'none';
                 }
             });
+
+            const emptyEl = panel.querySelector('.filter-empty-state');
+            if (emptyEl) {
+                if (visibleCount === 0) {
+                    emptyEl.style.display = 'block';
+                    const catSpan = emptyEl.querySelector('.filter-empty-cat-name');
+                    if (catSpan) catSpan.textContent = filterCat;
+                } else {
+                    emptyEl.style.display = 'none';
+                }
+            }
         });
 
         /* ============ Bridge diagnostic readout (profile) ============ */
