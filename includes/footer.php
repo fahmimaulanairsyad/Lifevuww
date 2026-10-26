@@ -985,24 +985,29 @@
 
         /* ============ UI Maxing: Antigravity Spotlight, Sunderland Ticks, & A24 Holographic Tilt ============ */
         (function() {
-            // 1. Google Antigravity: Cursor Spotlight coordinates
-            let spotlightScheduled = false;
-            document.addEventListener('mousemove', (e) => {
-                if (spotlightScheduled) return;
-                spotlightScheduled = true;
-                requestAnimationFrame(() => {
-                    const cards = document.querySelectorAll('.spotlight-card');
-                    cards.forEach(card => {
-                        const rect = card.getBoundingClientRect();
-                        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-                        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-                    });
-                    spotlightScheduled = false;
-                });
-            }, { passive: true });
+            const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-            // 2. A24: 3D Holographic Card Tilt with Specular Glare
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            // 1. Google Antigravity: Cursor Spotlight coordinates (Desktop only)
+            if (canHover) {
+                let spotlightScheduled = false;
+                document.addEventListener('mousemove', (e) => {
+                    if (spotlightScheduled) return;
+                    spotlightScheduled = true;
+                    requestAnimationFrame(() => {
+                        const cards = document.querySelectorAll('.spotlight-card');
+                        cards.forEach(card => {
+                            const rect = card.getBoundingClientRect();
+                            card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                            card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                        });
+                        spotlightScheduled = false;
+                    });
+                }, { passive: true });
+            }
+
+            // 2. A24: 3D Holographic Card Tilt with Specular Glare (Desktop only & respects motion preference)
+            if (canHover && !reduceMotion) {
                 document.querySelectorAll('.holo-card').forEach(card => {
                     if (!card.querySelector('.holo-glare')) {
                         const glare = document.createElement('div');
@@ -1030,10 +1035,14 @@
                 });
             }
 
-            // 3. Gray Sunderland: Tactile Mechanical Audio Ticks on Interaction
+            // 3. Gray Sunderland: Tactile Mechanical Audio Ticks on Interaction (Throttled 50ms)
+            let lastTickTime = 0;
             document.addEventListener('pointerenter', (e) => {
                 const el = e.target.closest('.btn-filter-pill, .nav-item, .cp-item, .btn-command-palette-trigger');
                 if (el) {
+                    const now = performance.now();
+                    if (now - lastTickTime < 50) return;
+                    lastTickTime = now;
                     LVSound.tick();
                 }
             }, true);
