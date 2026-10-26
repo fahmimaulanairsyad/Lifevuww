@@ -22,7 +22,7 @@ secure_session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261027_01" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261027_02" rel="stylesheet">
     <!-- Motion & Scroll Libraries: Lenis & GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -126,8 +126,7 @@ secure_session_start();
             $navExpPct = min(100, max(0, (($navExp - $navCurBase) / max(1, ($navNextExp - $navCurBase))) * 100));
             $userRankTitle = calculateRank($navLevel);
         ?>
-        <!-- Interactive Antigravity Canvas & Film Grain Noise Overlay -->
-        <canvas id="antigravity-canvas" class="antigravity-canvas"></canvas>
+        <!-- Film Grain Noise Overlay (Cinematic physical depth) -->
         <div class="film-grain"></div>
 
         <!-- Custom Magnetic Cursor Follower (Desktop only) -->
@@ -137,51 +136,34 @@ secure_session_start();
         <!-- Top Telemetry Cockpit HUD -->
         <header class="telemetry-hud">
             <div class="hud-inner">
-                <!-- Brand -->
+                <!-- Brand & Rank Title -->
                 <a href="dashboard.php" class="hud-brand">
                     <img src="../assets/images/logo.svg" alt="Logo" class="hud-logo">
                     <span class="hud-title">Lifevuww</span>
-                    <span class="badge-status accent font-mono hud-rank-pill d-none d-sm-inline-block">
+                    <span class="hud-rank-pill font-mono d-none d-sm-inline-block">
                         <?php echo htmlspecialchars($userRankTitle); ?>
                     </span>
                 </a>
 
-                <!-- Gauges & Telemetry (Center/Right) -->
+                <!-- Telemetry Control Center (Right) -->
                 <div class="hud-telemetry">
-                    <!-- Vitals HP Gauge -->
-                    <div class="hud-gauge d-none d-md-flex" title="Health Points">
-                        <div class="d-flex align-items-center justify-content-between font-mono text-danger" style="font-size: 0.68rem;">
-                            <span><i class="fas fa-heart me-1"></i>HP</span>
-                            <span class="hud-gauge-val"><?php echo $navUser['hp'] ?? 100; ?>/<?php echo $navUser['max_hp'] ?? 100; ?></span>
+                    <!-- Unified Glass Status Capsule -->
+                    <div class="hud-unified-capsule">
+                        <div class="hud-cap-item text-danger" title="Poin Kesehatan (HP)">
+                            <i class="fas fa-heart"></i>
+                            <span class="font-mono"><?php echo $navUser['hp'] ?? 100; ?></span>
                         </div>
-                        <div class="hud-track">
-                            <div class="hud-fill bg-danger" style="width: <?php echo min(100, max(0, (($navUser['hp'] ?? 100) / ($navUser['max_hp'] ?? 100)) * 100)); ?>%;"></div>
+                        <div class="hud-cap-divider"></div>
+                        <div class="hud-cap-item text-accent" title="Tingkat <?php echo $navLevel; ?> (<?php echo $navExp; ?>/<?php echo $navNextExp; ?> EXP)">
+                            <i class="fas fa-bolt"></i>
+                            <span class="font-mono">Lv.<?php echo $navLevel; ?></span>
+                            <span class="hud-cap-sub d-none d-md-inline font-mono"><?php echo $navExp; ?>/<?php echo $navNextExp; ?></span>
                         </div>
-                    </div>
-
-                    <!-- Vitals EXP & Level Gauge -->
-                    <div class="hud-gauge d-none d-md-flex" title="Tingkat & EXP">
-                        <div class="d-flex align-items-center justify-content-between font-mono text-accent" style="font-size: 0.68rem;">
-                            <span><i class="fas fa-bolt me-1"></i>Lv.<?php echo $navLevel; ?></span>
-                            <span class="hud-gauge-val"><?php echo $navExp; ?>/<?php echo $navNextExp; ?></span>
+                        <div class="hud-cap-divider"></div>
+                        <div class="hud-cap-item text-warning" title="Saldo Gold">
+                            <i class="fas fa-coins"></i>
+                            <span class="font-mono"><?php echo number_format($navUser['gold'] ?? 0); ?></span>
                         </div>
-                        <div class="hud-track">
-                            <div class="hud-fill bg-accent" style="width: <?php echo $navExpPct; ?>%;"></div>
-                        </div>
-                    </div>
-
-                    <!-- Mobile compact vitals -->
-                    <span class="mobile-chip font-mono text-accent d-md-none" style="border-color: rgba(16, 185, 129, 0.25); background-color: var(--accent-dim);">
-                        Lv.<?php echo $navLevel; ?>
-                    </span>
-                    <span class="mobile-chip hp d-md-none">
-                        <i class="fas fa-heart"></i> <?php echo $navUser['hp'] ?? 100; ?>
-                    </span>
-
-                    <!-- Gold Chip -->
-                    <div class="hud-chip gold font-mono">
-                        <i class="fas fa-coins text-warning"></i>
-                        <span><?php echo number_format($navUser['gold'] ?? 0); ?></span>
                     </div>
 
                     <!-- Quick Command Trigger [⌘K] -->
@@ -237,6 +219,9 @@ secure_session_start();
                 </a>
             </div>
         </nav>
+
+        <!-- Bottom Vignette Gradient Behind Floating Dock -->
+        <div class="dock-backdrop-fade"></div>
         <?php endif; ?>
 
         <main class="app-main">

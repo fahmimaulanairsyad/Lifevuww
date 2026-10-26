@@ -451,7 +451,7 @@ require_once '../includes/header.php';
                                             $boostText = ' • 1.2x';
                                         }
                                 ?>
-                                    <span class="badge-status warning font-mono" style="background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); color: var(--status-warning);">
+                                    <span class="badge-status warning font-mono" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.22); color: #f59e0b;">
                                         <i class="fas fa-fire"></i> <?php echo $streak; ?> hari<?php echo $boostText; ?>
                                     </span>
                                 <?php endif; ?>

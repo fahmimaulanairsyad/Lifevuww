@@ -515,7 +515,7 @@ require_once __DIR__ . '/../includes/header.php';
 
                             <!-- Boss Quest HP Bar & Subtask Checklist -->
                             <?php if ($totalSub > 0): ?>
-                                <div class="boss-card-container spotlight-card holo-card mt-2 p-2" style="background-color: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: var(--radius); max-width: 520px;">
+                                <div class="boss-card-container spotlight-card holo-card mt-2 p-3" style="max-width: 520px;">
                                     <div class="d-flex justify-content-between align-items-center font-mono text-danger mb-1" style="font-size: 0.72rem;">
                                         <span><i class="fas fa-shield-virus me-1"></i> Sisa HP Boss</span>
                                         <span><?php echo $bossHpPct; ?>% (<?php echo ($totalSub - $doneSub); ?>/<?php echo $totalSub; ?> Fase)</span>
