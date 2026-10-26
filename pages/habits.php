@@ -444,7 +444,6 @@ require_once '../includes/header.php';
                                 <?php 
                                     $streak = $habit['streak'] ?? 0;
                                     if ($streak > 0): 
-                                        $streakClass = 'badge-status warning';
                                         $boostText = '';
                                         if ($streak >= 7) {
                                             $boostText = ' • 1.5x';
@@ -452,7 +451,7 @@ require_once '../includes/header.php';
                                             $boostText = ' • 1.2x';
                                         }
                                 ?>
-                                    <span class="<?php echo $streakClass; ?>">
+                                    <span class="badge-status warning font-mono" style="background: rgba(245, 158, 11, 0.14); border: 1px solid rgba(245, 158, 11, 0.35); color: var(--status-warning);">
                                         <i class="fas fa-fire"></i> <?php echo $streak; ?> hari<?php echo $boostText; ?>
                                     </span>
                                 <?php endif; ?>
@@ -491,14 +490,14 @@ require_once '../includes/header.php';
                         <?php endif; ?>
                         
                         <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
+                        <button type="button" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
                         <form method="POST" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                            <button type="submit" name="delete_habit" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Hapus kebiasaan ini secara permanen?" data-confirm-title="Hapus Kebiasaan" data-confirm-variant="danger" data-confirm-btn="Hapus">
+                            <button type="submit" name="delete_habit" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Hapus kebiasaan ini secara permanen?" data-confirm-title="Hapus Kebiasaan" data-confirm-variant="danger" data-confirm-btn="Hapus">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>

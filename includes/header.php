@@ -197,7 +197,7 @@ secure_session_start();
                 <a href="quests.php" class="nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>" title="Misi" aria-label="Misi">
                     <i class="fas fa-map-signs"></i> <span>Misi</span>
                 </a>
-                <a href="skills.php" class="nav-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" title="Keahlian" aria-label="Keahlian">
+                <a href="skills.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" title="Keahlian" aria-label="Keahlian">
                     <i class="fas fa-book-open"></i> <span>Keahlian</span>
                 </a>
                 <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" title="Toko" aria-label="Toko Hadiah">
@@ -205,6 +205,9 @@ secure_session_start();
                 </a>
                 <a href="history.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" title="Riwayat" aria-label="Riwayat Aktivitas">
                     <i class="fas fa-history"></i> <span>Riwayat</span>
+                </a>
+                <a href="profile.php" class="nav-item d-md-none <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" title="Profil" aria-label="Profil Pengguna">
+                    <i class="fas fa-user-circle"></i> <span>Profil</span>
                 </a>
             </nav>
 

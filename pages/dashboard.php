@@ -254,7 +254,7 @@ try {
 </div>
 
 <!-- 7-Day Activity Velocity Panel -->
-<div class="bento-panel mb-4">
+<div class="bento-panel mb-4" style="margin-top: 1.5rem;">
     <div class="panel-header">
         <div>
             <h3 class="panel-title"><i class="fas fa-chart-bar text-accent"></i> Velocity Performa 7 Hari</h3>

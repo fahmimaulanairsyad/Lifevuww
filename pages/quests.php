@@ -515,13 +515,13 @@ require_once __DIR__ . '/../includes/header.php';
 
                             <!-- Boss Quest HP Bar & Subtask Checklist -->
                             <?php if ($totalSub > 0): ?>
-                                <div class="mt-2 p-2" style="background-color: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.18); border-radius: var(--radius); max-width: 520px;">
+                                <div class="boss-card-container mt-2 p-2" style="background-color: rgba(244, 63, 94, 0.06); border: 1px solid rgba(244, 63, 94, 0.2); border-radius: var(--radius); max-width: 520px;">
                                     <div class="d-flex justify-content-between align-items-center font-mono text-danger mb-1" style="font-size: 0.72rem;">
                                         <span><i class="fas fa-shield-virus me-1"></i> Sisa HP Boss</span>
                                         <span><?php echo $bossHpPct; ?>% (<?php echo ($totalSub - $doneSub); ?>/<?php echo $totalSub; ?> Fase)</span>
                                     </div>
-                                    <div class="vitals-track" style="height: 5px; background-color: rgba(255,255,255,0.06); margin-bottom: 0.5rem;">
-                                        <div class="vitals-fill" style="width: <?php echo $bossHpPct; ?>%; background-color: var(--status-danger);"></div>
+                                    <div class="vitals-track boss-hp-track" style="height: 6px; background-color: rgba(255,255,255,0.06); margin-bottom: 10px;">
+                                        <div class="vitals-fill boss-hp-fill" style="width: <?php echo $bossHpPct; ?>%; background-color: var(--status-danger); transition: width 0.3s ease;"></div>
                                     </div>
                                     <div class="d-flex flex-column gap-1">
                                         <?php foreach ($subtasks as $idx => $st): ?>
@@ -530,9 +530,9 @@ require_once __DIR__ . '/../includes/header.php';
                                                 <input type="hidden" name="toggle_subtask" value="1">
                                                 <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
                                                 <input type="hidden" name="subtask_index" value="<?php echo $idx; ?>">
-                                                <label class="d-flex align-items-center gap-2 m-0" style="cursor: pointer;">
-                                                    <input type="checkbox" onchange="this.form.submit()" <?php echo !empty($st['done']) ? 'checked' : ''; ?> style="accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;">
-                                                    <span style="font-size: 0.78rem; <?php echo !empty($st['done']) ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-primary);'; ?>">
+                                                <label class="subtask-row w-100 d-flex align-items-center gap-2 p-2 m-0" style="cursor: pointer; border-radius: var(--radius);">
+                                                    <input type="checkbox" onchange="this.form.submit()" <?php echo !empty($st['done']) ? 'checked' : ''; ?> style="accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; flex-shrink: 0;">
+                                                    <span style="font-size: 0.8rem; line-height: 1.35; <?php echo !empty($st['done']) ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-primary);'; ?>">
                                                         <?php echo htmlspecialchars($st['title'] ?? ''); ?>
                                                     </span>
                                                 </label>
@@ -566,14 +566,14 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php endif; ?>
                         
                         <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
+                        <button type="button" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
 
                         <form method="POST" action="quests.php" style="margin: 0;">
                             <?php echo csrf_field(); ?>
                             <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
-                            <button type="submit" name="delete_quest" class="btn-core btn-ghost" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-confirm="Hapus misi ini secara permanen?" data-confirm-title="Hapus Misi" data-confirm-variant="danger" data-confirm-btn="Hapus">
+                            <button type="submit" name="delete_quest" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-confirm="Hapus misi ini secara permanen?" data-confirm-title="Hapus Misi" data-confirm-variant="danger" data-confirm-btn="Hapus">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>

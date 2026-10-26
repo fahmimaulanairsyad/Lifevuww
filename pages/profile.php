@@ -435,8 +435,9 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php $expPercentage = min(100, max(0, (($totalExp - (($level-1)*100)) / 100) * 100)); ?>
                     <div class="vitals-fill" style="width: <?php echo $expPercentage; ?>%; background-color: var(--accent);"></div>
                 </div>
-                <div class="text-end text-muted mt-1 font-mono" style="font-size: 0.7rem;">
-                    SISA <?php echo number_format(max(0, $expToNextLevel)); ?> EXP
+                <div class="d-flex justify-content-between text-muted mt-1 font-mono" style="font-size: 0.7rem;">
+                    <span>Progres ke Tingkat <?php echo $level + 1; ?></span>
+                    <span>SISA <?php echo number_format(max(0, $expToNextLevel)); ?> EXP</span>
                 </div>
             </div>
 

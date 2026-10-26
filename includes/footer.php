@@ -551,6 +551,42 @@
             }
         });
 
+        /* ============ Floating RPG Combat/Reward Numbers ============ */
+        window.spawnFloatingReward = function(x, y, textHtml) {
+            const el = document.createElement('div');
+            el.className = 'floating-combat-text';
+            el.innerHTML = textHtml;
+            el.style.left = (x || (window.innerWidth / 2)) + 'px';
+            el.style.top = (y || (window.innerHeight / 2)) + 'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 900);
+        };
+
+        // Capture clicks on completion buttons
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('button[name="complete_habit"], button[name="complete_quest"]');
+            if (btn) {
+                const rect = btn.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top;
+                const row = btn.closest('.data-row');
+                const expVal = row && row.dataset.exp ? `+${row.dataset.exp} EXP` : '+EXP!';
+                window.spawnFloatingReward(x, y, `<i class="fas fa-bolt text-accent"></i> ${expVal}`);
+                LVSound.coin();
+            }
+        });
+
+        // Shake Boss HP Bar on subtask toggle
+        document.addEventListener('change', function(e) {
+            if (e.target.closest('.subtask-row')) {
+                const box = e.target.closest('.boss-card-container');
+                if (box) {
+                    box.classList.add('boss-hit-anim');
+                    setTimeout(() => box.classList.remove('boss-hit-anim'), 300);
+                }
+            }
+        });
+
         /* ============ Fast Client-Side Sorting (Habits & Quests) with LocalStorage ============ */
         document.addEventListener('change', function(e) {
             if (e.target.id === 'sortQuests') {

@@ -453,6 +453,67 @@ a:hover {
     background-color: var(--bg-surface-hover) !important;
 }
 
+/* Secondary Action Buttons (Edit/Delete) on Rows */
+.btn-action-secondary {
+    opacity: 0.45;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.data-row:hover .btn-action-secondary,
+.btn-action-secondary:hover,
+.btn-action-secondary:focus {
+    opacity: 1;
+}
+
+/* Boss Subtask Rows & Damage Feedback */
+.subtask-row {
+    transition: background-color 0.15s ease;
+}
+.subtask-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+@keyframes bossHit {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-4px); }
+    40% { transform: translateX(4px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+}
+.boss-hit-anim {
+    animation: bossHit 0.25s ease-in-out;
+}
+
+/* Floating RPG Combat / Reward Text (+EXP / +Gold) */
+@keyframes floatReward {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, 0) scale(0.9);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -22px) scale(1.08);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -38px) scale(0.95);
+    }
+}
+.floating-combat-text {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--accent);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    animation: floatReward 0.85s ease-out forwards;
+}
+
 /* Category Filter Pills */
 .filter-pills-category {
     display: flex;
@@ -999,8 +1060,8 @@ body.nag-active .app-main {
         align-items: center;
         justify-content: center;
         flex: 1;
-        gap: 0;
-        padding: 9px 0;
+        gap: 3px;
+        padding: 7px 0 8px 0;
         border: none;
         background: transparent;
         transition: transform 0.1s ease, opacity 0.1s ease;
@@ -1012,13 +1073,19 @@ body.nag-active .app-main {
     }
 
     .nav-item span {
-        display: none;
+        display: block;
+        font-size: 0.62rem;
+        color: var(--text-muted);
+        letter-spacing: -0.01em;
+        line-height: 1;
+        transition: color 0.15s ease;
     }
 
     .nav-item i {
         margin-right: 0;
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         color: var(--text-muted);
+        transition: color 0.15s ease;
     }
 
     .nav-item.active {
@@ -1028,6 +1095,11 @@ body.nag-active .app-main {
 
     .nav-item.active i {
         color: var(--accent);
+    }
+
+    .nav-item.active span {
+        color: var(--accent);
+        font-weight: 500;
     }
 
     /* Main content clears both bars */
