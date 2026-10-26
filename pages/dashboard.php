@@ -160,7 +160,7 @@ try {
 <div class="row g-3 mb-4">
     <!-- Character Core Status -->
     <div class="col-md-8">
-        <div class="bento-panel h-100 d-flex flex-column justify-content-between">
+        <div class="bento-panel spotlight-card h-100 d-flex flex-column justify-content-between">
             <div>
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
@@ -171,7 +171,7 @@ try {
                     </div>
                     <div class="text-end">
                         <div class="text-muted" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Tingkat</div>
-                        <div style="font-size: 2.2rem; font-weight: 600; line-height: 1; font-family: var(--font-mono); color: var(--text-primary);"><?php echo $level; ?></div>
+                        <div style="font-size: 2.2rem; font-weight: 600; line-height: 1; font-family: var(--font-mono); color: var(--text-primary);"><span class="count-up" data-target="<?php echo $level; ?>"><?php echo $level; ?></span></div>
                     </div>
                 </div>
 
@@ -179,7 +179,7 @@ try {
                 <div class="mb-3">
                     <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem;">
                         <span class="text-muted"><i class="fas fa-heart text-danger me-1"></i> Poin Kesehatan (HP)</span>
-                        <span class="font-mono text-danger"><?php echo $user['hp'] ?? 100; ?> / <?php echo $user['max_hp'] ?? 100; ?></span>
+                        <span class="font-mono text-danger"><span class="count-up" data-target="<?php echo (int)($user['hp'] ?? 100); ?>"><?php echo $user['hp'] ?? 100; ?></span> / <?php echo $user['max_hp'] ?? 100; ?></span>
                     </div>
                     <div class="vitals-track">
                         <?php 
@@ -196,7 +196,7 @@ try {
             <div class="pt-2">
                 <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem;">
                     <span class="text-muted"><i class="fas fa-bolt text-accent me-1"></i> Pengalaman (EXP)</span>
-                    <span class="font-mono text-accent"><?php echo number_format($totalExp); ?> / <?php echo number_format($nextLevelExp); ?></span>
+                    <span class="font-mono text-accent"><span class="count-up" data-target="<?php echo (int)$totalExp; ?>"><?php echo number_format($totalExp); ?></span> / <?php echo number_format($nextLevelExp); ?></span>
                 </div>
                 <div class="vitals-track">
                     <?php $expPercentage = min(100, max(0, (($totalExp - $currentLevelExp) / ($nextLevelExp - $currentLevelExp)) * 100)); ?>
@@ -212,11 +212,11 @@ try {
 
     <!-- Gold & Shop Quick Access -->
     <div class="col-md-4">
-        <div class="bento-panel h-100 d-flex flex-column justify-content-between text-center py-4">
+        <div class="bento-panel spotlight-card h-100 d-flex flex-column justify-content-between text-center py-4">
             <div>
                 <div class="text-muted mb-2" style="font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Saldo Gold</div>
                 <div style="font-family: var(--font-mono); font-size: 2.25rem; font-weight: 600; color: var(--status-warning); line-height: 1.1;">
-                    <i class="fas fa-coins me-1" style="font-size: 1.6rem;"></i><?php echo number_format($user['gold'] ?? 0); ?>
+                    <i class="fas fa-coins me-1" style="font-size: 1.6rem;"></i><span class="count-up" data-target="<?php echo (int)($user['gold'] ?? 0); ?>"><?php echo number_format($user['gold'] ?? 0); ?></span>
                 </div>
                 <p class="text-muted mt-2 mb-0" style="font-size: 0.78rem;">Kumpulkan gold dengan menjaga kebiasaan dan menuntaskan misi.</p>
             </div>
@@ -233,35 +233,35 @@ try {
 <div class="metric-strip mb-4">
     <div class="metric-cell">
         <div class="metric-label"><i class="fas fa-check-square text-accent"></i> Kebiasaan</div>
-        <div class="metric-value"><?php echo $completedHabits; ?> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalHabits; ?></span></div>
+        <div class="metric-value"><span class="count-up" data-target="<?php echo (int)$completedHabits; ?>"><?php echo $completedHabits; ?></span> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalHabits; ?></span></div>
         <div class="metric-sub">Tuntas hari ini</div>
     </div>
     <div class="metric-cell">
         <div class="metric-label"><i class="fas fa-scroll text-accent"></i> Misi</div>
-        <div class="metric-value"><?php echo $completedQuests; ?> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalQuests; ?></span></div>
+        <div class="metric-value"><span class="count-up" data-target="<?php echo (int)$completedQuests; ?>"><?php echo $completedQuests; ?></span> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalQuests; ?></span></div>
         <div class="metric-sub">Total tuntas</div>
     </div>
     <div class="metric-cell">
         <div class="metric-label"><i class="fas fa-fire text-warning"></i> Streak</div>
-        <div class="metric-value text-warning"><?php echo $maxStreak; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">HARI</span></div>
+        <div class="metric-value text-warning"><span class="count-up" data-target="<?php echo (int)$maxStreak; ?>"><?php echo $maxStreak; ?></span> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">HARI</span></div>
         <div class="metric-sub">Rekor beruntun</div>
     </div>
     <div class="metric-cell">
         <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Perisai</div>
-        <div class="metric-value" style="color: var(--status-info);"><?php echo $user['streak_freeze'] ?? 0; ?> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SLOT</span></div>
+        <div class="metric-value" style="color: var(--status-info);"><span class="count-up" data-target="<?php echo (int)($user['streak_freeze'] ?? 0); ?>"><?php echo $user['streak_freeze'] ?? 0; ?></span> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SLOT</span></div>
         <div class="metric-sub">Hari terlindungi</div>
     </div>
 </div>
 
 <!-- 7-Day Activity Velocity Panel -->
-<div class="bento-panel mb-4" style="margin-top: 1.5rem;">
+<div class="bento-panel spotlight-card mb-4" style="margin-top: 1.5rem;">
     <div class="panel-header">
         <div>
             <h3 class="panel-title"><i class="fas fa-chart-bar text-accent"></i> Velocity Performa 7 Hari</h3>
             <p class="text-muted mb-0" style="font-size: 0.78rem;">Akumulasi EXP dari rutinitas dan petualangan.</p>
         </div>
         <span class="badge-status accent font-mono">
-            <?php echo number_format(array_sum($activityData)); ?> EXP TERKUMPUL
+            <span class="count-up" data-target="<?php echo (int)array_sum($activityData); ?>"><?php echo number_format(array_sum($activityData)); ?></span> EXP TERKUMPUL
         </span>
     </div>
     <div style="height: 180px; width: 100%;">
@@ -356,6 +356,32 @@ try {
             }
         }
     });
+
+    // TernakKlip Count-Up Telemetry Animation
+    (function() {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        const countEls = document.querySelectorAll('.count-up');
+        countEls.forEach(el => {
+            const target = parseInt(el.dataset.target, 10);
+            if (isNaN(target) || target <= 0) return;
+            const duration = 650;
+            const start = performance.now();
+            const animate = (now) => {
+                const elapsed = now - start;
+                const progress = Math.min(1, elapsed / duration);
+                // easeOutQuad
+                const ease = progress * (2 - progress);
+                const current = Math.floor(ease * target);
+                el.textContent = current.toLocaleString('id-ID');
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    el.textContent = target.toLocaleString('id-ID');
+                }
+            };
+            requestAnimationFrame(animate);
+        });
+    })();
 </script>
 
 <?php require_once("../includes/footer.php"); ?>

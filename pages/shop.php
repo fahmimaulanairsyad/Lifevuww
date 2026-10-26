@@ -201,7 +201,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
     <div class="row g-3">
         <!-- Minor Potion -->
         <div class="col-md-4">
-            <div class="bento-panel d-flex flex-column justify-content-between p-3 h-100">
+            <div class="bento-panel spotlight-card holo-card d-flex flex-column justify-content-between p-3 h-100">
                 <div class="d-flex align-items-start gap-3 mb-3">
                     <div style="width: 36px; height: 36px; border-radius: var(--radius); background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.2); color: var(--status-danger); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
                         <i class="fas fa-prescription-bottle"></i>
@@ -227,7 +227,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
 
         <!-- Full Elixir -->
         <div class="col-md-4">
-            <div class="bento-panel d-flex flex-column justify-content-between p-3 h-100">
+            <div class="bento-panel spotlight-card holo-card d-flex flex-column justify-content-between p-3 h-100">
                 <div class="d-flex align-items-start gap-3 mb-3">
                     <div style="width: 36px; height: 36px; border-radius: var(--radius); background-color: var(--status-danger-dim); border: 1px solid rgba(244, 63, 94, 0.2); color: var(--status-danger); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
                         <i class="fas fa-flask"></i>
@@ -253,7 +253,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
 
         <!-- Streak Freeze -->
         <div class="col-md-4">
-            <div class="bento-panel d-flex flex-column justify-content-between p-3 h-100">
+            <div class="bento-panel spotlight-card holo-card d-flex flex-column justify-content-between p-3 h-100">
                 <div class="d-flex align-items-start gap-3 mb-3">
                     <div style="width: 36px; height: 36px; border-radius: var(--radius); background-color: var(--status-info-dim); border: 1px solid rgba(6, 182, 212, 0.2); color: var(--status-info); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
                         <i class="fas fa-snowflake"></i>
@@ -285,7 +285,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
     <div class="row g-3">
         <?php foreach ($rewards as $reward): ?>
             <div class="col-md-4">
-                <div class="bento-panel text-center h-100 position-relative p-4 d-flex flex-column justify-content-between" style="<?php echo $userGold < $reward['cost'] ? 'opacity: 0.55;' : ''; ?>">
+                <div class="bento-panel spotlight-card holo-card text-center h-100 position-relative p-4 d-flex flex-column justify-content-between" style="<?php echo $userGold < $reward['cost'] ? 'opacity: 0.55;' : ''; ?>">
                     <form method="POST" action="shop.php" style="position: absolute; top: 0.75rem; right: 0.75rem;">
                         <?php echo csrf_field(); ?>
                         <input type="hidden" name="reward_id" value="<?php echo $reward['reward_id']; ?>">

@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261025_03" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261026_01" rel="stylesheet">
     <!-- Confetti library for Interactive Preview -->
     <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" integrity="sha384-HAH79XdRvHr6axVGh4xQWVCp14kcd32bNk4Xu0sHDHtFQ42n6BAM8ykvB47dGz6D" crossorigin="anonymous"></script>
 
@@ -80,7 +80,12 @@ if (isset($_SESSION['user_id'])) {
             <i class="fas fa-gamepad me-1"></i> GAMIFIED HABIT TRACKER
         </span>
         <h1 class="landing-hero-title">
-            Disiplin Nyata dalam Format Petualangan RPG
+            <span class="char-reveal" style="--char-i: 1;">Disiplin</span>
+            <span class="char-reveal" style="--char-i: 2;">Nyata</span>
+            <span class="char-reveal" style="--char-i: 3;">dalam</span>
+            <span class="char-reveal" style="--char-i: 4;">Format</span>
+            <span class="char-reveal" style="--char-i: 5;">Petualangan</span>
+            <span class="char-reveal text-accent" style="--char-i: 6;">RPG</span>
         </h1>
         <p class="landing-hero-subtitle">
             Bangun kebiasaan harian, tingkatkan level dan rank karaktermu, kumpulkan gold, dan tebus reward impianmu.
@@ -99,8 +104,43 @@ if (isset($_SESSION['user_id'])) {
             </form>
         </div>
 
+        <!-- TernakKlip: Infinite Marquee Ticker (Rank Progression) -->
+        <div class="marquee-wrapper mb-5">
+            <div class="marquee-track">
+                <span class="marquee-item"><i class="fas fa-crown text-muted"></i> F-Rank Novice</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-crown text-muted"></i> E-Rank Rookie</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-compass text-accent"></i> D-Rank Explorer</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-shield-alt text-info"></i> C-Rank Vanguard</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-award text-accent"></i> B-Rank Elite</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-dragon text-warning"></i> A-Rank Master</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-medal text-warning"></i> S-Rank Sovereign</span>
+                <span class="text-muted">•</span>
+                <!-- Duplicate for seamless infinite loop -->
+                <span class="marquee-item"><i class="fas fa-crown text-muted"></i> F-Rank Novice</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-crown text-muted"></i> E-Rank Rookie</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-compass text-accent"></i> D-Rank Explorer</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-shield-alt text-info"></i> C-Rank Vanguard</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-award text-accent"></i> B-Rank Elite</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-dragon text-warning"></i> A-Rank Master</span>
+                <span class="text-muted">•</span>
+                <span class="marquee-item"><i class="fas fa-medal text-warning"></i> S-Rank Sovereign</span>
+                <span class="text-muted">•</span>
+            </div>
+        </div>
+
         <!-- Interactive Live Vitals Preview Card -->
-        <div class="landing-preview-card" id="landingSimCard">
+        <div class="landing-preview-card spotlight-card holo-card" id="landingSimCard">
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
                     <div style="width: 34px; height: 34px; border-radius: 50%; background-color: var(--accent-dim); border: 1px solid var(--accent); display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 0.9rem;">
@@ -177,9 +217,9 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </section>
 
-    <!-- Bento Features Grid -->
-    <section class="landing-bento-grid">
-        <div class="landing-bento-item">
+    <!-- Bento Features Grid (Asymmetric & Interactive) -->
+    <section class="landing-bento-grid asymmetric">
+        <div class="landing-bento-item bento-span-7 spotlight-card holo-card">
             <div>
                 <div class="landing-bento-icon text-accent">
                     <i class="fas fa-crown"></i>
@@ -200,38 +240,38 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
 
-        <div class="landing-bento-item">
+        <div class="landing-bento-item bento-span-5 spotlight-card holo-card">
             <div>
                 <div class="landing-bento-icon text-danger">
                     <i class="fas fa-heartbeat"></i>
                 </div>
-                <h2 class="landing-bento-title">Konsekuensi Nyata & Sistem HP</h2>
+                <h2 class="landing-bento-title">Konsekuensi Nyata & HP</h2>
                 <p class="landing-bento-desc">
-                    Karaktermu dibekali 100 HP. Melewatkan rutinitas akan mengurangi HP. Jika HP habis, karakter mengalami Game Over dan kehilangan 50% EXP. Disiplin bukan lagi sekadar pilihan.
+                    Karaktermu dibekali 100 HP. Melewatkan rutinitas akan mengurangi HP. Jika HP habis, karakter mengalami Game Over dan kehilangan 50% EXP.
                 </p>
             </div>
             <div class="mt-3 font-mono text-danger" style="font-size: 0.75rem;">
-                <i class="fas fa-exclamation-triangle me-1"></i> Penalti HP sesuai tingkat kesulitan
+                <i class="fas fa-exclamation-triangle me-1"></i> Penalti HP sesuai kesulitan
             </div>
         </div>
 
-        <div class="landing-bento-item">
+        <div class="landing-bento-item bento-span-4 spotlight-card holo-card">
             <div>
                 <div class="landing-bento-icon text-warning">
                     <i class="fas fa-fire"></i>
                 </div>
-                <h2 class="landing-bento-title">Streak Multiplier & Toko Hadiah</h2>
+                <h2 class="landing-bento-title">Streak Multiplier</h2>
                 <p class="landing-bento-desc">
-                    Jaga konsistensi harianmu untuk membuka multiplier hingga 1.5x EXP dan Gold. Belanjakan gold di Reward Shop untuk ramuan pemulih HP, perisai Streak Freeze, atau hadiah impianmu.
+                    Jaga konsistensi harianmu untuk membuka multiplier hingga 1.5x EXP dan Gold.
                 </p>
             </div>
             <div class="mt-3 d-flex gap-2 font-mono text-warning" style="font-size: 0.75rem;">
-                <span><i class="fas fa-bolt me-1"></i>1.2x (3+ hari)</span>
-                <span><i class="fas fa-fire me-1"></i>1.5x (7+ hari)</span>
+                <span><i class="fas fa-bolt me-1"></i>1.2x</span>
+                <span><i class="fas fa-fire me-1"></i>1.5x</span>
             </div>
         </div>
 
-        <div class="landing-bento-item">
+        <div class="landing-bento-item bento-span-8 spotlight-card holo-card">
             <div>
                 <div class="landing-bento-icon text-accent">
                     <i class="fas fa-brain"></i>
@@ -251,7 +291,7 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
         <!-- Full Width Call to Action Bento Item -->
-        <div class="landing-bento-item full-width text-center py-4">
+        <div class="landing-bento-item bento-span-12 spotlight-card holo-card text-center py-4">
             <h2 style="font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.5rem;">
                 Siap Mengubah Hidupmu Hari Ini?
             </h2>

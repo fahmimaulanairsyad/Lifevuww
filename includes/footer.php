@@ -66,6 +66,7 @@
             window.addEventListener('keydown', flush);
 
             return {
+                tick() { tone(2600, 0, 0.012, 'sine', 0.025); },
                 fanfare() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.09, 0.22, 'triangle', 0.11)); },
                 levelUp() { [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98].forEach((f, i) => tone(f, i * 0.09, 0.3, 'triangle', 0.13)); },
                 quest() { [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.08, 0.2, 'triangle', 0.1)); },
@@ -981,6 +982,62 @@
                 }
             });
         });
+
+        /* ============ UI Maxing: Antigravity Spotlight, Sunderland Ticks, & A24 Holographic Tilt ============ */
+        (function() {
+            // 1. Google Antigravity: Cursor Spotlight coordinates
+            let spotlightScheduled = false;
+            document.addEventListener('mousemove', (e) => {
+                if (spotlightScheduled) return;
+                spotlightScheduled = true;
+                requestAnimationFrame(() => {
+                    const cards = document.querySelectorAll('.spotlight-card');
+                    cards.forEach(card => {
+                        const rect = card.getBoundingClientRect();
+                        card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                        card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
+                    });
+                    spotlightScheduled = false;
+                });
+            }, { passive: true });
+
+            // 2. A24: 3D Holographic Card Tilt with Specular Glare
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelectorAll('.holo-card').forEach(card => {
+                    if (!card.querySelector('.holo-glare')) {
+                        const glare = document.createElement('div');
+                        glare.className = 'holo-glare';
+                        card.appendChild(glare);
+                    }
+
+                    card.addEventListener('mousemove', (e) => {
+                        const rect = card.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        const rotateX = ((y - centerY) / centerY) * -8;
+                        const rotateY = ((x - centerX) / centerX) * 8;
+
+                        card.style.transform = `perspective(850px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
+                        card.style.setProperty('--glare-x', `${(x / rect.width) * 100}%`);
+                        card.style.setProperty('--glare-y', `${(y / rect.height) * 100}%`);
+                    });
+
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = 'perspective(850px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+                    });
+                });
+            }
+
+            // 3. Gray Sunderland: Tactile Mechanical Audio Ticks on Interaction
+            document.addEventListener('pointerenter', (e) => {
+                const el = e.target.closest('.btn-filter-pill, .nav-item, .cp-item, .btn-command-palette-trigger');
+                if (el) {
+                    LVSound.tick();
+                }
+            }, true);
+        })();
     </script>
 </body>
 </html>

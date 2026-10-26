@@ -8,6 +8,31 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 
+/* ==========================================================
+   CSS VIEW TRANSITIONS API (Seamless Cross-Page Navigation)
+   ========================================================== */
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: 0.2s;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-sidebar {
+    view-transition-name: app-sidebar;
+}
+
+.mobile-top-bar {
+    view-transition-name: mobile-top-bar;
+}
+
+.main-container {
+    view-transition-name: main-container;
+}
+
 :root {
     color-scheme: dark;
 
@@ -1420,7 +1445,232 @@ html.is-apk #btn-install-app {
     color: var(--text-primary);
 }
 
+/* ==========================================================
+   UI MAXING ARCHITECTURE (Antigravity, TernakKlip, Sunderland, A24)
+   ========================================================== */
+
+/* 1. Google Antigravity: Spotlight Glow on Cards */
+.spotlight-card,
+.bento-panel.spotlight-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.spotlight-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: radial-gradient(380px circle at var(--mouse-x, -999px) var(--mouse-y, -999px), rgba(16, 185, 129, 0.35), transparent 45%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    z-index: 2;
+}
+
+.spotlight-card:hover::before {
+    opacity: 1;
+}
+
+/* 2. TernakKlip: Infinite Marquee Ticker */
+.marquee-wrapper {
+    width: 100%;
+    overflow: hidden;
+    user-select: none;
+    display: flex;
+    position: relative;
+    padding: 0.85rem 0;
+    border-top: 1px solid var(--border-hairline);
+    border-bottom: 1px solid var(--border-hairline);
+    background-color: rgba(17, 17, 20, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.marquee-wrapper::before,
+.marquee-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.marquee-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, var(--bg-base), transparent);
+}
+
+.marquee-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, var(--bg-base), transparent);
+}
+
+.marquee-track {
+    display: flex;
+    flex-shrink: 0;
+    gap: 2.5rem;
+    min-width: 100%;
+    animation: marqueeScroll 32s linear infinite;
+    align-items: center;
+}
+
+@keyframes marqueeScroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+
+.marquee-track:hover {
+    animation-play-state: paused;
+}
+
+.marquee-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* 3. A24: 3D Holographic Card Tilt & Specular Glare */
+.holo-card-wrap {
+    perspective: 900px;
+    transform-style: preserve-3d;
+}
+
+.holo-card {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+    will-change: transform;
+}
+
+.holo-card .holo-glare {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--glare-x, 50%) var(--glare-y, 50%), rgba(255, 255, 255, 0.14) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 4;
+}
+
+.holo-card:hover .holo-glare {
+    opacity: 1;
+}
+
+/* 4. A24 & RPG: Animated Sword Slash Strike */
+.slash-animated {
+    position: relative;
+    display: inline-block;
+}
+
+.slash-animated::after {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 50%;
+    width: 0;
+    height: 2px;
+    background-color: var(--accent);
+    transform: translateY(-50%) rotate(-1deg);
+    transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.slash-animated.slashed::after {
+    width: calc(100% + 4px);
+}
+
+/* 5. Google Antigravity: Staggered Character/Word Reveal */
+@keyframes charFadeIn {
+    0% {
+        opacity: 0;
+        filter: blur(8px);
+        transform: translateY(14px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateY(0) scale(1);
+    }
+}
+
+.char-reveal {
+    display: inline-block;
+    opacity: 0;
+    animation: charFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation-delay: calc(var(--char-i, 0) * 0.04s);
+}
+
+/* Asymmetric Bento Grid Enhancement */
+.landing-bento-grid.asymmetric {
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.25rem;
+}
+
+.landing-bento-grid.asymmetric .bento-span-7 {
+    grid-column: span 7;
+}
+
+.landing-bento-grid.asymmetric .bento-span-5 {
+    grid-column: span 5;
+}
+
+.landing-bento-grid.asymmetric .bento-span-4 {
+    grid-column: span 4;
+}
+
+.landing-bento-grid.asymmetric .bento-span-8 {
+    grid-column: span 8;
+}
+
+.landing-bento-grid.asymmetric .bento-span-12 {
+    grid-column: span 12;
+}
+
+/* Reduced Motion Safety Override */
+@media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+        animation: none !important;
+    }
+    .holo-card {
+        transform: none !important;
+        transition: none !important;
+    }
+    .char-reveal {
+        opacity: 1 !important;
+        filter: none !important;
+        transform: none !important;
+        animation: none !important;
+    }
+    .floating-combat-text {
+        animation-duration: 0.01ms !important;
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation: none !important;
+    }
+}
+
 @media (max-width: 768px) {
+    .landing-bento-grid.asymmetric {
+        grid-template-columns: 1fr;
+    }
+    .landing-bento-grid.asymmetric [class*="bento-span-"] {
+        grid-column: span 1 !important;
+    }
     .landing-hero {
         padding: 3.5rem 1rem 2.5rem 1rem;
     }

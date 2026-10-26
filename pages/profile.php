@@ -474,7 +474,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="row g-3">
         <?php foreach ($achievements as $ach): ?>
             <div class="col-md-3 col-6">
-                <div class="p-3 h-100 d-flex flex-column justify-content-between" style="background-color: var(--bg-surface-hover); border: 1px solid <?php echo $ach['unlocked'] ? 'var(--accent-border)' : 'var(--border-hairline)'; ?>; border-radius: var(--radius); transition: all 0.15s ease; <?php echo !$ach['unlocked'] ? 'opacity: 0.6;' : 'box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);'; ?>">
+                <div class="p-3 h-100 d-flex flex-column justify-content-between holo-card spotlight-card" style="background-color: var(--bg-surface-hover); border: 1px solid <?php echo $ach['unlocked'] ? 'var(--accent-border)' : 'var(--border-hairline)'; ?>; border-radius: var(--radius); transition: all 0.15s ease; <?php echo !$ach['unlocked'] ? 'opacity: 0.6;' : 'box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);'; ?>">
                     <div>
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div style="width: 36px; height: 36px; border-radius: 50%; background-color: <?php echo $ach['unlocked'] ? 'var(--accent-dim)' : 'rgba(255, 255, 255, 0.04)'; ?>; color: <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--text-muted)'; ?>; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--border-hairline)'; ?>;">
