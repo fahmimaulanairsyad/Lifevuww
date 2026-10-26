@@ -719,7 +719,8 @@
                 { title: 'Profil & Kredensial', category: 'Navigasi', icon: 'fa-user-circle', url: 'profile.php', keywords: 'profil profile akun settings kata sandi backup' },
                 { title: 'Buat Kebiasaan Baru', category: 'Aksi Cepat', icon: 'fa-plus', action: 'add_habit', keywords: 'tambah buat habit kebiasaan baru' },
                 { title: 'Buat Misi Baru', category: 'Aksi Cepat', icon: 'fa-plus-circle', action: 'add_quest', keywords: 'tambah buat misi quest baru boss' },
-                { title: 'Toggle Efek Suara (On/Off)', category: 'Preferensi', icon: 'fa-volume-up', action: 'toggle_sound', keywords: 'suara sound audio mute senyap toggle' }
+                { title: 'Toggle Efek Suara (On/Off)', category: 'Preferensi', icon: 'fa-volume-up', action: 'toggle_sound', keywords: 'suara sound audio mute senyap toggle' },
+                { title: 'Keluar dari Akun', category: 'Akun', icon: 'fa-sign-out-alt', url: '../logout.php', keywords: 'keluar logout signout exit' }
             ];
 
             let activeIdx = 0;

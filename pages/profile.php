@@ -395,9 +395,9 @@ require_once __DIR__ . '/../includes/header.php';
             <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($user['username'] ?? 'User'); ?></h2>
             <span class="badge-status accent mb-3"><?php echo htmlspecialchars($rank); ?></span>
 
-            <!-- Mobile only logout (sidebar footer is hidden on small screens) -->
-            <a href="../logout.php" class="btn-core btn-ghost text-danger w-100 d-md-none mt-2" style="font-size: 0.8rem;">
-                <i class="fas fa-sign-out-alt"></i> Keluar
+            <!-- Tombol Keluar dari Akun (Desktop & Mobile) -->
+            <a href="../logout.php" class="btn-core btn-outline text-danger w-100 mt-2" style="font-size: 0.8rem; border-color: rgba(244, 63, 94, 0.25);" data-confirm="Yakin ingin keluar dari akun?" data-confirm-title="Keluar Akun" data-confirm-variant="danger" data-confirm-btn="Ya, Keluar">
+                <i class="fas fa-sign-out-alt me-1"></i> Keluar dari Akun
             </a>
 
             <!-- Card for profile picture edit options -->

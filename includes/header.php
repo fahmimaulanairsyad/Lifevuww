@@ -181,6 +181,11 @@ secure_session_start();
                     <a href="profile.php" class="hud-profile-btn" title="Profil" aria-label="Profil Pengguna">
                         <i class="fas fa-user-circle"></i>
                     </a>
+
+                    <!-- Logout Quick Action -->
+                    <a href="../logout.php" class="hud-btn-icon text-muted d-none d-sm-inline-flex" title="Keluar dari akun" aria-label="Keluar dari akun" data-confirm="Yakin ingin keluar dari akun?" data-confirm-title="Keluar Akun" data-confirm-variant="danger" data-confirm-btn="Keluar">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
                 </div>
             </div>
         </header>
