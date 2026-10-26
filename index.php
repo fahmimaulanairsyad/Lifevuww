@@ -38,7 +38,11 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261026_02" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261027_01" rel="stylesheet">
+    <!-- Motion & Scroll Libraries: Lenis & GSAP via CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
     <!-- Confetti library for Interactive Preview -->
     <script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" integrity="sha384-HAH79XdRvHr6axVGh4xQWVCp14kcd32bNk4Xu0sHDHtFQ42n6BAM8ykvB47dGz6D" crossorigin="anonymous"></script>
 
@@ -62,6 +66,14 @@ if (isset($_SESSION['user_id'])) {
 </head>
 <body class="landing-body">
 
+    <!-- Interactive Antigravity Canvas & Film Grain Noise Overlay -->
+    <canvas id="antigravity-canvas" class="antigravity-canvas"></canvas>
+    <div class="film-grain"></div>
+
+    <!-- Custom Magnetic Cursor Follower (Desktop only) -->
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
     <!-- Top Navigation -->
     <header class="landing-nav">
         <a href="index.php" class="landing-brand">
@@ -75,7 +87,12 @@ if (isset($_SESSION['user_id'])) {
     </header>
 
     <!-- Hero Section -->
-    <section class="landing-hero">
+    <section class="landing-hero position-relative">
+        <!-- Interactive 3D Isometric Core Canvas -->
+        <div class="d-flex justify-content-center mb-2">
+            <canvas id="hero-3d-core" width="180" height="180" style="width: 150px; height: 150px; cursor: grab;" title="Putar Core RPG 3D dengan Kursor"></canvas>
+        </div>
+
         <span class="badge-status accent font-mono mb-3" style="font-size: 0.75rem; padding: 0.35rem 0.75rem;">
             <i class="fas fa-gamepad me-1"></i> GAMIFIED HABIT TRACKER
         </span>
@@ -420,6 +437,236 @@ if (isset($_SESSION['user_id'])) {
                 hpBar.style.backgroundColor = 'var(--status-danger)';
             }
         }
+
+        // 3D Isometric RPG Core Renderer (Canvas 2D wireframe / shaded octahedron)
+        (function init3DHeroCore() {
+            const canvas = document.getElementById('hero-3d-core');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const cx = w / 2, cy = h / 2;
+
+            // Vertices of an octahedron (RPG crystal core)
+            const vertices = [
+                { x: 0, y: -52, z: 0 },   // Top apex
+                { x: 40, y: 0, z: -40 },  // Front right
+                { x: -40, y: 0, z: -40 }, // Front left
+                { x: -40, y: 0, z: 40 },  // Back left
+                { x: 40, y: 0, z: 40 },   // Back right
+                { x: 0, y: 52, z: 0 }     // Bottom apex
+            ];
+
+            const faces = [
+                [0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1], // Top pyramid
+                [5, 2, 1], [5, 3, 2], [5, 4, 3], [5, 1, 4]  // Bottom pyramid
+            ];
+
+            let rotX = 0.25, rotY = 0.35;
+            let targetRotX = 0.25, targetRotY = 0.35;
+
+            window.addEventListener('mousemove', (e) => {
+                const normX = (e.clientX / window.innerWidth) - 0.5;
+                const normY = (e.clientY / window.innerHeight) - 0.5;
+                targetRotY = normX * 1.6;
+                targetRotX = normY * 1.1;
+            }, { passive: true });
+
+            function project(p, rx, ry) {
+                const cosY = Math.cos(ry), sinY = Math.sin(ry);
+                const x1 = p.x * cosY + p.z * sinY;
+                const z1 = -p.x * sinY + p.z * cosY;
+
+                const cosX = Math.cos(rx), sinX = Math.sin(rx);
+                const y2 = p.y * cosX - z1 * sinX;
+                const z2 = p.y * sinX + z1 * cosX;
+
+                const fov = 240;
+                const scale = fov / (fov + z2 + 90);
+                return {
+                    x: cx + x1 * scale,
+                    y: cy + y2 * scale,
+                    z: z2
+                };
+            }
+
+            function drawCore() {
+                ctx.clearRect(0, 0, w, h);
+
+                rotY += 0.012; // Continuous spin
+                rotX += (targetRotX - rotX) * 0.08;
+                rotY += (targetRotY - rotY) * 0.04;
+
+                const projected = vertices.map(v => project(v, rotX, rotY));
+
+                const sortedFaces = faces.map(f => {
+                    const avgZ = (projected[f[0]].z + projected[f[1]].z + projected[f[2]].z) / 3;
+                    return { face: f, z: avgZ };
+                }).sort((a, b) => b.z - a.z);
+
+                sortedFaces.forEach(sf => {
+                    const f = sf.face;
+                    const p0 = projected[f[0]];
+                    const p1 = projected[f[1]];
+                    const p2 = projected[f[2]];
+
+                    ctx.beginPath();
+                    ctx.moveTo(p0.x, p0.y);
+                    ctx.lineTo(p1.x, p1.y);
+                    ctx.lineTo(p2.x, p2.y);
+                    ctx.closePath();
+
+                    ctx.fillStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.32)';
+                    ctx.fill();
+
+                    ctx.strokeStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.35)' : 'rgba(16, 185, 129, 0.9)';
+                    ctx.lineWidth = 1.3;
+                    ctx.stroke();
+                });
+
+                requestAnimationFrame(drawCore);
+            }
+            requestAnimationFrame(drawCore);
+        })();
+
+        // Antigravity particles for index.php
+        (function initAntigravityCanvas() {
+            const canvas = document.getElementById('antigravity-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }, { passive: true });
+
+            const numParticles = Math.min(42, Math.floor(width / 32));
+            const particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: (Math.random() - 0.5) * 0.35,
+                    radius: Math.random() * 1.5 + 0.75,
+                    alpha: Math.random() * 0.3 + 0.15,
+                    color: Math.random() > 0.4 ? '16, 185, 129' : '161, 161, 170'
+                });
+            }
+
+            let mouseX = -9999, mouseY = -9999;
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            }, { passive: true });
+
+            function render() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < 0) p.x = width;
+                    if (p.x > width) p.x = 0;
+                    if (p.y < 0) p.y = height;
+                    if (p.y > height) p.y = 0;
+
+                    const dx = p.x - mouseX;
+                    const dy = p.y - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const maxDist = 130;
+
+                    if (dist < maxDist && dist > 0) {
+                        const force = (1 - dist / maxDist) * 3.5;
+                        p.x += (dx / dist) * force;
+                        p.y += (dy / dist) * force;
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+                    ctx.fill();
+                }
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        })();
+
+        // Magnetic Cursor for index.php
+        (function initMagneticCursor() {
+            const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+            if (!canHover) return;
+            const dot = document.getElementById('cursorDot');
+            const ring = document.getElementById('cursorRing');
+            if (!dot || !ring) return;
+
+            let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
+            let ringX = mouseX, ringY = mouseY;
+
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+            }, { passive: true });
+
+            function renderRing() {
+                ringX += (mouseX - ringX) * 0.18;
+                ringY += (mouseY - ringY) * 0.18;
+                ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+                requestAnimationFrame(renderRing);
+            }
+            requestAnimationFrame(renderRing);
+
+            document.addEventListener('pointerenter', (e) => {
+                if (e.target.closest('.btn-core, a, button, input, .spotlight-card')) {
+                    ring.classList.add('magnetic');
+                }
+            }, true);
+
+            document.addEventListener('pointerleave', (e) => {
+                if (e.target.closest('.btn-core, a, button, input, .spotlight-card')) {
+                    ring.classList.remove('magnetic');
+                }
+            }, true);
+        })();
+
+        // Lenis Smooth Scroll + GSAP Scroll Scrub on landing preview card
+        (function initLenisAndGsap() {
+            const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (!canHover || reduceMotion) return;
+
+            if (typeof Lenis !== 'undefined') {
+                try {
+                    const lenis = new Lenis({ duration: 1.15, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
+                    function raf(time) {
+                        lenis.raf(time);
+                        requestAnimationFrame(raf);
+                    }
+                    requestAnimationFrame(raf);
+                } catch (e) {}
+            }
+
+            if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
+                gsap.registerPlugin(ScrollTrigger);
+                gsap.fromTo("#landingSimCard",
+                    { transform: "perspective(900px) rotateX(18deg) scale(0.92)", opacity: 0.85 },
+                    {
+                        transform: "perspective(900px) rotateX(0deg) scale(1)",
+                        opacity: 1,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: "#landingSimCard",
+                            start: "top 85%",
+                            end: "top 50%",
+                            scrub: 1
+                        }
+                    }
+                );
+            }
+        })();
     </script>
 </body>
 </html>

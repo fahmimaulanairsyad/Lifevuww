@@ -1038,7 +1038,7 @@
             // 3. Gray Sunderland: Tactile Mechanical Audio Ticks on Interaction (Throttled 50ms)
             let lastTickTime = 0;
             document.addEventListener('pointerenter', (e) => {
-                const el = e.target.closest('.btn-filter-pill, .nav-item, .cp-item, .btn-command-palette-trigger');
+                const el = e.target.closest('.btn-filter-pill, .nav-item, .dock-item, .cp-item, .btn-command-palette-trigger, .hud-cmd-trigger');
                 if (el) {
                     const now = performance.now();
                     if (now - lastTickTime < 50) return;
@@ -1046,6 +1046,141 @@
                     LVSound.tick();
                 }
             }, true);
+
+            // 4. Google Antigravity: Interactive Repulsion Particle Canvas
+            (function initAntigravityCanvas() {
+                const canvas = document.getElementById('antigravity-canvas');
+                if (!canvas || reduceMotion) return;
+                const ctx = canvas.getContext('2d');
+                let width = canvas.width = window.innerWidth;
+                let height = canvas.height = window.innerHeight;
+
+                window.addEventListener('resize', () => {
+                    width = canvas.width = window.innerWidth;
+                    height = canvas.height = window.innerHeight;
+                }, { passive: true });
+
+                const numParticles = Math.min(42, Math.floor(width / 32));
+                const particles = [];
+                for (let i = 0; i < numParticles; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.35,
+                        vy: (Math.random() - 0.5) * 0.35,
+                        radius: Math.random() * 1.5 + 0.75,
+                        alpha: Math.random() * 0.3 + 0.15,
+                        color: Math.random() > 0.4 ? '16, 185, 129' : '161, 161, 170'
+                    });
+                }
+
+                let mouseX = -9999, mouseY = -9999;
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                }, { passive: true });
+                window.addEventListener('mouseleave', () => {
+                    mouseX = -9999;
+                    mouseY = -9999;
+                });
+
+                function renderParticles() {
+                    ctx.clearRect(0, 0, width, height);
+                    for (let i = 0; i < particles.length; i++) {
+                        const p = particles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        if (p.x < 0) p.x = width;
+                        if (p.x > width) p.x = 0;
+                        if (p.y < 0) p.y = height;
+                        if (p.y > height) p.y = 0;
+
+                        // Antigravity mouse repulsion
+                        const dx = p.x - mouseX;
+                        const dy = p.y - mouseY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const maxDist = 130;
+
+                        if (dist < maxDist && dist > 0) {
+                            const force = (1 - dist / maxDist) * 3.5;
+                            p.x += (dx / dist) * force;
+                            p.y += (dy / dist) * force;
+                        }
+
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+                        ctx.fill();
+                    }
+                    requestAnimationFrame(renderParticles);
+                }
+                requestAnimationFrame(renderParticles);
+            })();
+
+            // 5. Custom Magnetic Cursor Follower (Desktop only)
+            (function initMagneticCursor() {
+                if (!canHover || reduceMotion) return;
+                const dot = document.getElementById('cursorDot');
+                const ring = document.getElementById('cursorRing');
+                if (!dot || !ring) return;
+
+                let mouseX = window.innerWidth / 2;
+                let mouseY = window.innerHeight / 2;
+                let ringX = mouseX;
+                let ringY = mouseY;
+
+                window.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX;
+                    mouseY = e.clientY;
+                    dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+                }, { passive: true });
+
+                function renderRing() {
+                    ringX += (mouseX - ringX) * 0.18;
+                    ringY += (mouseY - ringY) * 0.18;
+                    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+                    requestAnimationFrame(renderRing);
+                }
+                requestAnimationFrame(renderRing);
+
+                document.addEventListener('pointerenter', (e) => {
+                    const target = e.target.closest('.dock-item, .btn-core, .btn-filter-pill, .hud-cmd-trigger, .hud-btn-icon, .hud-profile-btn');
+                    if (target) {
+                        ring.classList.add('magnetic');
+                    }
+                }, true);
+
+                document.addEventListener('pointerleave', (e) => {
+                    const target = e.target.closest('.dock-item, .btn-core, .btn-filter-pill, .hud-cmd-trigger, .hud-btn-icon, .hud-profile-btn');
+                    if (target) {
+                        ring.classList.remove('magnetic');
+                    }
+                }, true);
+            })();
+
+            // 6. Lenis Smooth Momentum Scroll (Desktop only)
+            (function initLenis() {
+                if (!canHover || reduceMotion || typeof Lenis === 'undefined') return;
+                try {
+                    const lenis = new Lenis({
+                        duration: 1.15,
+                        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                        orientation: 'vertical',
+                        gestureOrientation: 'vertical',
+                        smoothWheel: true,
+                    });
+
+                    function raf(time) {
+                        lenis.raf(time);
+                        requestAnimationFrame(raf);
+                    }
+                    requestAnimationFrame(raf);
+                    window.lvLenis = lenis;
+                } catch (e) {
+                    console.warn('Lenis init bypassed:', e);
+                }
+            })();
         })();
     </script>
 </body>

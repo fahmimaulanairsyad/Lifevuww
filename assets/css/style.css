@@ -6,7 +6,7 @@
    Android APK          : .is-apk native enhancements
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 /* ==========================================================
    CSS VIEW TRANSITIONS API (Seamless Cross-Page Navigation)
@@ -41,12 +41,12 @@
     }
 }
 
-.app-sidebar {
-    view-transition-name: app-sidebar;
+.telemetry-hud {
+    view-transition-name: telemetry-hud;
 }
 
-.mobile-top-bar {
-    view-transition-name: mobile-top-bar;
+.floating-magnetic-dock {
+    view-transition-name: floating-dock;
 }
 
 .main-container {
@@ -90,10 +90,10 @@
     /* Fonts */
     --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
+    --font-display: 'Syne', 'Space Grotesk', var(--font-sans);
 
     /* Geometry */
     --radius: 6px;
-    --sidebar-width: 230px;
     --header-height: 56px;
 }
 
@@ -162,138 +162,336 @@ a:hover {
 /* ==========================================================
    APP SHELL - DESKTOP (default)
    ========================================================== */
+/* ==========================================================
+   APP SHELL - SPATIAL ARCHITECTURE (True UI Maxing)
+   Top Telemetry HUD + Floating Magnetic Glass Dock
+   ========================================================== */
 .app-layout {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
+    background-color: var(--bg-base);
+    position: relative;
+    overflow-x: hidden;
 }
 
-.app-sidebar {
-    width: var(--sidebar-width);
-    background-color: var(--bg-surface);
-    border-right: 1px solid var(--border-hairline);
-    display: flex;
-    flex-direction: column;
+/* Antigravity Canvas Background */
+.antigravity-canvas {
     position: fixed;
     top: 0;
     left: 0;
+    width: 100vw;
     height: 100vh;
-    z-index: 40;
+    pointer-events: none;
+    z-index: 0;
 }
 
-.sidebar-header {
-    height: var(--header-height);
+/* Film Grain Texture Overlay (A24 / Linear Aesthetic) */
+.film-grain {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9990;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Custom Magnetic Cursor Follower */
+.cursor-dot, .cursor-ring {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    border-radius: 50%;
+    z-index: 99999;
+    transform: translate(-50%, -50%);
+    display: none;
+}
+@media (hover: hover) and (pointer: fine) {
+    .cursor-dot {
+        display: block;
+        width: 6px;
+        height: 6px;
+        background-color: var(--accent);
+        transition: width 0.15s ease, height 0.15s ease, background-color 0.15s ease;
+    }
+    .cursor-ring {
+        display: block;
+        width: 28px;
+        height: 28px;
+        border: 1px solid rgba(16, 185, 129, 0.45);
+        transition: width 0.15s ease, height 0.15s ease, border-color 0.15s ease, transform 0.06s ease;
+    }
+    .cursor-ring.magnetic {
+        width: 44px;
+        height: 44px;
+        border-color: var(--accent);
+        background-color: rgba(16, 185, 129, 0.08);
+    }
+}
+
+/* 1. Top Telemetry Cockpit HUD */
+.telemetry-hud {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background-color: rgba(9, 9, 11, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-hairline);
+    z-index: 80;
+}
+
+.hud-inner {
+    max-width: 1140px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 1.25rem;
     display: flex;
     align-items: center;
-    padding: 0 1.25rem;
-    border-bottom: 1px solid var(--border-hairline);
-    gap: 10px;
+    justify-content: space-between;
 }
 
-.brand-name {
+.hud-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.hud-logo {
+    width: 24px;
+    height: 24px;
+}
+
+.hud-title {
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     letter-spacing: -0.02em;
     color: var(--text-primary);
 }
 
-.sidebar-vitals {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--border-hairline);
-    background-color: var(--bg-surface);
-}
-
-.vitals-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.75rem;
-    margin-bottom: 4px;
-}
-
-.vitals-label {
-    font-weight: 500;
-    color: var(--text-muted);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+.hud-rank-pill {
     font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    margin-left: 4px;
 }
 
-.vitals-value {
-    font-family: var(--font-mono);
-    font-weight: 500;
+.hud-telemetry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.sidebar-nav {
-    padding: 1rem 0.6rem;
-    flex: 1;
+.hud-gauge {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    min-width: 95px;
 }
 
-.nav-item {
-    display: flex;
+.hud-gauge-val {
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.hud-track {
+    height: 4px;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.hud-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.hud-fill.bg-danger { background-color: var(--status-danger); }
+.hud-fill.bg-accent { background-color: var(--accent); }
+
+.hud-chip {
+    display: inline-flex;
     align-items: center;
-    padding: 0.5rem 0.75rem;
-    color: var(--text-secondary);
+    gap: 4px;
+    padding: 3px 8px;
     border-radius: var(--radius);
-    font-size: 0.85rem;
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
     font-weight: 500;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    border: 1px solid transparent;
+    background-color: var(--bg-surface-hover);
+    border: 1px solid var(--border-hairline);
+}
+.hud-chip.gold { color: var(--status-warning); }
+
+.hud-cmd-trigger {
+    background: var(--bg-surface-hover);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius);
+    padding: 0.3rem 0.6rem;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.15s ease;
+}
+.hud-cmd-trigger:hover {
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
+}
+.hud-cmd-trigger kbd {
+    background: var(--bg-base);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.62rem;
 }
 
-.nav-item i {
-    width: 18px;
-    margin-right: 10px;
-    font-size: 0.9rem;
+.hud-btn-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
     color: var(--text-muted);
+    font-size: 0.85rem;
+    cursor: pointer;
     transition: color 0.15s ease;
 }
+.hud-btn-icon:hover { color: var(--text-primary); }
 
-.nav-item:hover {
-    background-color: var(--bg-surface-hover);
+.hud-profile-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    transition: transform 0.12s ease;
+}
+.hud-profile-btn:hover {
+    transform: scale(1.08);
     color: var(--text-primary);
 }
 
-.nav-item:hover i {
+/* 2. Floating Magnetic Glass Dock */
+.floating-magnetic-dock {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 90;
+    pointer-events: auto;
+}
+
+.dock-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: rgba(17, 17, 20, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 9999px;
+    box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.dock-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dock-item i {
+    font-size: 1.15rem;
+    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), color 0.18s ease;
+}
+
+.dock-item .dock-label {
+    display: none;
+}
+
+.dock-item:hover {
+    color: var(--text-primary);
+    transform: translateY(-4px) scale(1.18);
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.dock-item:hover i {
     color: var(--text-primary);
 }
 
-.nav-item.active {
-    background-color: var(--bg-elevated);
-    color: var(--text-primary);
-    border-color: var(--border-subtle);
+.dock-item.active {
+    color: var(--accent);
+    background-color: var(--accent-dim);
+    border: 1px solid var(--accent-border);
 }
 
-.nav-item.active i {
+.dock-item.active i {
     color: var(--accent);
 }
 
-.sidebar-footer {
-    padding: 0.75rem 0.6rem;
-    border-top: 1px solid var(--border-hairline);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+/* Tooltip on Desktop hover */
+.dock-item::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: rgba(17, 17, 20, 0.95);
+    border: 1px solid var(--border-hairline);
+    color: var(--text-primary);
+    font-size: 0.68rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    font-family: var(--font-sans);
 }
 
+.dock-item:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Spatial Full-Width Main Canvas */
 .app-main {
     flex: 1;
-    margin-left: var(--sidebar-width);
+    margin-left: 0 !important;
+    width: 100%;
     min-height: 100vh;
-    padding: 2.25rem 2.5rem;
-    background-color: var(--bg-base);
+    padding: 76px 1.5rem 110px 1.5rem;
+    background-color: transparent;
+    position: relative;
+    z-index: 10;
 }
 
 .main-container {
-    max-width: 980px;
+    max-width: 1080px;
     margin: 0 auto;
-}
-
-/* Mobile-only chrome hidden on desktop */
-.mobile-top-bar {
-    display: none;
 }
 
 /* Page Header */
@@ -986,173 +1184,87 @@ body.nag-active .app-main {
         overflow-x: hidden;
     }
 
-    /* Native Top App Bar */
-    .mobile-top-bar {
-        display: flex;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
+    /* Telemetry HUD on Mobile */
+    .telemetry-hud {
         height: calc(52px + env(safe-area-inset-top, 0px));
         padding-top: env(safe-area-inset-top, 0px);
-        padding-left: max(1rem, env(safe-area-inset-left, 0px));
-        padding-right: max(1rem, env(safe-area-inset-right, 0px));
-        padding-bottom: 0;
-        background-color: rgba(17, 17, 20, 0.95);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border-bottom: 1px solid var(--border-hairline);
-        align-items: center;
-        justify-content: space-between;
-        z-index: 50;
     }
 
-    .mobile-brand {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
+    .hud-gauge {
+        display: none !important;
     }
 
-    .mobile-logo {
-        width: 22px;
-        height: 22px;
+    .hud-inner {
+        padding: 0 1rem;
     }
 
-    .mobile-brand-title {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        letter-spacing: -0.02em;
-    }
-
-    .mobile-vitals {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .mobile-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        border-radius: var(--radius);
-        font-size: 0.72rem;
-        font-family: var(--font-mono);
-        font-weight: 500;
-        background-color: var(--bg-surface-hover);
-        border: 1px solid var(--border-hairline);
-    }
-
-    .mobile-chip.hp { color: var(--status-danger); }
-    .mobile-chip.gold { color: var(--status-warning); }
-
-    .mobile-profile-link {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        color: var(--text-secondary);
-        font-size: 1.15rem;
-        transition: transform 0.1s ease;
-    }
-
-    .mobile-profile-link:active {
-        transform: scale(0.92);
-        color: var(--text-primary);
-    }
-
-    /* Bottom Tab Bar */
-    .app-sidebar {
-        position: fixed;
-        top: auto;
+    /* Floating Dock pinned as native bottom bar on Mobile */
+    .floating-magnetic-dock {
         bottom: 0;
         left: 0;
         right: 0;
+        transform: none;
         width: 100%;
-        height: auto;
-        min-height: 56px;
-        padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
-        flex-direction: row;
+    }
+
+    .dock-container {
+        border-radius: 0;
+        border-left: none;
         border-right: none;
-        border-top: 1px solid var(--border-hairline);
-        background-color: rgba(17, 17, 20, 0.96);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        z-index: 45;
-        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
-    }
-
-    .sidebar-header,
-    .sidebar-vitals,
-    .sidebar-footer {
-        display: none;
-    }
-
-    .sidebar-nav {
-        flex-direction: row;
-        padding: 0;
-        justify-content: space-around;
-        align-items: center;
+        border-bottom: none;
         width: 100%;
+        justify-content: space-around;
+        padding: 6px 0 max(8px, env(safe-area-inset-bottom, 0px)) 0;
+        background: rgba(17, 17, 20, 0.96);
     }
 
-    .nav-item {
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+    .dock-item {
+        width: auto;
+        height: auto;
         flex: 1;
-        gap: 3px;
-        padding: 7px 0 8px 0;
-        border: none;
-        background: transparent;
-        transition: transform 0.1s ease, opacity 0.1s ease;
+        border-radius: 0;
+        transform: none !important;
+        background: transparent !important;
+        border: none !important;
     }
 
-    .nav-item:active {
-        transform: scale(0.9);
-        opacity: 0.7;
+    .dock-item:hover {
+        transform: none !important;
+        background: transparent !important;
     }
 
-    .nav-item span {
+    .dock-item i {
+        font-size: 1.15rem;
+    }
+
+    .dock-item .dock-label {
         display: block;
         font-size: 0.62rem;
+        margin-top: 2px;
         color: var(--text-muted);
         letter-spacing: -0.01em;
-        line-height: 1;
-        transition: color 0.15s ease;
     }
 
-    .nav-item i {
-        margin-right: 0;
-        font-size: 1.15rem;
-        color: var(--text-muted);
-        transition: color 0.15s ease;
+    .dock-item.active .dock-label {
+        color: var(--accent);
+        font-weight: 600;
     }
 
-    .nav-item.active {
-        background-color: transparent;
-        border-color: transparent;
-    }
-
-    .nav-item.active i {
+    .dock-item.active i {
         color: var(--accent);
     }
 
-    .nav-item.active span {
-        color: var(--accent);
-        font-weight: 500;
+    .dock-item::after {
+        display: none !important;
     }
 
     /* Main content clears both bars */
     .app-main {
-        margin-left: 0;
-        margin-top: calc(52px + env(safe-area-inset-top, 0px));
-        margin-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
-        padding: 1.25rem 1rem;
+        margin-left: 0 !important;
+        padding-top: calc(64px + env(safe-area-inset-top, 0px));
+        padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+        padding-left: 1rem;
+        padding-right: 1rem;
         width: 100%;
         max-width: 100vw;
         overflow-x: hidden;

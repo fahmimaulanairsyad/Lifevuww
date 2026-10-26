@@ -22,7 +22,11 @@ secure_session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261026_02" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261027_01" rel="stylesheet">
+    <!-- Motion & Scroll Libraries: Lenis & GSAP via CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
     <style>
         /* Scoped resilience styles for filters & heatmap */
         .filter-pills-category { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 1.25rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
@@ -114,115 +118,125 @@ secure_session_start();
                     'reminder' => $reminderShort
                 ];
             }
-            // Data level & EXP untuk sidebar dan mobile header
+            // Data level & EXP untuk HUD dan mobile header
             $navExp = (int) ($navUser['exp'] ?? 0);
             $navLevel = calculateLevel($navExp);
             $navNextExp = $navLevel * 100;
             $navCurBase = ($navLevel - 1) * 100;
             $navExpPct = min(100, max(0, (($navExp - $navCurBase) / max(1, ($navNextExp - $navCurBase))) * 100));
+            $userRankTitle = calculateRank($navLevel);
         ?>
-        <!-- Dedicated Mobile Top App Bar -->
-        <header class="mobile-top-bar">
-            <a href="dashboard.php" class="mobile-brand">
-                <img src="../assets/images/logo.svg" alt="Logo" class="mobile-logo">
-                <span class="mobile-brand-title">Lifevuww</span>
-            </a>
-            <div class="mobile-vitals">
-                <button type="button" class="btn-core btn-ghost p-1 d-md-none text-muted" onclick="window.openCommandPalette && window.openCommandPalette();" aria-label="Buka Menu Cepat">
-                    <i class="fas fa-search"></i>
-                </button>
-                <span class="mobile-chip font-mono text-accent" style="border-color: rgba(16, 185, 129, 0.25); background-color: var(--accent-dim);">
-                    Lv.<?php echo $navLevel; ?>
-                </span>
-                <span class="mobile-chip hp">
-                    <i class="fas fa-heart"></i> <?php echo $navUser['hp'] ?? 100; ?>
-                </span>
-                <span class="mobile-chip gold">
-                    <i class="fas fa-coins"></i> <?php echo number_format($navUser['gold'] ?? 0); ?>
-                </span>
-                <a href="profile.php" class="mobile-profile-link" title="Profil" aria-label="Profil Pengguna">
-                    <i class="fas fa-user-circle"></i>
+        <!-- Interactive Antigravity Canvas & Film Grain Noise Overlay -->
+        <canvas id="antigravity-canvas" class="antigravity-canvas"></canvas>
+        <div class="film-grain"></div>
+
+        <!-- Custom Magnetic Cursor Follower (Desktop only) -->
+        <div class="cursor-dot" id="cursorDot"></div>
+        <div class="cursor-ring" id="cursorRing"></div>
+
+        <!-- Top Telemetry Cockpit HUD -->
+        <header class="telemetry-hud">
+            <div class="hud-inner">
+                <!-- Brand -->
+                <a href="dashboard.php" class="hud-brand">
+                    <img src="../assets/images/logo.svg" alt="Logo" class="hud-logo">
+                    <span class="hud-title">Lifevuww</span>
+                    <span class="badge-status accent font-mono hud-rank-pill d-none d-sm-inline-block">
+                        <?php echo htmlspecialchars($userRankTitle); ?>
+                    </span>
                 </a>
+
+                <!-- Gauges & Telemetry (Center/Right) -->
+                <div class="hud-telemetry">
+                    <!-- Vitals HP Gauge -->
+                    <div class="hud-gauge d-none d-md-flex" title="Health Points">
+                        <div class="d-flex align-items-center justify-content-between font-mono text-danger" style="font-size: 0.68rem;">
+                            <span><i class="fas fa-heart me-1"></i>HP</span>
+                            <span class="hud-gauge-val"><?php echo $navUser['hp'] ?? 100; ?>/<?php echo $navUser['max_hp'] ?? 100; ?></span>
+                        </div>
+                        <div class="hud-track">
+                            <div class="hud-fill bg-danger" style="width: <?php echo min(100, max(0, (($navUser['hp'] ?? 100) / ($navUser['max_hp'] ?? 100)) * 100)); ?>%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Vitals EXP & Level Gauge -->
+                    <div class="hud-gauge d-none d-md-flex" title="Tingkat & EXP">
+                        <div class="d-flex align-items-center justify-content-between font-mono text-accent" style="font-size: 0.68rem;">
+                            <span><i class="fas fa-bolt me-1"></i>Lv.<?php echo $navLevel; ?></span>
+                            <span class="hud-gauge-val"><?php echo $navExp; ?>/<?php echo $navNextExp; ?></span>
+                        </div>
+                        <div class="hud-track">
+                            <div class="hud-fill bg-accent" style="width: <?php echo $navExpPct; ?>%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile compact vitals -->
+                    <span class="mobile-chip font-mono text-accent d-md-none" style="border-color: rgba(16, 185, 129, 0.25); background-color: var(--accent-dim);">
+                        Lv.<?php echo $navLevel; ?>
+                    </span>
+                    <span class="mobile-chip hp d-md-none">
+                        <i class="fas fa-heart"></i> <?php echo $navUser['hp'] ?? 100; ?>
+                    </span>
+
+                    <!-- Gold Chip -->
+                    <div class="hud-chip gold font-mono">
+                        <i class="fas fa-coins text-warning"></i>
+                        <span><?php echo number_format($navUser['gold'] ?? 0); ?></span>
+                    </div>
+
+                    <!-- Quick Command Trigger [⌘K] -->
+                    <button type="button" class="hud-cmd-trigger" onclick="window.openCommandPalette && window.openCommandPalette();" title="Buka Menu Cepat (Ctrl+K)">
+                        <i class="fas fa-search me-1"></i>
+                        <kbd class="font-mono d-none d-sm-inline">⌘K</kbd>
+                    </button>
+
+                    <!-- Sound Toggle -->
+                    <button type="button" class="btn-sound-toggle hud-btn-icon d-none d-sm-inline-flex" aria-label="Nyalakan atau matikan suara">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+
+                    <!-- Profile Avatar -->
+                    <a href="profile.php" class="hud-profile-btn" title="Profil" aria-label="Profil Pengguna">
+                        <i class="fas fa-user-circle"></i>
+                    </a>
+                </div>
             </div>
         </header>
 
-        <aside class="app-sidebar">
-            <div class="sidebar-header">
-                <img src="../assets/images/logo.svg" alt="Logo" style="width: 24px; height: 24px;">
-                <span class="brand-name">Lifevuww</span>
-            </div>
-            
-            <div class="sidebar-vitals">
-                <!-- HP -->
-                <div class="vitals-row">
-                    <span class="vitals-label"><i class="fas fa-heart text-danger me-1"></i> HP</span>
-                    <span class="vitals-value font-mono text-danger"><?php echo $navUser['hp'] ?? 100; ?> / <?php echo $navUser['max_hp'] ?? 100; ?></span>
-                </div>
-                <div class="vitals-track mb-2">
-                    <div class="vitals-fill" style="width: <?php echo min(100, max(0, (($navUser['hp'] ?? 100) / ($navUser['max_hp'] ?? 100)) * 100)); ?>%; background-color: var(--status-danger);"></div>
-                </div>
-
-                <!-- EXP Progress Bar -->
-                <div class="vitals-row">
-                    <span class="vitals-label"><i class="fas fa-bolt text-accent me-1"></i> Tingkat <?php echo $navLevel; ?></span>
-                    <span class="vitals-value font-mono text-accent" style="font-size: 0.72rem;"><?php echo $navExp; ?> / <?php echo $navNextExp; ?> EXP</span>
-                </div>
-                <div class="vitals-track mb-3">
-                    <div class="vitals-fill" style="width: <?php echo $navExpPct; ?>%; background-color: var(--accent);"></div>
-                </div>
-                
-                <!-- Gold -->
-                <div class="vitals-row">
-                    <span class="vitals-label"><i class="fas fa-coins text-warning me-1"></i> Gold</span>
-                    <span class="vitals-value font-mono text-warning"><?php echo number_format($navUser['gold'] ?? 0); ?></span>
-                </div>
-            </div>
-
-            <!-- Command Palette Trigger (Desktop) -->
-            <div class="px-2 pt-1 pb-1 d-none d-md-block">
-                <button type="button" class="btn-command-palette-trigger w-100 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius); padding: 0.4rem 0.65rem; color: var(--text-muted); font-size: 0.75rem; cursor: pointer;" onclick="window.openCommandPalette && window.openCommandPalette();">
-                    <span><i class="fas fa-search me-1 text-muted"></i> Menu Cepat</span>
-                    <kbd class="font-mono" style="background: var(--bg-base); border: 1px solid var(--border-subtle); color: var(--text-secondary); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.65rem;">Ctrl+K</kbd>
-                </button>
-            </div>
-
-            <nav class="sidebar-nav">
+        <!-- Floating Magnetic Glass Dock -->
+        <nav class="floating-magnetic-dock" id="floatingDock">
+            <div class="dock-container">
                 <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
-                <a href="dashboard.php" class="nav-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>" title="Dasbor" aria-label="Dasbor">
-                    <i class="fas fa-home"></i> <span>Dasbor</span>
+                <a href="dashboard.php" class="dock-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>" data-tooltip="Dasbor">
+                    <i class="fas fa-home"></i>
+                    <span class="dock-label">Dasbor</span>
                 </a>
-                <a href="habits.php" class="nav-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>" title="Kebiasaan" aria-label="Kebiasaan">
-                    <i class="fas fa-check-square"></i> <span>Kebiasaan</span>
+                <a href="habits.php" class="dock-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>" data-tooltip="Kebiasaan">
+                    <i class="fas fa-check-square"></i>
+                    <span class="dock-label">Kebiasaan</span>
                 </a>
-                <a href="quests.php" class="nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>" title="Misi" aria-label="Misi">
-                    <i class="fas fa-map-signs"></i> <span>Misi</span>
+                <a href="quests.php" class="dock-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>" data-tooltip="Misi">
+                    <i class="fas fa-map-signs"></i>
+                    <span class="dock-label">Misi</span>
                 </a>
-                <a href="skills.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" title="Keahlian" aria-label="Keahlian">
-                    <i class="fas fa-book-open"></i> <span>Keahlian</span>
+                <a href="skills.php" class="dock-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" data-tooltip="Keahlian">
+                    <i class="fas fa-book-open"></i>
+                    <span class="dock-label">Keahlian</span>
                 </a>
-                <a href="shop.php" class="nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" title="Toko" aria-label="Toko Hadiah">
-                    <i class="fas fa-store"></i> <span>Toko</span>
+                <a href="shop.php" class="dock-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" data-tooltip="Toko">
+                    <i class="fas fa-store"></i>
+                    <span class="dock-label">Toko</span>
                 </a>
-                <a href="history.php" class="nav-item d-none d-md-flex <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" title="Riwayat" aria-label="Riwayat Aktivitas">
-                    <i class="fas fa-history"></i> <span>Riwayat</span>
+                <a href="history.php" class="dock-item <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" data-tooltip="Riwayat">
+                    <i class="fas fa-history"></i>
+                    <span class="dock-label">Riwayat</span>
                 </a>
-                <a href="profile.php" class="nav-item d-md-none <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" title="Profil" aria-label="Profil Pengguna">
-                    <i class="fas fa-user-circle"></i> <span>Profil</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <a href="profile.php" class="nav-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" aria-label="Profil Pengguna">
-                    <i class="fas fa-user-circle"></i> <span>Profil</span>
-                </a>
-                <button type="button" id="btn-sound" class="nav-item btn-sound-toggle" aria-label="Nyalakan atau matikan efek suara" style="background: none; border: none; width: 100%; cursor: pointer; font-family: inherit; text-align: left;">
-                    <i class="fas fa-volume-up"></i> <span>Suara nyala</span>
-                </button>
-                <a href="../logout.php" class="nav-item" aria-label="Keluar dari akun" style="color: var(--text-tertiary);">
-                    <i class="fas fa-sign-out-alt"></i> <span>Keluar</span>
+                <a href="profile.php" class="dock-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" data-tooltip="Profil">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="dock-label">Profil</span>
                 </a>
             </div>
-        </aside>
+        </nav>
         <?php endif; ?>
 
         <main class="app-main">
