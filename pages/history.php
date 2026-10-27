@@ -96,6 +96,12 @@ for ($i = 59; $i >= 0; $i--) {
     ];
 }
 
+// Ambil rekor streak terbaik untuk ringkasan metrik
+$stmtStreak = $pdo->prepare("SELECT COALESCE(MAX(streak), 0) FROM habits WHERE user_id = ?");
+$stmtStreak->execute([$userId]);
+$historyBestStreak = (int) $stmtStreak->fetchColumn();
+$historyAvgDaily = round($totalHeatTasks / 60, 1);
+
 // Urutkan terbaru dulu, lalu kelompokkan per tanggal
 usort($entries, fn($a, $b) => strcmp($b['sort_key'], $a['sort_key']));
 $grouped = [];
@@ -121,17 +127,28 @@ function status_badge($status) {
 </div>
 
 <!-- Heatmap Konsistensi 60 Hari (GitHub Style) -->
-<div class="bento-panel mb-4 p-4">
-    <div class="panel-header">
+<div class="bento-panel spotlight-card holo-card mb-4 p-4">
+    <div class="panel-header flex-wrap gap-2">
         <div>
             <h3 class="panel-title"><i class="fas fa-th text-accent"></i> Heatmap Konsistensi (60 Hari Terakhir)</h3>
             <p class="text-muted mb-0" style="font-size: 0.78rem;">Peta visual keteraturan disiplin dan produktivitas harianmu.</p>
         </div>
-        <div class="d-flex gap-3 font-mono" style="font-size: 0.75rem;">
-            <span><strong class="text-accent"><?php echo $activeHeatDays; ?></strong> / 60 hari aktif</span>
-            <span><strong class="text-accent"><?php echo $totalHeatTasks; ?></strong> tugas tuntas</span>
+        <!-- 3 Mini Summary Metrics -->
+        <div class="d-flex flex-wrap gap-2 font-mono" style="font-size: 0.72rem;">
+            <span class="badge-status accent font-mono" title="Total hari aktif dalam 60 hari">
+                <i class="fas fa-calendar-check me-1"></i><strong><?php echo $activeHeatDays; ?></strong>/60 Hari Aktif
+            </span>
+            <span class="badge-status warning font-mono" title="Rekor streak tertinggi">
+                <i class="fas fa-fire me-1"></i><strong><?php echo $historyBestStreak; ?></strong> Hari Rekor Streak
+            </span>
+            <span class="badge-status font-mono" title="Rata-rata aktivitas harian">
+                <i class="fas fa-chart-line me-1"></i><strong><?php echo $historyAvgDaily; ?></strong> Aktivitas/Hari
+            </span>
         </div>
     </div>
+
+    <!-- Floating Tooltip Container -->
+    <div id="heatmapFloatingTooltip" class="heatmap-floating-tooltip"></div>
 
     <!-- Heatmap Grid -->
     <div class="heatmap-wrapper" id="heatmapWrapper" style="overflow-x: auto; padding: 0.25rem 0;">
@@ -150,10 +167,10 @@ function status_badge($status) {
                     $bg = 'rgba(16, 185, 129, 0.28)';
                     $border = 'rgba(16, 185, 129, 0.4)';
                 }
-                $tooltip = indo_short_date($hd['date']) . ': ' . ($cnt > 0 ? "{$cnt} tugas tuntas (+{$hd['exp']} EXP)" : "Tidak ada aktivitas");
+                $tooltip = indo_short_date($hd['date']) . ' • ' . ($cnt > 0 ? "{$cnt} Aktivitas Selesai (+{$hd['exp']} EXP)" : "Tidak ada aktivitas");
             ?>
                 <div class="heatmap-cell" 
-                     title="<?php echo htmlspecialchars($tooltip); ?>" 
+                     data-tooltip="<?php echo htmlspecialchars($tooltip); ?>" 
                      style="display: inline-block; width: 16px; height: 16px; border-radius: 3px; background-color: <?php echo $bg; ?>; border: 1px solid <?php echo $border; ?>; cursor: pointer; flex-shrink: 0;">
                 </div>
             <?php endforeach; ?>
@@ -161,10 +178,29 @@ function status_badge($status) {
     </div>
     <script>
         (function() {
+            // Horizontal auto-scroll
             const hw = document.getElementById('heatmapWrapper');
             if (hw && hw.scrollWidth > hw.clientWidth) {
                 hw.scrollLeft = hw.scrollWidth;
             }
+
+            // Interactive Custom Floating Tooltip
+            const tooltip = document.getElementById('heatmapFloatingTooltip');
+            if (!tooltip) return;
+            document.querySelectorAll('.heatmap-cell[data-tooltip]').forEach(cell => {
+                const show = () => {
+                    tooltip.textContent = cell.getAttribute('data-tooltip');
+                    tooltip.classList.add('show');
+                    const rect = cell.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                    tooltip.style.top = rect.top + 'px';
+                };
+                cell.addEventListener('mouseenter', show);
+                cell.addEventListener('mousemove', show);
+                cell.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('show');
+                });
+            });
         })();
     </script>
 

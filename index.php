@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261027_04" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261027_05" rel="stylesheet">
 
     <!-- Motion & Scroll Libraries: Lenis & GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
@@ -74,6 +74,9 @@ if (isset($_SESSION['user_id'])) {
     <!-- Custom Magnetic Cursor Follower (Desktop only) -->
     <div class="cursor-dot" id="cursorDot"></div>
     <div class="cursor-ring" id="cursorRing"></div>
+
+    <!-- Top Vignette Blur Shield (prevents content collision when scrolling behind navbar) -->
+    <div class="top-vignette-shield"></div>
 
     <!-- 1. Floating Pill Glass Navbar -->
     <nav class="lp-navbar-pill">
@@ -913,11 +916,11 @@ if (isset($_SESSION['user_id'])) {
                     ctx.lineTo(p2.x, p2.y);
                     ctx.closePath();
 
-                    ctx.fillStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.05)' : 'rgba(99, 102, 241, 0.12)';
+                    ctx.fillStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(99, 102, 241, 0.16)';
                     ctx.fill();
 
-                    ctx.strokeStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.22)' : 'rgba(99, 102, 241, 0.38)';
-                    ctx.lineWidth = 1.2;
+                    ctx.strokeStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.45)' : 'rgba(99, 102, 241, 0.65)';
+                    ctx.lineWidth = 1.6;
                     ctx.stroke();
                 });
 

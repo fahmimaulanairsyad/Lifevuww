@@ -244,7 +244,7 @@ a:hover {
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border-hairline);
-    z-index: 80;
+    z-index: 1000;
 }
 
 .hud-inner {
@@ -721,6 +721,31 @@ a:hover {
 .btn-action-secondary:hover,
 .btn-action-secondary:focus {
     opacity: 1;
+}
+
+/* Heatmap Custom Dark Glass Floating Tooltip */
+.heatmap-floating-tooltip {
+    position: fixed;
+    z-index: 99999;
+    pointer-events: none;
+    padding: 6px 12px;
+    background: rgba(14, 14, 18, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    color: #fafafa;
+    font-size: 0.74rem;
+    font-family: var(--font-mono);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(-8px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    white-space: nowrap;
+}
+.heatmap-floating-tooltip.show {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(-12px);
 }
 
 /* Boss Card: Deep crimson glass */
@@ -1549,6 +1574,24 @@ html.is-apk #btn-install-app {
     overflow: visible;
 }
 
+/* Top Vignette Shield for Floating Navbar & HUD */
+.top-vignette-shield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 88px;
+    background: linear-gradient(to bottom, #09090b 25%, rgba(9, 9, 11, 0.72) 65%, transparent 100%);
+    pointer-events: none;
+    z-index: 990;
+}
+
+#lp-showcase,
+#lp-bento,
+#lp-ranks {
+    scroll-margin-top: 100px;
+}
+
 .lp-hero-stage {
     position: absolute;
     inset: 0;
@@ -1556,12 +1599,13 @@ html.is-apk #btn-install-app {
     height: 650px;
     pointer-events: none;
     z-index: 0;
-    background: radial-gradient(ellipse 65% 45% at 50% 25%, rgba(16, 185, 129, 0.14), rgba(99, 102, 241, 0.06), transparent 75%);
+    background: radial-gradient(circle at 50% 38%, rgba(16, 185, 129, 0.22) 0%, rgba(99, 102, 241, 0.08) 35%, transparent 68%);
     background-image: 
+        radial-gradient(circle at 50% 38%, rgba(16, 185, 129, 0.22) 0%, rgba(99, 102, 241, 0.08) 35%, transparent 68%),
         radial-gradient(ellipse 65% 45% at 50% 25%, rgba(16, 185, 129, 0.14), rgba(99, 102, 241, 0.06), transparent 75%),
         linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-    background-size: 100% 100%, 48px 48px, 48px 48px;
+    background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
     background-position: center top;
     -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
     mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
@@ -1573,7 +1617,7 @@ html.is-apk #btn-install-app {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    opacity: 0.45;
+    opacity: 0.7;
     z-index: 0;
 }
 
