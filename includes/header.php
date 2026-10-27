@@ -22,7 +22,7 @@ secure_session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261027_06" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261027_07" rel="stylesheet">
     <!-- Motion & Scroll Libraries: Lenis & GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -171,22 +171,22 @@ secure_session_start();
 
                     <!-- Quick Command Trigger [⌘K] -->
                     <button type="button" class="hud-cmd-trigger" onclick="window.openCommandPalette && window.openCommandPalette();" title="Buka Menu Cepat (Ctrl+K)">
-                        <i class="fas fa-search me-1"></i>
-                        <kbd class="font-mono d-none d-sm-inline">⌘K</kbd>
+                        <i class="fas fa-search"></i>
+                        <kbd class="font-mono d-none d-md-inline ms-1">⌘K</kbd>
                     </button>
 
                     <!-- Sound Toggle -->
-                    <button type="button" class="btn-sound-toggle hud-btn-icon d-none d-sm-inline-flex" aria-label="Nyalakan atau matikan suara">
+                    <button type="button" class="btn-sound-toggle hud-btn-icon" aria-label="Nyalakan atau matikan suara" title="Audio">
                         <i class="fas fa-volume-up"></i>
                     </button>
 
-                    <!-- Profile Avatar -->
-                    <a href="profile.php" class="hud-profile-btn" title="Profil" aria-label="Profil Pengguna">
+                    <!-- Profile Avatar (Desktop HUD) -->
+                    <a href="profile.php" class="hud-profile-btn d-none d-md-inline-flex" title="Profil" aria-label="Profil Pengguna">
                         <i class="fas fa-user-circle"></i>
                     </a>
 
                     <!-- Logout Quick Action -->
-                    <a href="../logout.php" class="hud-btn-icon text-muted d-none d-sm-inline-flex" title="Keluar dari akun" aria-label="Keluar dari akun" data-confirm="Yakin ingin keluar dari akun?" data-confirm-title="Keluar Akun" data-confirm-variant="danger" data-confirm-btn="Keluar">
+                    <a href="../logout.php" class="hud-btn-icon text-muted" title="Keluar dari akun" aria-label="Keluar dari akun" data-confirm="Yakin ingin keluar dari akun?" data-confirm-title="Keluar Akun" data-confirm-variant="danger" data-confirm-btn="Keluar">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </div>

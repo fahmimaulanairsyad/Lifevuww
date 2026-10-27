@@ -328,8 +328,8 @@ function status_badge($status) {
             <i class="fas fa-filter text-accent"></i>
             <span>Menampilkan aktivitas tanggal <strong id="filterDateLabel" class="text-accent font-mono"></strong></span>
         </div>
-        <button type="button" id="btnClearDateFilter" class="btn-core btn-ghost text-muted p-1" style="font-size: 0.75rem;" title="Tampilkan Semua">
-            Tampilkan Semua &times;
+        <button type="button" id="btnClearDateFilter" class="btn-core btn-ghost text-muted p-1" style="font-size: 0.75rem;" title="Tampilkan Semua Tanggal">
+            Tampilkan Semua Tanggal &times;
         </button>
     </div>
 

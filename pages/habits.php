@@ -411,8 +411,8 @@ require_once '../includes/header.php';
             </div>
         </div>
     <?php else: ?>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-            <div class="filter-pills-category" style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; margin-bottom: 0;">
+        <div class="task-filter-bar mb-3">
+            <div class="filter-pills-category">
                 <button type="button" class="btn-core btn-filter-pill active" data-filter="all"><i class="fas fa-layer-group"></i> Semua</button>
                 <button type="button" class="btn-core btn-filter-pill" data-filter="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
                 <button type="button" class="btn-core btn-filter-pill" data-filter="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
@@ -420,7 +420,7 @@ require_once '../includes/header.php';
                 <button type="button" class="btn-core btn-filter-pill" data-filter="Wealth"><i class="fas fa-coins"></i> Wealth</button>
                 <button type="button" class="btn-core btn-filter-pill" data-filter="Social"><i class="fas fa-users"></i> Social</button>
             </div>
-            <div class="d-flex align-items-center gap-1 ms-auto">
+            <div class="filter-sort-wrap">
                 <label for="sortHabits" class="text-muted" style="font-size: 0.74rem; white-space: nowrap;"><i class="fas fa-sort me-1"></i>Urutkan:</label>
                 <select id="sortHabits" class="form-select form-select-sm font-mono" style="font-size: 0.76rem; width: auto; padding-right: 1.75rem; background-color: var(--bg-surface-hover); border-color: var(--border-hairline);">
                     <option value="default">Bawaan</option>
@@ -480,10 +480,10 @@ require_once '../includes/header.php';
                                 </button>
                             </form>
                         <?php else: ?>
-                            <form method="POST" style="margin: 0;">
+                            <form method="POST" style="margin: 0;" class="form-action-primary">
                                 <?php echo csrf_field(); ?>
                                 <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                                <button type="submit" name="complete_habit" class="btn-core btn-accent" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+                                <button type="submit" name="complete_habit" class="btn-core btn-accent btn-action-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
                                     Selesaikan
                                 </button>
                             </form>
