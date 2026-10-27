@@ -562,4 +562,24 @@ require_once '../includes/header.php';
     <?php endif; ?>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const newCat = params.get('new_cat');
+    const validCats = ['Intelligence', 'Physical', 'Health', 'Wealth', 'Social'];
+    if (newCat && validCats.includes(newCat)) {
+        const catSelect = document.getElementById('category');
+        if (catSelect) {
+            catSelect.value = newCat;
+        }
+        const modalEl = document.getElementById('addHabitModal');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+</script>
+
 <?php require_once("../includes/footer.php"); ?>

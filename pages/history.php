@@ -136,7 +136,7 @@ function status_badge($status) {
         <!-- 3 Mini Summary Metrics -->
         <div class="d-flex flex-wrap gap-2 font-mono" style="font-size: 0.72rem;">
             <span class="badge-status accent font-mono" title="Total hari aktif dalam 60 hari">
-                <i class="fas fa-calendar-check me-1"></i><strong><?php echo $activeHeatDays; ?></strong>/60 Hari Aktif
+                <i class="fas fa-calendar-check me-1"></i><strong><?php echo $activeHeatDays; ?></strong> / 60 Hari Aktif
             </span>
             <span class="badge-status warning font-mono" title="Rekor streak tertinggi">
                 <i class="fas fa-fire me-1"></i><strong><?php echo $historyBestStreak; ?></strong> Hari Rekor Streak
@@ -170,6 +170,7 @@ function status_badge($status) {
                 $tooltip = indo_short_date($hd['date']) . ' • ' . ($cnt > 0 ? "{$cnt} Aktivitas Selesai (+{$hd['exp']} EXP)" : "Tidak ada aktivitas");
             ?>
                 <div class="heatmap-cell" 
+                     data-date="<?php echo $hd['date']; ?>"
                      data-tooltip="<?php echo htmlspecialchars($tooltip); ?>" 
                      style="display: inline-block; width: 16px; height: 16px; border-radius: 3px; background-color: <?php echo $bg; ?>; border: 1px solid <?php echo $border; ?>; cursor: pointer; flex-shrink: 0;">
                 </div>
@@ -184,22 +185,107 @@ function status_badge($status) {
                 hw.scrollLeft = hw.scrollWidth;
             }
 
-            // Interactive Custom Floating Tooltip
+            // Interactive Custom Floating Tooltip & Click-to-filter
             const tooltip = document.getElementById('heatmapFloatingTooltip');
-            if (!tooltip) return;
-            document.querySelectorAll('.heatmap-cell[data-tooltip]').forEach(cell => {
-                const show = () => {
-                    tooltip.textContent = cell.getAttribute('data-tooltip');
-                    tooltip.classList.add('show');
-                    const rect = cell.getBoundingClientRect();
-                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-                    tooltip.style.top = rect.top + 'px';
-                };
-                cell.addEventListener('mouseenter', show);
-                cell.addEventListener('mousemove', show);
-                cell.addEventListener('mouseleave', () => {
-                    tooltip.classList.remove('show');
+            const banner = document.getElementById('historyDateFilterBanner');
+            const filterLabel = document.getElementById('filterDateLabel');
+            const clearBtn = document.getElementById('btnClearDateFilter');
+            const emptyEl = document.getElementById('historyDateEmptyState');
+            const dayGroups = document.querySelectorAll('.history-day-group');
+            const cells = document.querySelectorAll('.heatmap-cell[data-tooltip]');
+
+            let selectedDate = null;
+
+            function positionTooltip(cell) {
+                if (!tooltip) return;
+                tooltip.textContent = cell.getAttribute('data-tooltip');
+                tooltip.classList.add('show');
+                const rect = cell.getBoundingClientRect();
+                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                tooltip.style.top = rect.top + 'px';
+            }
+
+            function clearDateFilter() {
+                selectedDate = null;
+                cells.forEach(c => c.classList.remove('is-selected'));
+                if (tooltip) tooltip.classList.remove('show');
+                if (banner) {
+                    banner.classList.remove('d-flex');
+                    banner.classList.add('d-none');
+                }
+                if (emptyEl) emptyEl.classList.add('d-none');
+                dayGroups.forEach(g => g.style.display = '');
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearDateFilter);
+            }
+
+            cells.forEach(cell => {
+                const date = cell.getAttribute('data-date');
+                
+                cell.addEventListener('mouseenter', () => {
+                    if (!selectedDate) positionTooltip(cell);
                 });
+                cell.addEventListener('mousemove', () => {
+                    if (!selectedDate) positionTooltip(cell);
+                });
+                cell.addEventListener('mouseleave', () => {
+                    if (!selectedDate && tooltip) tooltip.classList.remove('show');
+                });
+
+                // Click / Tap Handler
+                cell.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (selectedDate === date) {
+                        clearDateFilter();
+                        return;
+                    }
+
+                    selectedDate = date;
+                    cells.forEach(c => c.classList.remove('is-selected'));
+                    cell.classList.add('is-selected');
+                    positionTooltip(cell);
+
+                    // Filter history groups
+                    let visibleCount = 0;
+                    dayGroups.forEach(g => {
+                        if (g.getAttribute('data-date') === date) {
+                            g.style.display = '';
+                            visibleCount++;
+                        } else {
+                            g.style.display = 'none';
+                        }
+                    });
+
+                    if (banner && filterLabel) {
+                        const rawTooltip = cell.getAttribute('data-tooltip') || '';
+                        const datePart = rawTooltip.split('•')[0].trim() || date;
+                        filterLabel.textContent = datePart;
+                        banner.classList.remove('d-none');
+                        banner.classList.add('d-flex');
+                    }
+
+                    if (emptyEl) {
+                        if (visibleCount === 0) {
+                            emptyEl.classList.remove('d-none');
+                        } else {
+                            emptyEl.classList.add('d-none');
+                        }
+                    }
+
+                    // Smooth scroll down to log list on mobile
+                    if (window.innerWidth <= 768 && banner) {
+                        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                });
+            });
+
+            // Close tooltip and selection when clicking outside heatmap
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('#heatmapWrapper') && !e.target.closest('#historyDateFilterBanner')) {
+                    if (!selectedDate && tooltip) tooltip.classList.remove('show');
+                }
             });
         })();
     </script>
@@ -236,6 +322,23 @@ function status_badge($status) {
         </div>
     </form>
 
+    <!-- Active Date Filter Indicator Banner -->
+    <div id="historyDateFilterBanner" class="alert alert-dismissible fade show d-none align-items-center justify-content-between p-2 px-3 mb-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius); font-size: 0.78rem;">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fas fa-filter text-accent"></i>
+            <span>Menampilkan aktivitas tanggal <strong id="filterDateLabel" class="text-accent font-mono"></strong></span>
+        </div>
+        <button type="button" id="btnClearDateFilter" class="btn-core btn-ghost text-muted p-1" style="font-size: 0.75rem;" title="Tampilkan Semua">
+            Tampilkan Semua &times;
+        </button>
+    </div>
+
+    <div id="historyDateEmptyState" class="text-center py-4 text-muted d-none">
+        <i class="fas fa-calendar-times fa-2x mb-2" style="opacity: 0.3;"></i>
+        <p class="mb-0 font-mono" style="font-size: 0.82rem;">Tidak ada riwayat aktivitas tercatat pada tanggal ini.</p>
+    </div>
+
+    <div id="historyLogContainer">
     <?php if (empty($grouped)): ?>
         <div class="text-center py-5 text-muted">
             <i class="fas fa-history fa-2x mb-3" style="opacity: 0.3;"></i>
@@ -245,34 +348,37 @@ function status_badge($status) {
         <?php foreach ($grouped as $day => $items):
             $dayExp = array_sum(array_column($items, 'exp_reward'));
         ?>
-            <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
-                <h3 class="font-mono mb-0" style="font-size: 0.85rem; font-weight: 600;"><?php echo indo_short_date($day); ?></h3>
-                <span class="badge-status accent font-mono">+<?php echo number_format($dayExp); ?> EXP</span>
-            </div>
-            <div class="data-list" style="border-top: 1px solid var(--border-hairline);">
-                <?php foreach ($items as $it): ?>
-                    <div class="data-row" style="padding: 0.7rem 0;">
-                        <div class="data-main">
-                            <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; color: <?php echo $it['kind'] === 'quest' ? 'var(--accent)' : 'var(--text-muted)'; ?>;">
-                                <i class="fas <?php echo $it['kind'] === 'quest' ? 'fa-scroll' : 'fa-check-square'; ?>"></i>
-                            </div>
-                            <div>
-                                <div class="data-title" style="font-size: 0.85rem;"><?php echo htmlspecialchars($it['name']); ?></div>
-                                <div class="data-meta font-mono">
-                                    <span><?php echo htmlspecialchars($it['kind'] === 'quest' ? date('H:i', strtotime($it['done_at'])) : indo_short_date($it['done_at'])); ?></span>
-                                    <span><?php echo $it['kind'] === 'quest' ? 'Misi' : 'Kebiasaan'; ?></span>
+            <div class="history-day-group" data-date="<?php echo $day; ?>">
+                <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+                    <h3 class="font-mono mb-0" style="font-size: 0.85rem; font-weight: 600;"><?php echo indo_short_date($day); ?></h3>
+                    <span class="badge-status accent font-mono">+<?php echo number_format($dayExp); ?> EXP</span>
+                </div>
+                <div class="data-list" style="border-top: 1px solid var(--border-hairline);">
+                    <?php foreach ($items as $it): ?>
+                        <div class="data-row" data-date="<?php echo $day; ?>" style="padding: 0.7rem 0;">
+                            <div class="data-main">
+                                <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; color: <?php echo $it['kind'] === 'quest' ? 'var(--accent)' : 'var(--text-muted)'; ?>;">
+                                    <i class="fas <?php echo $it['kind'] === 'quest' ? 'fa-scroll' : 'fa-check-square'; ?>"></i>
+                                </div>
+                                <div>
+                                    <div class="data-title" style="font-size: 0.85rem;"><?php echo htmlspecialchars($it['name']); ?></div>
+                                    <div class="data-meta font-mono">
+                                        <span><?php echo htmlspecialchars($it['kind'] === 'quest' ? date('H:i', strtotime($it['done_at'])) : indo_short_date($it['done_at'])); ?></span>
+                                        <span><?php echo $it['kind'] === 'quest' ? 'Misi' : 'Kebiasaan'; ?></span>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="data-actions">
+                                <span class="font-mono text-accent me-2" style="font-size: 0.78rem;">+<?php echo $it['exp_reward']; ?></span>
+                                <?php echo status_badge($it['status']); ?>
+                            </div>
                         </div>
-                        <div class="data-actions">
-                            <span class="font-mono text-accent me-2" style="font-size: 0.78rem;">+<?php echo $it['exp_reward']; ?></span>
-                            <?php echo status_badge($it['status']); ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
+    </div>
 </div>
 
 <?php require_once("../includes/footer.php"); ?>

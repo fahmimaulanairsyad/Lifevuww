@@ -133,7 +133,7 @@ arsort($sorted_stats);
                         <div class="vitals-fill" style="width: <?php echo $pct; ?>%; background-color: var(--accent);"></div>
                     </div>
 
-                    <a href="habits.php" class="btn-core btn-outline w-100 font-mono" style="font-size: 0.75rem; padding: 0.4rem 0.6rem;">
+                    <a href="habits.php?new_cat=<?php echo urlencode($category); ?>" class="btn-core btn-outline w-100 font-mono" style="font-size: 0.75rem; padding: 0.4rem 0.6rem;">
                         <i class="fas fa-plus me-1 text-accent"></i> + Buat Kebiasaan
                     </a>
                 </div>

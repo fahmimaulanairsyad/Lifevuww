@@ -597,6 +597,14 @@ a:hover {
     z-index: 5;
     border-color: #fafafa !important;
 }
+.heatmap-cell.is-selected {
+    outline: 2px solid #10b981 !important;
+    outline-offset: 1px;
+    border-color: #10b981 !important;
+    transform: scale(1.25);
+    z-index: 6;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+}
 
 /* Connected Metric Strip */
 .metric-strip {

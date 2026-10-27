@@ -160,11 +160,11 @@ try {
 <div class="row g-3 mb-4">
     <!-- Character Core Status -->
     <div class="col-md-8">
-        <div class="bento-panel spotlight-card holo-card h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 45%), #111114;">
+        <div class="bento-panel spotlight-card holo-card h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.16) 0%, transparent 48%), radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 40%), #111114; border-top: 1px solid rgba(255, 255, 255, 0.18);">
             <div>
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
-                        <span class="badge-status accent font-mono mb-2" style="font-size: 0.74rem; padding: 0.22rem 0.65rem; border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.12);">
+                        <span class="badge-status accent font-mono mb-2" style="font-size: 0.74rem; padding: 0.25rem 0.7rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.14); box-shadow: 0 0 14px rgba(16, 185, 129, 0.18);">
                             <i class="fas fa-crown me-1 text-warning"></i> <?php echo htmlspecialchars($rank); ?>
                         </span>
                         <h2 style="font-size: 1.65rem; margin: 0; font-weight: 600;"><?php echo htmlspecialchars($user['username']); ?></h2>
@@ -204,7 +204,7 @@ try {
                 </div>
                 <div class="mt-2 d-flex justify-content-between align-items-center font-mono" style="font-size: 0.72rem;">
                     <span class="text-muted">Progres ke Tingkat <?php echo $level + 1; ?></span>
-                    <span class="badge-status font-mono" style="font-size: 0.68rem; background: rgba(255, 255, 255, 0.05); color: #d4d4d8;">
+                    <span class="badge-status font-mono" style="font-size: 0.7rem; background: rgba(255, 255, 255, 0.05); color: #d4d4d8; border-color: rgba(255, 255, 255, 0.1);">
                         Butuh <strong class="text-accent ms-1"><?php echo number_format(max(0, $expToNextLevel)); ?> EXP</strong> lagi
                     </span>
                 </div>
