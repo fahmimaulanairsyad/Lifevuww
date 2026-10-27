@@ -1449,140 +1449,408 @@ html.is-apk #btn-install-app {
 }
 
 /* ==========================================================
-   LANDING PAGE STYLES
+   LANDING PAGE STYLES - Awwwards / High-Craft Product Showcase
+   Scoped with .lp-* to avoid touching internal app pages
    ========================================================== */
 .landing-body {
     background-color: var(--bg-base);
     color: var(--text-primary);
     overflow-x: hidden;
+    position: relative;
 }
 
-.landing-nav {
-    position: sticky;
-    top: 0;
-    z-index: 100;
+/* 1. Floating Pill Glass Navbar */
+.lp-navbar-pill {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    max-width: 880px;
+    width: calc(100% - 32px);
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(14, 14, 18, 0.78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.85rem 1.5rem;
-    background-color: rgba(9, 9, 11, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border-hairline);
+    transition: all 0.25s ease;
 }
 
-.landing-brand {
+.lp-nav-brand {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    text-decoration: none;
+    gap: 8px;
     color: var(--text-primary);
+    text-decoration: none;
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     letter-spacing: -0.02em;
 }
 
-.landing-brand:hover {
+.lp-nav-brand:hover {
     color: var(--text-primary);
 }
 
-.landing-hero {
-    padding: 5rem 1.5rem 3.5rem 1.5rem;
-    max-width: 860px;
-    margin: 0 auto;
-    text-align: center;
+.lp-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-.landing-hero-title {
-    font-size: 2.75rem;
+.lp-nav-link {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.lp-nav-link:hover {
+    color: var(--text-primary);
+}
+
+.lp-btn-capsule {
+    background-color: var(--text-primary);
+    color: #09090b !important;
+    border-radius: 999px;
+    padding: 0.42rem 1.15rem;
+    font-size: 0.8rem;
     font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+}
+
+.lp-btn-capsule:hover {
+    background-color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(255, 255, 255, 0.2);
+    color: #09090b !important;
+}
+
+/* 2. Hero Section with Atmospheric 3D Stage & Perspective Grid */
+.lp-hero {
+    position: relative;
+    padding: 130px 1.5rem 3.5rem 1.5rem;
+    max-width: 1180px;
+    margin: 0 auto;
+    text-align: center;
+    overflow: visible;
+}
+
+.lp-hero-stage {
+    position: absolute;
+    inset: 0;
+    top: 50px;
+    height: 650px;
+    pointer-events: none;
+    z-index: 0;
+    background: radial-gradient(ellipse 65% 45% at 50% 25%, rgba(16, 185, 129, 0.14), rgba(99, 102, 241, 0.06), transparent 75%);
+    background-image: 
+        radial-gradient(ellipse 65% 45% at 50% 25%, rgba(16, 185, 129, 0.14), rgba(99, 102, 241, 0.06), transparent 75%),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 100% 100%, 48px 48px, 48px 48px;
+    background-position: center top;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
+}
+
+#hero-3d-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.45;
+    z-index: 0;
+}
+
+.lp-hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 840px;
+    margin: 0 auto;
+}
+
+.lp-hero-title {
+    font-size: clamp(2.6rem, 5.8vw, 4.8rem);
     letter-spacing: -0.04em;
-    line-height: 1.15;
+    line-height: 1.04;
+    font-weight: 700;
+    font-family: var(--font-display, var(--font-sans));
     margin: 1.25rem 0 1rem 0;
 }
 
-.landing-hero-subtitle {
+.lp-hero-subtitle {
+    max-width: 640px;
+    color: #a1a1aa;
     font-size: 1.05rem;
-    color: var(--text-secondary);
-    max-width: 580px;
-    margin: 0 auto 2rem auto;
     line-height: 1.6;
+    margin: 0 auto 2.2rem auto;
 }
 
-.landing-cta-group {
+.lp-cta-group {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
+    gap: 0.85rem;
     flex-wrap: wrap;
-    margin-bottom: 3.5rem;
+    margin-bottom: 3rem;
 }
 
-.landing-preview-card {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: calc(var(--radius) * 1.5);
-    padding: 1.5rem;
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+/* 3. 3D Perspective App Window Showcase */
+.lp-mockup-window {
+    max-width: 1040px;
+    margin: 40px auto 0;
+    border-radius: 20px;
+    background: #0c0c10;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 32px 100px rgba(0, 0, 0, 0.8), 0 -1px 0 rgba(255, 255, 255, 0.18) inset, 0 0 80px rgba(16, 185, 129, 0.08);
+    overflow: hidden;
+    transform: perspective(1400px) rotateX(12deg) scale(0.96);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
     text-align: left;
-    max-width: 720px;
-    margin: 0 auto;
+    position: relative;
+    z-index: 5;
 }
 
+.lp-mockup-window:hover,
+.lp-mockup-window.straightened {
+    transform: perspective(1400px) rotateX(0deg) scale(1);
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.9), 0 -1px 0 rgba(255, 255, 255, 0.22) inset, 0 0 100px rgba(16, 185, 129, 0.12);
+}
+
+.lp-window-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(18, 18, 22, 0.85);
+    gap: 12px;
+}
+
+.lp-window-dots {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.lp-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    opacity: 0.65;
+}
+.lp-dot.red { background: #f43f5e; }
+.lp-dot.yellow { background: #f59e0b; }
+.lp-dot.green { background: #10b981; }
+
+.lp-window-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 3px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.lp-tab-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.lp-tab-btn:hover {
+    color: var(--text-primary);
+}
+
+.lp-tab-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.lp-mock-capsule {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+}
+
+.lp-mock-body {
+    padding: 24px;
+    min-height: 400px;
+    background: #0e0e13;
+}
+
+.lp-tab-pane {
+    display: none;
+}
+
+.lp-tab-pane.active {
+    display: block;
+    animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 4. Bento Grid with Animated Micro-UI Illustrations */
 .landing-bento-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(12, 1fr);
     gap: 1.25rem;
-    max-width: 980px;
-    margin: 0 auto 4rem auto;
+    max-width: 1040px;
+    margin: 0 auto 5rem auto;
     padding: 0 1.5rem;
 }
 
 .landing-bento-item {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-hairline);
-    border-radius: calc(var(--radius) * 1.5);
+    background-color: #111114;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 16px;
     padding: 1.75rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: border-color 0.2s ease, transform 0.2s ease;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+    position: relative;
 }
 
 .landing-bento-item:hover {
-    border-color: var(--border-subtle);
+    border-color: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
+    box-shadow: 0 14px 40px -10px rgba(0, 0, 0, 0.7);
 }
 
-.landing-bento-item.full-width {
-    grid-column: span 2;
+.landing-bento-item.span-7 { grid-column: span 7; }
+.landing-bento-item.span-5 { grid-column: span 5; }
+.landing-bento-item.span-4 { grid-column: span 4; }
+.landing-bento-item.span-8 { grid-column: span 8; }
+.landing-bento-item.span-12 { grid-column: span 12; }
+
+/* Micro-UI Illustrations inside Bento Cards */
+.lp-micro-ui-wrap {
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 1.25rem;
 }
 
-.landing-bento-icon {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--radius);
-    background-color: var(--bg-surface-hover);
-    border: 1px solid var(--border-hairline);
-    display: flex;
+/* Micro-UI 1: Rank Cycle Badges */
+.lp-rank-badge-node {
+    display: inline-flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    margin-bottom: 1rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.68rem;
+    transition: all 0.35s ease;
 }
 
-.landing-bento-title {
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.5rem;
+.lp-rank-badge-node.active-sweep {
+    background: rgba(16, 185, 129, 0.16);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #10b981;
+    transform: scale(1.1);
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
 }
 
-.landing-bento-desc {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-    line-height: 1.55;
-    margin: 0;
+/* Micro-UI 2: Pulsing Radar */
+@keyframes radarPulse {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.05); opacity: 1; }
+}
+.lp-radar-pulse {
+    animation: radarPulse 3.5s ease-in-out infinite;
+    transform-origin: center;
+}
+
+/* Micro-UI 3: HP Shield Deflection */
+@keyframes shieldGlow {
+    0%, 100% { box-shadow: 0 0 6px rgba(6, 182, 212, 0.2); }
+    50% { box-shadow: 0 0 18px rgba(6, 182, 212, 0.6); }
+}
+.lp-shield-anim {
+    animation: shieldGlow 2.5s ease-in-out infinite;
+}
+
+/* Micro-UI 4: Heatmap Sequential Light-up */
+.lp-mini-heat-cell {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.4s ease;
+}
+.lp-mini-heat-cell.lit {
+    background: #10b981;
+    border-color: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+/* 5. Closing CTA */
+.lp-closing-cta {
+    max-width: 1040px;
+    margin: 0 auto 5rem auto;
+    padding: 3.5rem 2rem;
+    border-radius: 20px;
+    background: #111114;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.lp-closing-title {
+    font-size: clamp(1.8rem, 3.8vw, 2.75rem);
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    margin-bottom: 0.85rem;
+}
+
+.lp-closing-desc {
+    color: #a1a1aa;
+    font-size: 0.95rem;
+    max-width: 540px;
+    margin: 0 auto 2rem auto;
+    line-height: 1.6;
 }
 
 .landing-footer {
@@ -1607,6 +1875,54 @@ html.is-apk #btn-install-app {
 
 .landing-footer-links a:hover {
     color: var(--text-primary);
+}
+
+@media (max-width: 768px) {
+    .lp-navbar-pill {
+        top: 12px;
+        padding: 8px 14px;
+        width: calc(100% - 24px);
+    }
+    .lp-hero {
+        padding: 100px 1rem 2rem 1rem;
+    }
+    .lp-hero-title {
+        font-size: 2.2rem;
+    }
+    .lp-hero-subtitle {
+        font-size: 0.92rem;
+    }
+    .landing-bento-grid {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+    .landing-bento-item[class*="span-"] {
+        grid-column: span 1 !important;
+    }
+    .lp-cta-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    .lp-cta-group .btn-core,
+    .lp-cta-group form {
+        width: 100%;
+    }
+    .lp-mockup-window {
+        margin-top: 20px;
+        border-radius: 14px;
+    }
+    .lp-window-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .lp-window-tabs {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .lp-mock-body {
+        padding: 14px;
+    }
 }
 
 /* ==========================================================
