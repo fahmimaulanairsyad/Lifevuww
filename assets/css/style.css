@@ -2153,6 +2153,7 @@ html.is-apk #btn-install-app {
 }
 
 #lp-showcase,
+#lp-reel,
 #lp-bento,
 #lp-ranks {
     scroll-margin-top: 100px;
@@ -2331,6 +2332,48 @@ html.is-apk #btn-install-app {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* 3.5. 30s High-Octane Motion Reel Player Section */
+.lp-reel-section {
+    max-width: 1040px;
+    margin: 0 auto 5rem auto;
+    padding: 0 1.5rem;
+    text-align: center;
+}
+
+.lp-reel-window {
+    margin: 24px auto 0;
+    border-radius: 20px;
+    background: #0c0c10;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 32px 100px rgba(0, 0, 0, 0.8), 0 -1px 0 rgba(255, 255, 255, 0.18) inset, 0 0 80px rgba(16, 185, 129, 0.08);
+    overflow: hidden;
+    text-align: left;
+    position: relative;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.lp-reel-window:hover {
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.9), 0 -1px 0 rgba(255, 255, 255, 0.22) inset, 0 0 100px rgba(16, 185, 129, 0.14);
+}
+
+.lp-reel-body {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: #000;
+    overflow: hidden;
+}
+
+.lp-reel-body iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
 }
 
 /* 4. Bento Grid with Animated Micro-UI Illustrations */
@@ -2540,6 +2583,14 @@ html.is-apk #btn-install-app {
     .lp-cta-group .btn-core,
     .lp-cta-group form {
         width: 100%;
+    }
+    .lp-reel-section {
+        padding: 0 1rem;
+        margin-bottom: 3.5rem;
+    }
+    .lp-reel-window {
+        border-radius: 14px;
+        margin-top: 16px;
     }
     .lp-mockup-window {
         margin-top: 20px;

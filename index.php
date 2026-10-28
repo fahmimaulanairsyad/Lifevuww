@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261027_11" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261029_01" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -88,6 +88,7 @@ if (isset($_SESSION['user_id'])) {
         <!-- Center Nav Anchor Links (Hidden on < 768px) -->
         <ul class="lp-nav-links d-none d-md-flex">
             <li><a href="#lp-showcase" class="lp-nav-link">Simulasi Live</a></li>
+            <li><a href="#lp-reel" class="lp-nav-link">Teaser 30s</a></li>
             <li><a href="#lp-bento" class="lp-nav-link">Fitur RPG</a></li>
             <li><a href="#lp-ranks" class="lp-nav-link">Sistem Rank</a></li>
         </ul>
@@ -477,6 +478,41 @@ if (isset($_SESSION['user_id'])) {
             <span class="text-muted">✦</span>
         </div>
     </div>
+
+    <!-- 3.5. 30-Second High-Octane Motion Reel Showcase -->
+    <section class="lp-reel-section" id="lp-reel">
+        <div class="text-center mb-4">
+            <span class="badge-status accent font-mono mb-2" style="font-size: 0.72rem; padding: 0.28rem 0.75rem; border-radius: 999px;">
+                <i class="fas fa-play me-1"></i> 30-SECOND HIGH-OCTANE REEL
+            </span>
+            <h2 class="landing-section-title" style="font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.4rem;">
+                Aksi Gamifikasi Produktivitas dalam 30 Detik
+            </h2>
+            <p class="text-muted" style="font-size: 0.88rem; max-width: 600px; margin: 0 auto;">
+                Dari rentetan streak habit, radar 5 pilar karakter, pertarungan boss, hingga kenaikan gelar S-Rank Sovereign.
+            </p>
+        </div>
+
+        <div class="lp-reel-window spotlight-card">
+            <!-- Window Topbar -->
+            <div class="lp-window-topbar">
+                <div class="lp-window-dots">
+                    <span class="lp-dot red"></span>
+                    <span class="lp-dot yellow"></span>
+                    <span class="lp-dot green"></span>
+                    <span class="text-muted ms-2 font-mono" style="font-size: 0.7rem;">lifevuww-reel-30s // 120-bpm</span>
+                </div>
+                <div class="lp-mock-capsule font-mono d-none d-sm-inline-flex" style="font-size: 0.68rem; padding: 2px 10px;">
+                    <i class="fas fa-code text-accent me-1"></i> 100% Code & Synth Audio
+                </div>
+            </div>
+
+            <!-- Player Body (16:9) -->
+            <div class="lp-reel-body">
+                <iframe id="lpReelIframe" data-src="assets/reel-30s.html" src="" allow="autoplay" loading="lazy" title="Lifevuww 30s High-Octane Motion Reel"></iframe>
+            </div>
+        </div>
+    </section>
 
     <!-- 4. Re-Engineered Bento Grid with Living Micro-UI Illustrations -->
     <section class="landing-bento-grid" id="lp-bento">
@@ -1050,6 +1086,30 @@ if (isset($_SESSION['user_id'])) {
                         }
                     }
                 );
+            }
+        })();
+
+        // 8.5. Lazy-load 30s Motion Reel Iframe on Scroll Viewport Intersection
+        (function initReelObserver() {
+            const reelSection = document.getElementById('lp-reel');
+            const iframe = document.getElementById('lpReelIframe');
+            if (!reelSection || !iframe) return;
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            if (!iframe.src && iframe.dataset.src) {
+                                iframe.src = iframe.dataset.src;
+                            }
+                        }
+                    });
+                }, { rootMargin: '300px 0px' });
+                observer.observe(reelSection);
+            } else {
+                if (iframe.dataset.src) {
+                    iframe.src = iframe.dataset.src;
+                }
             }
         })();
 

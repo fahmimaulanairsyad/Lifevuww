@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Lifevuww - 30s High-Octane Reel</title>
+<!--
+  LIFEVUWW - 30 SECOND HIGH-OCTANE MOTION DESIGN REEL
+  Cut to 120 BPM grid (30s = 15 bars, 1 beat = 0.5s, 16th note = 0.125s, 240 steps)
+  Structure:
+    00:00 - 00:02.0  S01: Terminal Hook & Glitch Boot
+    00:02.0 - 00:04.5  S02: 3D Isometric Prism Forge
+    00:04.5 - 00:07.5  S03: Rapid Stat Hits (+150 EXP / Streak x1.5 / Level Up Confetti)
+    00:07.5 - 00:10.5  S04: 5-Pillar Radar Chart Neon Bloom
+    00:10.5 - 00:14.0  S05: High-Speed 3D Quest Corridor Dolly
+    00:14.0 - 00:17.5  S06: Reward Shop & Virtual Economy (Potion, Freeze, 2H Gaming)
+    00:17.5 - 00:20.5  S07: Red Alert, HP Drain & STREAK RESET Stamp
+    00:20.5 - 00:23.5  S08: Full-Frame 1-Beat Strobe Cuts
+    00:23.5 - 00:26.5  S09: Diagonal Stair Type Whiplash (LEVEL UP YOUR LIFE)
+    00:26.5 - 00:30.0  S10: Hero Landing & Clean Brand Resolution
+-->
+<style>
+@font-face{ font-family:'Geist'; src:url('https://cdn.jsdelivr.net/npm/geist@1.5.1/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2'); font-weight:100 900; font-display:swap; }
+@font-face{ font-family:'Geist Mono'; src:url('https://cdn.jsdelivr.net/npm/geist@1.5.1/dist/fonts/geist-mono/GeistMono-Variable.woff2') format('woff2'); font-weight:100 900; font-display:swap; }
+
+:root{
+  --em:#10b981; --em-glow:rgba(16,185,129,0.35);
+  --vi:#8b5cf6; --vi-glow:rgba(139,92,246,0.35);
+  --gold:#f59e0b; --gold-glow:rgba(245,158,11,0.35);
+  --red:#ef4444; --red-glow:rgba(239,68,68,0.4);
+  --cyan:#06b6d4;
+  --bg:#09090b; --fg:#fafafa;
+  --z1:#121215; --z2:#222226; --z4:#52525b; --z6:#a1a1aa;
+  --sans:'Geist','Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,sans-serif;
+  --mono:'Geist Mono','Cascadia Code',Consolas,'Courier New',monospace;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; width:100%; background:#000; overflow:hidden; font-family:var(--sans); color:var(--fg); -webkit-font-smoothing:antialiased; }
+
+#frame{
+  position:absolute; left:50%; top:50%; width:1920px; height:1080px;
+  transform-origin:50% 50%; background:var(--bg); overflow:hidden;
+}
+#stage{ position:absolute; inset:0; will-change:transform; }
+
+.scene{ position:absolute; inset:0; visibility:hidden; opacity:0; pointer-events:none; }
+.scene.on{ visibility:visible; opacity:1; pointer-events:auto; }
+
+/* Overlays */
+#fx{ position:absolute; inset:0; pointer-events:none; z-index:40; }
+#flash{ position:absolute; inset:0; background:#fafafa; opacity:0; pointer-events:none; z-index:50; }
+#grain{
+  position:absolute; inset:0; pointer-events:none; z-index:45; opacity:0.04;
+  background-image:repeating-conic-gradient(#52525b 0% 25%, transparent 0% 50%);
+  background-size:4px 4px;
+}
+#crt{
+  position:absolute; inset:0; pointer-events:none; z-index:46; opacity:0;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,0.35) 0 2px, transparent 2px 5px);
+}
+
+/* =====================================================================
+   SCENE STYLES (S01 - S10)
+===================================================================== */
+/* S01: Terminal */
+.term-wrap{ position:absolute; left:50%; top:50%; transform:translate(-50%,-54%); text-align:center; }
+#term{ font-family:var(--mono); font-size:68px; font-weight:600; letter-spacing:-0.02em; white-space:pre; }
+#term.gl{ text-shadow:-7px 0 var(--em), 7px 0 var(--vi); transform:skewX(-7deg); }
+#caret{ display:inline-block; width:30px; height:60px; background:var(--em); vertical-align:-8px; margin-left:8px; }
+
+/* S02: Prism */
+#prism-hero{ position:absolute; left:50%; top:44%; width:440px; height:440px; transform:translate(-50%,-50%); }
+#prism-hero svg{ width:100%; height:100%; overflow:visible; }
+#sweep{
+  position:absolute; left:80px; top:80px; width:220px; height:180px;
+  background:linear-gradient(110deg, transparent 20%, rgba(255,255,255,0.45) 50%, transparent 80%);
+  opacity:0; pointer-events:none; mix-blend-mode:screen;
+}
+#s2-text{ position:absolute; left:0; right:0; top:68%; text-align:center; opacity:0; }
+#s2-title{ font-size:92px; font-weight:800; letter-spacing:-0.03em; line-height:1; }
+#s2-title b{ color:var(--em); }
+#s2-sub{ font-family:var(--mono); font-size:22px; letter-spacing:0.42em; color:var(--z6); margin-top:14px; }
+
+/* S03: Rapid Stat Hits */
+.cut{ position:absolute; inset:0; background:var(--bg); display:none; }
+.cut .stack{ position:absolute; left:50%; top:50%; transform:translate(-50%,-56%); text-align:center; }
+.k-label{ font-family:var(--mono); font-size:22px; letter-spacing:0.4em; color:var(--z6); margin-bottom:24px; }
+.big-val{ font-size:168px; font-weight:800; letter-spacing:-0.04em; line-height:1; white-space:nowrap; }
+.big-val em{ font-style:normal; }
+.chips-row{ margin-top:30px; display:flex; gap:16px; justify-content:center; }
+.chip{
+  font-family:var(--mono); font-size:16px; letter-spacing:0.25em; color:var(--z6);
+  border:1px solid var(--z2); border-radius:999px; padding:10px 22px; background:rgba(18,18,21,0.6);
+}
+.chip.em{ color:var(--em); border-color:rgba(16,185,129,0.5); }
+.chip.vi{ color:#b79afc; border-color:rgba(139,92,246,0.5); }
+.chip.gold{ color:var(--gold); border-color:rgba(245,158,11,0.5); }
+.ul-bar{ width:0px; height:6px; margin:24px auto 0; background:var(--em); }
+
+/* S04: 5-Pillar Radar */
+#radar-box{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  display:flex; align-items:center; gap:90px;
+}
+#radar-svg{ width:480px; height:480px; overflow:visible; }
+.radar-grid{ stroke:var(--z2); stroke-width:1.5; fill:none; }
+.radar-axis{ stroke:var(--z2); stroke-width:1.5; }
+.radar-poly{ fill:rgba(16,185,129,0.22); stroke:var(--em); stroke-width:3; filter:drop-shadow(0 0 16px var(--em-glow)); }
+.radar-lbl{ font-family:var(--mono); font-size:16px; fill:var(--z6); letter-spacing:0.2em; text-anchor:middle; }
+.radar-stats-side{ font-family:var(--mono); text-align:left; }
+.r-row{ margin-bottom:22px; }
+.r-k{ font-size:16px; color:var(--z6); letter-spacing:0.24em; margin-bottom:4px; }
+.r-v{ font-size:38px; font-weight:800; color:var(--fg); }
+.r-v em{ font-style:normal; color:var(--em); font-size:22px; margin-left:8px; }
+
+/* S05: 3D Corridor */
+#s05{ perspective:1200px; background:var(--bg); }
+#corr{ position:absolute; inset:0; transform-style:preserve-3d; }
+.card{
+  position:absolute; left:50%; top:50%; width:380px; height:230px;
+  margin-left:-190px; margin-top:-115px; background:#111114;
+  border:1px solid var(--z2); border-radius:14px; padding:24px;
+}
+.card .top{ height:4px; width:70px; border-radius:2px; margin-bottom:20px; }
+.card .t1{ font-family:var(--mono); font-size:15px; letter-spacing:0.3em; color:var(--z4); margin-bottom:10px; }
+.card .t2{ font-size:38px; font-weight:700; letter-spacing:-0.02em; margin-bottom:16px; }
+.card .t3{ font-family:var(--mono); font-size:16px; color:var(--z6); }
+
+#hud{
+  position:absolute; left:64px; top:54px; right:64px; display:flex;
+  justify-content:space-between; font-family:var(--mono); z-index:10; opacity:0;
+}
+.hud-cell{ display:flex; align-items:center; gap:14px; font-size:22px; letter-spacing:0.08em; }
+.hud-bar{ width:200px; height:12px; background:var(--z2); border-radius:99px; overflow:hidden; }
+.hud-bar i{ display:block; height:100%; background:var(--em); width:100%; }
+.hud-chip{ border:1px solid var(--z2); padding:6px 16px; border-radius:99px; color:var(--z6); font-size:18px; }
+
+/* S06: Reward Shop & Virtual Economy */
+.shop-wrap{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); text-align:center; width:1200px; }
+.shop-cards{ display:flex; gap:26px; justify-content:center; margin-top:36px; }
+.s-card{
+  flex:1; background:#121216; border:1px solid var(--z2); border-radius:14px;
+  padding:26px; text-align:left; font-family:var(--mono);
+}
+.s-card.feat{ border-color:var(--vi); box-shadow:0 0 24px var(--vi-glow); }
+.sc-tag{ font-size:14px; color:var(--vi); letter-spacing:0.25em; margin-bottom:10px; }
+.sc-name{ font-size:26px; font-weight:700; font-family:var(--sans); color:var(--fg); margin-bottom:12px; }
+.sc-price{ font-size:18px; color:var(--gold); }
+
+/* S07: HP Penalty & Streak Reset */
+.hp-wrap{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:1260px; text-align:center; }
+.hp-header{ font-family:var(--mono); font-size:26px; letter-spacing:0.4em; color:var(--red); margin-bottom:18px; display:flex; justify-content:space-between; }
+.hp-track{ height:60px; background:#141418; border:2px solid var(--z2); border-radius:12px; padding:6px; margin-bottom:28px; }
+#hp-bar{ height:100%; width:100%; background:var(--red); border-radius:6px; box-shadow:0 0 20px var(--red-glow); }
+#streak-reset-stamp{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) rotate(-6deg);
+  font-family:var(--mono); font-size:74px; font-weight:800; letter-spacing:0.22em;
+  color:var(--red); border:6px solid var(--red); padding:22px 60px; border-radius:14px;
+  background:rgba(9,9,11,0.85); box-shadow:0 0 40px var(--red-glow); opacity:0;
+}
+.hp-penalty-copy{ font-size:42px; font-weight:700; letter-spacing:-0.02em; color:var(--fg); opacity:0; }
+
+/* S08: Full-Frame Strobe */
+.strobe-scene{ display:flex; align-items:center; justify-content:center; }
+.strobe-word{ font-size:210px; font-weight:800; letter-spacing:-0.05em; line-height:1; }
+
+/* S09: Stair Type */
+#s09{ background:var(--bg); }
+#lines{ position:absolute; inset:-30%; transform:rotate(-16deg); opacity:0.45; }
+#lines i{ position:absolute; left:-100%; right:-100%; height:1px; background:#222228; }
+.stair-word{ position:absolute; font-weight:800; letter-spacing:-0.04em; line-height:1; opacity:0; }
+#sw0{ left:120px; top:270px; font-size:160px; color:var(--em); }
+#sw1{ left:520px; top:420px; font-size:188px; color:var(--fg); }
+#sw2{ left:960px; top:560px; font-size:160px; color:var(--fg); }
+#sw3{ left:1260px; top:700px; font-size:200px; color:var(--vi); }
+#stair-slam{
+  position:absolute; left:0; right:0; top:44%; text-align:center; opacity:0;
+  font-size:142px; font-weight:800; letter-spacing:-0.04em; white-space:nowrap;
+}
+
+/* S10: Hero Landing */
+#s10{ background:var(--bg); }
+#fin{
+  position:absolute; left:50%; top:44%; transform:translate(-50%,-50%);
+  text-align:center; opacity:0;
+}
+#fin .sym{ display:block; margin:0 auto 28px; width:124px; height:124px; }
+#fin .wordmark{ font-size:108px; font-weight:700; letter-spacing:-0.03em; line-height:1; }
+#fin .wordmark b{ color:var(--em); font-weight:700; }
+#tagline{
+  position:absolute; left:0; right:0; top:62%; text-align:center; opacity:0;
+  font-family:var(--mono); font-size:22px; letter-spacing:0.48em; color:var(--z6);
+}
+#fin-chips{
+  position:absolute; left:0; right:0; top:70%; display:flex; gap:14px;
+  justify-content:center; opacity:0;
+}
+#credit{
+  position:absolute; right:64px; bottom:58px; font-family:var(--mono);
+  font-size:15px; letter-spacing:0.3em; color:var(--z4); opacity:0;
+}
+#hint{
+  position:absolute; left:64px; bottom:58px; font-family:var(--mono);
+  font-size:13px; letter-spacing:0.22em; color:#52525b; opacity:0;
+}
+
+/* =====================================================================
+   VIEWER CONTROLS
+===================================================================== */
+#bar{
+  position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+  width:min(940px, 94vw); background:rgba(12,12,15,0.88); border:1px solid #1f1f23;
+  border-radius:14px; padding:10px 16px; display:flex; align-items:center; gap:14px;
+  backdrop-filter:blur(12px); font-family:var(--mono); z-index:99;
+}
+#bar button{
+  font-family:var(--mono); font-size:12px; letter-spacing:0.14em;
+  background:transparent; color:var(--fg); border:1px solid var(--z2);
+  border-radius:8px; padding:7px 14px; cursor:pointer; transition:all 0.15s ease;
+}
+#bar button:hover{ border-color:var(--em); color:var(--em); }
+#b-sound.on{ border-color:var(--em); color:var(--em); background:rgba(16,185,129,0.14); }
+#tcode{ font-size:13px; color:var(--z6); letter-spacing:0.12em; white-space:nowrap; font-variant-numeric:tabular-nums; }
+#prog{ flex:1; height:6px; background:var(--z2); border-radius:99px; position:relative; cursor:pointer; }
+#prog-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--em); border-radius:99px; }
+.tick{ position:absolute; top:-3px; width:2px; height:12px; background:#3f3f46; pointer-events:none; }
+</style>
+</head>
+<body>
+
+<div id="frame">
+  <div id="stage">
+
+    <!-- S01: Terminal Hook (0.00 - 2.00) -->
+    <div class="scene" id="s01">
+      <div id="crt"></div>
+      <div class="term-wrap">
+        <div id="term"><span style="color:var(--em)">C:\&gt; </span><span id="typed"></span><i id="caret"></i></div>
+      </div>
+    </div>
+
+    <!-- S02: 3D Isometric Prism Forge (2.00 - 4.50) -->
+    <div class="scene" id="s02">
+      <div id="prism-hero">
+        <svg viewBox="0 0 256 256" aria-hidden="true">
+          <g id="fL" opacity="0"><polygon points="41.4 88 124.6 136 124.6 226 41.4 178" fill="#10b981"/></g>
+          <g id="fR" opacity="0"><polygon points="131.4 136 214.6 88 214.6 178 131.4 226" fill="#8b5cf6"/></g>
+          <g id="fT" opacity="0"><path fill="#52525b" fill-rule="evenodd"
+            d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/></g>
+        </svg>
+        <div id="sweep"></div>
+      </div>
+      <div id="s2-text">
+        <div id="s2-title">Life<b>vuww</b></div>
+        <div id="s2-sub">GAMIFIED HABIT TRACKER &middot; RPG PRODUCTIVITY</div>
+      </div>
+    </div>
+
+    <!-- S03: Rapid Stat Hits (4.50 - 7.50) -->
+    <div class="scene" id="s03">
+      <div class="cut" id="cutA">
+        <div class="stack">
+          <div class="k-label">HABIT COMPLETE</div>
+          <div class="big-val" style="color:var(--em)"><em id="cutA-num">+0</em> <span style="color:var(--fg)">EXP</span></div>
+          <div class="ul-bar" id="cutA-ul"></div>
+        </div>
+      </div>
+      <div class="cut" id="cutB">
+        <div class="stack">
+          <div class="k-label">7-DAY STREAK</div>
+          <div class="big-val" style="color:var(--fg)">STREAK <em style="color:var(--gold)">&times;1.5</em></div>
+          <div class="chips-row"><span class="chip gold">HOT STREAK</span><span class="chip">EXP &amp; GOLD BOOST</span></div>
+        </div>
+      </div>
+      <div class="cut" id="cutC">
+        <div class="stack">
+          <div class="k-label">LEVEL UP ACHIEVED</div>
+          <div class="big-val" style="color:var(--fg)"><span style="color:var(--z4)">6</span> <em style="color:var(--em)">&rarr;</em> 7</div>
+          <div class="chips-row"><span class="chip em">RANK: EXPLORER</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S04: 5-Pillar Radar (7.50 - 10.50) -->
+    <div class="scene" id="s04">
+      <div id="radar-box">
+        <svg id="radar-svg" viewBox="-240 -240 480 480">
+          <polygon class="radar-grid" points="0,-200 190,-62 117,162 -117,162 -190,-62"/>
+          <polygon class="radar-grid" points="0,-140 133,-43 82,113 -82,113 -133,-43"/>
+          <polygon class="radar-grid" points="0,-70 66,-21 41,56 -41,56 -66,-21"/>
+          <line class="radar-axis" x1="0" y1="0" x2="0" y2="-200"/>
+          <line class="radar-axis" x1="0" y1="0" x2="190" y2="-62"/>
+          <line class="radar-axis" x1="0" y1="0" x2="117" y2="162"/>
+          <line class="radar-axis" x1="0" y1="0" x2="-117" y2="162"/>
+          <line class="radar-axis" x1="0" y1="0" x2="-190" y2="-62"/>
+          <polygon id="radar-shape-30" class="radar-poly" points="0,-165 160,-52 95,128 -110,148 -155,-50"/>
+          <text class="radar-lbl" x="0" y="-216">PHYSICAL</text>
+          <text class="radar-lbl" x="206" y="-56">MENTAL</text>
+          <text class="radar-lbl" x="126" y="186">WEALTH</text>
+          <text class="radar-lbl" x="-126" y="186">SOCIAL</text>
+          <text class="radar-lbl" x="-206" y="-56">DISCIPLINE</text>
+        </svg>
+        <div class="radar-stats-side">
+          <div class="r-row"><div class="r-k">DISCIPLINE RATING</div><div class="r-v">88% <em>+14%</em></div></div>
+          <div class="r-row"><div class="r-k">PHYSICAL CONDITION</div><div class="r-v">76% <em>ELITE</em></div></div>
+          <div class="r-row"><div class="r-k">KNOWLEDGE BASE</div><div class="r-v">92% <em>MASTER</em></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S05: 3D Quest Corridor (10.50 - 14.00) -->
+    <div class="scene" id="s05">
+      <div id="corr"></div>
+      <div id="hud">
+        <div style="display:flex; gap:22px; align-items:center">
+          <div class="hud-cell"><span style="color:#10b981">&#9646;</span> LV 7</div>
+          <div class="hud-bar"><i id="hud-hp"></i></div>
+          <div class="hud-cell" style="color:#a1a1aa">EXP 740 / 800</div>
+        </div>
+        <div class="hud-chip">GOLD 380</div>
+      </div>
+    </div>
+
+    <!-- S06: Reward Shop & Virtual Economy (14.00 - 17.50) -->
+    <div class="scene" id="s06">
+      <div class="shop-wrap">
+        <div class="k-label">REWARD SHOP &middot; SPEND YOUR GOLD</div>
+        <div class="shop-cards">
+          <div class="s-card" id="sc0">
+            <div class="sc-tag">CONSUMABLE</div>
+            <div class="sc-name">Health Potion</div>
+            <div class="sc-price">&#9670; 25 GOLD (+25 HP)</div>
+          </div>
+          <div class="s-card feat" id="sc1">
+            <div class="sc-tag">LEGENDARY SHIELD</div>
+            <div class="sc-name">Streak Freeze</div>
+            <div class="sc-price">&#9670; 50 GOLD (1 DAY SAFE)</div>
+          </div>
+          <div class="s-card" id="sc2">
+            <div class="sc-tag">REAL-WORLD TREAT</div>
+            <div class="sc-name">2 Hrs Gaming</div>
+            <div class="sc-price">&#9670; 80 GOLD (GUILT-FREE)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S07: HP Penalty & Streak Reset (17.50 - 20.50) -->
+    <div class="scene" id="s07">
+      <div class="hp-wrap">
+        <div class="hp-header"><span>HEALTH DRAIN</span><span id="hp-text">100 / 100</span></div>
+        <div class="hp-track"><div id="hp-bar"></div></div>
+        <div class="hp-penalty-copy" id="pen-text">MISS A DAY &middot; PAY IN HP &middot; STREAK RESET</div>
+      </div>
+      <div id="streak-reset-stamp">STREAK RESET</div>
+    </div>
+
+    <!-- S08: Full-Frame 1-Beat Strobe (20.50 - 23.50) -->
+    <div class="scene strobe-scene" id="s08_0" style="background:var(--em)"><div class="strobe-word" style="color:#09090b">RESPAWN</div></div>
+    <div class="scene strobe-scene" id="s08_1" style="background:var(--vi)"><div class="strobe-word" style="color:#09090b">CONTINUE</div></div>
+    <div class="scene strobe-scene" id="s08_2" style="background:#fafafa"><div class="strobe-word" style="color:#09090b">AGAIN.</div></div>
+    <div class="scene strobe-scene" id="s08_3" style="background:#09090b"><div class="strobe-word" style="color:var(--em)">NEVER PAUSE</div></div>
+
+    <!-- S09: Stair Type Whiplash (23.50 - 26.50) -->
+    <div class="scene" id="s09">
+      <div id="lines"></div>
+      <div class="stair-word" id="sw0">LEVEL</div>
+      <div class="stair-word" id="sw1">UP</div>
+      <div class="stair-word" id="sw2">YOUR</div>
+      <div class="stair-word" id="sw3">LIFE.</div>
+      <div id="stair-slam"><span style="color:var(--em)">LEVEL</span> UP <span style="color:var(--vi)">YOUR LIFE.</span></div>
+    </div>
+
+    <!-- S10: Hero Landing (26.50 - 30.00) -->
+    <div class="scene" id="s10">
+      <div id="fin">
+        <svg class="sym" viewBox="0 0 256 256" aria-label="Lifevuww symbol">
+          <path fill="#52525b" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+          <polygon fill="#10b981" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+          <polygon fill="#8b5cf6" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+        </svg>
+        <div class="wordmark">Life<b>vuww</b></div>
+      </div>
+      <div id="tagline">LIFE IS THE GAME</div>
+      <div id="fin-chips">
+        <span class="chip">HABIT TRACKER RPG</span>
+        <span class="chip">PWA + ANDROID APK</span>
+        <span class="chip">PHP 8 &middot; MYSQL</span>
+      </div>
+      <div id="credit">LIFEVUWW &middot; MMXXVI</div>
+      <div id="hint">SPACE PAUSE &middot; R REPLAY &middot; S SOUND &middot; CLICK BAR TO JUMP</div>
+    </div>
+
+    <canvas id="fx" width="1920" height="1080"></canvas>
+    <div id="grain"></div>
+    <div id="flash"></div>
+  </div>
+</div>
+
+<div id="bar">
+  <button id="b-replay">REPLAY</button>
+  <button id="b-pause">PAUSE</button>
+  <button id="b-sound">SOUND OFF</button>
+  <span id="tcode">00:00.00 / 00:30.00</span>
+  <div id="prog"><div id="prog-fill"></div></div>
+</div>
+
+<script>
+'use strict';
+/* ================= stage fit ================= */
+const frameEl = document.getElementById('frame');
+function fit(){
+  const s = Math.min(innerWidth/1920, innerHeight/1080) * 0.97;
+  frameEl.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+}
+addEventListener('resize', fit); fit();
+
+/* ================= refs & helpers ================= */
+const $ = id => document.getElementById(id);
+const E = $;
+const stage = $('stage'), flash = $('flash'), fx = $('fx'), fctx = fx.getContext('2d');
+const EASE_O = 'cubic-bezier(0.16,1,0.3,1)';
+const EASE_I = 'cubic-bezier(0.7,0,0.84,0)';
+const DUR = 30.0;
+
+/* 10 Scene Cuts */
+const CUTS = [0.0, 2.0, 4.5, 7.5, 10.5, 14.0, 17.5, 20.5, 23.5, 26.5, 30.0];
+
+CUTS.slice(1, -1).forEach(c => {
+  const t = document.createElement('div');
+  t.className = 'tick'; t.style.left = (c / DUR * 100) + '%';
+  $('prog').appendChild(t);
+});
+
+/* ================= master clock ================= */
+let playStart = performance.now();
+let pauseAt = null;
+let lastT = 0;
+let cueIdx = 0;
+let finished = false;
+
+/* ================= timeline engine ================= */
+const CUES = [];
+const FRAMES = [];
+const cue = (t, fn) => CUES.push({ t, fn, done:false });
+const frame = fn => FRAMES.push(fn);
+
+function cancelAll(){
+  try { stage.getAnimations({ subtree:true }).forEach(a => a.cancel()); } catch(e){}
+}
+
+function resetAll(){
+  CUES.forEach(c => c.done = false);
+  cueIdx = 0; lastT = 0; finished = false;
+  shake = 0; stage.style.transform = 'translate(0,0)';
+  particles.length = 0;
+  fctx.clearRect(0, 0, 1920, 1080);
+  flash.style.opacity = 0;
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.cut').forEach(c => c.style.display = 'none');
+  
+  /* Reset dynamic states */
+  $('hp-bar').style.width = '100%';
+  $('hp-text').textContent = '100 / 100';
+  $('streak-reset-stamp').style.opacity = '0';
+  $('pen-text').style.opacity = '0';
+  $('stair-slam').style.opacity = '0';
+  $('fin').style.opacity = '0';
+  $('tagline').style.opacity = '0';
+  $('fin-chips').style.opacity = '0';
+  $('credit').style.opacity = '0';
+  $('hint').style.opacity = '0';
+  ['sw0','sw1','sw2','sw3'].forEach(id => { const el = $(id); if (el) el.style.opacity = '0'; });
+
+  cancelAll();
+  playStart = performance.now();
+  $('b-pause').textContent = 'PAUSE';
+  audioResync();
+}
+
+/* ================= screen shake & particles ================= */
+let shake = 0;
+const addShake = a => { shake = Math.max(shake, a); };
+frame((t, dt) => {
+  if (shake > 0.08){
+    stage.style.transform = 'translate(' + ((Math.random()-0.5)*shake).toFixed(1) + 'px,' +
+                            ((Math.random()-0.5)*shake).toFixed(1) + 'px)';
+    shake *= 0.85;
+  } else if (shake > 0){
+    stage.style.transform = 'translate(0,0)'; shake = 0;
+  }
+});
+function whiteFlash(out){
+  flash.style.transition = 'none';
+  flash.style.opacity = 1;
+  requestAnimationFrame(() => {
+    flash.style.transition = 'opacity ' + (out || 0.16) + 's linear';
+    flash.style.opacity = 0;
+  });
+}
+const anim = (el, kf, opt) => el.animate(kf, opt);
+
+const particles = [];
+const PCOL = ['#10b981', '#8b5cf6', '#fafafa', '#f59e0b', '#06b6d4'];
+function burst(x, y, n){
+  for (let i = 0; i < n; i++){
+    const a = Math.random() * Math.PI * 2, v = 450 + Math.random() * 650;
+    particles.push({ x, y, vx: Math.cos(a)*v, vy: Math.sin(a)*v - 320,
+      r: 4 + Math.random()*8, rot: Math.random()*6.28, vr: (Math.random()-0.5)*16,
+      life: 0.8 + Math.random()*0.5, c: PCOL[i % PCOL.length] });
+  }
+}
+frame((t, dt) => {
+  if (!particles.length){ fctx.clearRect(0,0,1920,1080); return; }
+  fctx.clearRect(0, 0, 1920, 1080);
+  for (let i = particles.length - 1; i >= 0; i--){
+    const p = particles[i];
+    p.life -= dt; if (p.life <= 0){ particles.splice(i,1); continue; }
+    p.vy += 1400 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+    fctx.save(); fctx.globalAlpha = Math.min(1, p.life * 2.2);
+    fctx.fillStyle = p.c; fctx.translate(p.x, p.y); fctx.rotate(p.rot);
+    fctx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 1.6); fctx.restore();
+  }
+});
+
+/* =====================================================================
+   S01: TERMINAL HOOK (0.00 - 2.00)
+===================================================================== */
+const CMD = 'lifevuww --launch';
+frame(t => {
+  if (t <= 1.8){
+    const n = Math.floor(Math.min(1, Math.max(0, (t - 0.1) / 1.1)) * CMD.length);
+    $('typed').textContent = CMD.slice(0, n);
+    $('caret').style.opacity = (t < 1.6 && Math.floor(t/0.1) % 2 === 0) ? '0.1' : '1';
+  }
+});
+cue(0.00, () => { E('s01').classList.add('on'); });
+cue(1.30, () => { $('term').classList.add('gl'); addShake(9); $('crt').style.opacity = 0.5; });
+cue(1.70, () => { whiteFlash(0.18); });
+cue(1.98, () => { E('s01').classList.remove('on'); $('crt').style.opacity = 0; $('term').classList.remove('gl'); });
+
+/* =====================================================================
+   S02: 3D PRISM FORGE (2.00 - 4.50)
+===================================================================== */
+cue(2.00, () => {
+  E('s02').classList.add('on');
+  anim(E('fT'), [{opacity:0, transform:'translateY(-500px)'}, {opacity:1, transform:'translateY(0)'}], {duration:320, easing:EASE_O, fill:'forwards'});
+  anim(E('fL'), [{opacity:0, transform:'translate(-600px, 260px)'}, {opacity:1, transform:'translate(0,0)'}], {duration:360, delay:100, easing:EASE_O, fill:'forwards'});
+  anim(E('fR'), [{opacity:0, transform:'translate(600px, -240px)'}, {opacity:1, transform:'translate(0,0)'}], {duration:360, delay:180, easing:EASE_O, fill:'forwards'});
+});
+cue(2.80, () => {
+  addShake(6);
+  anim(E('sweep'), [{opacity:0, transform:'translateX(-160px)'}, {opacity:1, offset:0.4}, {opacity:0, transform:'translateX(260px)'}], {duration:550, easing:'linear', fill:'forwards'});
+});
+cue(3.20, () => {
+  anim($('s2-text'), [{opacity:0, transform:'translateY(20px)'}, {opacity:1, transform:'translateY(0)'}], {duration:380, easing:EASE_O, fill:'forwards'});
+});
+cue(4.48, () => { E('s02').classList.remove('on'); });
+
+/* =====================================================================
+   S03: RAPID STAT HITS (4.50 - 7.50)
+===================================================================== */
+const statCuts = [
+  { id:'cutA', t:4.50 },
+  { id:'cutB', t:5.50 },
+  { id:'cutC', t:6.50 },
+];
+statCuts.forEach(sc => {
+  const root = $(sc.id), stack = root.querySelector('.stack');
+  cue(sc.t, () => {
+    root.style.display = 'block';
+    E('s03').classList.add('on');
+    anim(stack, [{transform:'translate(-32%,-56%) skewX(-8deg)', opacity:0.9}, {transform:'translate(-50%,-56%) skewX(0)', opacity:1}], {duration:130, easing:EASE_O, fill:'forwards'});
+  });
+  cue(sc.t + 0.85, () => {
+    anim(stack, [{transform:'translate(-50%,-56%) skewX(0)', opacity:1}, {transform:'translate(-66%,-56%) skewX(6deg)', opacity:0}], {duration:120, easing:EASE_I, fill:'forwards'});
+  });
+  cue(sc.t + 0.98, () => {
+    root.style.display = 'none';
+  });
+});
+frame(t => {
+  if (t >= 4.5 && t < 5.5){
+    const p = Math.min(1, (t - 4.5) / 0.7);
+    $('cutA-num').textContent = '+' + Math.round(150 * p);
+    $('cutA-ul').style.width = Math.round(540 * p) + 'px';
+  }
+});
+cue(6.55, () => { addShake(7); burst(960, 520, 40); });
+cue(7.48, () => { E('s03').classList.remove('on'); });
+
+/* =====================================================================
+   S04: 5-PILLAR RADAR (7.50 - 10.50)
+===================================================================== */
+cue(7.50, () => {
+  E('s04').classList.add('on');
+  anim($('radar-box'), [{opacity:0, transform:'translate(-50%,-50%) scale(0.85)'}, {opacity:1, transform:'translate(-50%,-50%) scale(1)'}], {duration:450, easing:EASE_O, fill:'forwards'});
+});
+frame(t => {
+  if (t >= 7.5 && t <= 10.5){
+    const p = Math.min(1, (t - 7.5) / 2.5);
+    const rad = $('radar-shape-30');
+    if (rad){
+      const y1 = -130 - p * 45;
+      const x2 = 130 + p * 40;
+      rad.setAttribute('points', `0,${y1.toFixed(0)} ${x2.toFixed(0)},-52 95,128 -110,148 -155,-50`);
+    }
+  }
+});
+cue(10.48, () => { E('s04').classList.remove('on'); });
+
+/* =====================================================================
+   S05: 3D QUEST CORRIDOR (10.50 - 14.00)
+===================================================================== */
+const CARD_N = 8;
+const corrCards = [];
+const LANE = [
+  { x:-460, y: 220 }, { x: 440, y:-180 }, { x:-360, y:-130 }, { x: 460, y: 240 },
+  { x: -80, y:-280 }, { x: 500, y:  60 }, { x:-520, y:  40 }, { x:  80, y: 280 }
+];
+const CARDS = [
+  ['HABIT', 'MORNING RUN', '+150 EXP'],
+  ['STREAK', '7-DAY STREAK', 'GOLD &times;1.5'],
+  ['DEEP WORK', '90 MIN FOCUS', '+200 EXP'],
+  ['SHOP', 'FULL ELIXIR', '75 GOLD'],
+  ['PILLAR', 'DISCIPLINE ELITE', 'RADAR 88%'],
+  ['HABIT', 'READING 30M', '+100 EXP'],
+  ['RANK', 'C-RANK VANGUARD', 'LEVEL 10'],
+  ['REWARD', '2H GAMING PASS', 'UNLOCKED']
+];
+(function buildCards(){
+  const corr = $('corr');
+  for (let i = 0; i < CARD_N; i++){
+    const d = document.createElement('div');
+    d.className = 'card';
+    const em = i % 2 === 0;
+    d.innerHTML =
+      '<div class="top" style="background:' + (em ? '#10b981' : '#8b5cf6') + '"></div>' +
+      '<div class="t1">' + CARDS[i][0] + '</div>' +
+      '<div class="t2">' + CARDS[i][1] + '</div>' +
+      '<div class="t3">' + CARDS[i][2] + '</div>';
+    corr.appendChild(d);
+    corrCards.push({ el: d, phase: i / CARD_N });
+  }
+})();
+
+cue(10.50, () => {
+  E('s05').classList.add('on');
+  anim($('hud'), [{opacity:0, transform:'translateY(-14px)'}, {opacity:1, transform:'translateY(0)'}], {duration:300, easing:EASE_O, fill:'forwards'});
+});
+frame(t => {
+  if (t < 10.5 || t > 14.0) return;
+  const dt = t - lastT;
+  if (dt <= 0 || dt > 0.25) return;
+  const p = (t - 10.5) / 3.5;
+  const spd = 0.35 + 0.6 * p;
+  corrCards.forEach(c => { c.phase = (c.phase + spd * dt) % 1; });
+  corrCards.forEach((c, i) => {
+    const L = LANE[i];
+    const z = -2600 + c.phase * 3500;
+    const fadeIn = Math.min(1, Math.max(0, (c.phase - 0.02) / 0.16));
+    const fadeOut = Math.min(1, Math.max(0, (0.96 - c.phase) / 0.06));
+    c.el.style.transform =
+      'translate3d(' + (L.x * (0.5 + p*0.6)).toFixed(1) + 'px,' +
+      (L.y * (0.5 + p*0.6)).toFixed(1) + 'px,' + z.toFixed(1) + 'px)';
+    c.el.style.opacity = Math.min(fadeIn, fadeOut).toFixed(2);
+  });
+});
+cue(13.98, () => { E('s05').classList.remove('on'); });
+
+/* =====================================================================
+   S06: REWARD SHOP (14.00 - 17.50)
+===================================================================== */
+cue(14.00, () => {
+  E('s06').classList.add('on');
+  anim(E('s06').querySelector('.shop-wrap'), [{opacity:0, transform:'translate(-50%,-46%)'}, {opacity:1, transform:'translate(-50%,-50%)'}], {duration:380, easing:EASE_O, fill:'forwards'});
+});
+cue(15.20, () => { anim($('sc0'), [{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}], {duration:220}); });
+cue(16.20, () => { anim($('sc1'), [{transform:'scale(1)'},{transform:'scale(1.08)'},{transform:'scale(1)'}], {duration:220}); burst(960, 560, 26); });
+cue(17.48, () => { E('s06').classList.remove('on'); });
+
+/* =====================================================================
+   S07: HP PENALTY (17.50 - 20.50)
+===================================================================== */
+cue(17.50, () => {
+  E('s07').classList.add('on');
+  anim($('pen-text'), [{opacity:0, transform:'translateY(14px)'}, {opacity:1, transform:'translateY(0)'}], {duration:300, easing:EASE_O, fill:'forwards'});
+});
+frame(t => {
+  if (t >= 17.5 && t <= 19.8){
+    const p = Math.min(1, (t - 17.5) / 2.0);
+    const hp = Math.max(0, Math.round(100 * (1 - p)));
+    $('hp-bar').style.width = hp + '%';
+    $('hp-text').textContent = hp + ' / 100';
+  }
+});
+cue(19.60, () => {
+  addShake(12);
+  anim($('streak-reset-stamp'), [{opacity:0, transform:'translate(-50%,-50%) rotate(-6deg) scale(2.2)'}, {opacity:1, transform:'translate(-50%,-50%) rotate(-6deg) scale(1)'}], {duration:140, easing:EASE_O, fill:'forwards'});
+});
+cue(20.48, () => { E('s07').classList.remove('on'); });
+
+/* =====================================================================
+   S08: 1-BEAT FULL-FRAME STROBE (20.50 - 23.50)
+===================================================================== */
+[
+  { t:20.50, id:'s08_0' },
+  { t:21.25, id:'s08_1' },
+  { t:22.00, id:'s08_2' },
+  { t:22.75, id:'s08_3' }
+].forEach((st, i) => {
+  cue(st.t, () => {
+    document.querySelectorAll('.strobe-scene').forEach(s => s.classList.remove('on'));
+    E(st.id).classList.add('on');
+    whiteFlash(0.08);
+  });
+});
+cue(23.48, () => { E('s08_3').classList.remove('on'); });
+
+/* =====================================================================
+   S09: STAIR TYPE (23.50 - 26.50)
+===================================================================== */
+(function buildLines(){
+  const box = $('lines');
+  for (let i = 0; i < 26; i++){
+    const l = document.createElement('i');
+    l.style.top = (i * 96) + 'px';
+    box.appendChild(l);
+  }
+})();
+const lineEls = [];
+(function cacheLines(){
+  $('lines').querySelectorAll('i').forEach(l => lineEls.push(l));
+})();
+frame(t => {
+  if (t < 23.5 || t > 26.5) return;
+  const off = (t * 900) % 96;
+  lineEls.forEach((l, i) => {
+    l.style.transform = 'translateX(' + (-(off + i * 31) % 4000) + 'px)';
+  });
+});
+const sws = [$('sw0'), $('sw1'), $('sw2'), $('sw3')];
+cue(23.50, () => {
+  E('s09').classList.add('on');
+});
+[23.70, 24.10, 24.50, 24.90].forEach((t, i) => cue(t, () => {
+  anim(sws[i], [{opacity:0, transform:'translateX(-130px) skewX(-8deg)'}, {opacity:1, transform:'translateX(0) skewX(0)'}], {duration:130, easing:EASE_O, fill:'forwards'});
+  if (i === 3) addShake(6);
+}));
+cue(25.40, () => {
+  anim($('stair-slam'), [{opacity:0, transform:'scale(0.88)'}, {opacity:1, transform:'scale(1)'}], {duration:150, easing:EASE_O, fill:'forwards'});
+  sws.forEach(w => anim(w, [{opacity:1}, {opacity:0}], {duration:90, fill:'forwards'}));
+});
+cue(26.48, () => { E('s09').classList.remove('on'); });
+
+/* =====================================================================
+   S10: HERO LANDING (26.50 - 30.00)
+===================================================================== */
+cue(26.50, () => {
+  E('s10').classList.add('on');
+});
+cue(26.60, () => {
+  anim($('fin'), [{opacity:0, transform:'translate(-50%,-53%) scale(1.05)'}, {opacity:1, transform:'translate(-50%,-50%) scale(1)'}], {duration:450, easing:EASE_O, fill:'forwards'});
+});
+cue(27.10, () => {
+  anim($('tagline'), [{opacity:0, transform:'translateY(14px)'}, {opacity:1, transform:'translateY(0)'}], {duration:300, easing:EASE_O, fill:'forwards'});
+});
+cue(27.50, () => {
+  anim($('fin-chips'), [{opacity:0, transform:'translateY(10px)'}, {opacity:1, transform:'translateY(0)'}], {duration:280, easing:EASE_O, fill:'forwards'});
+  anim($('credit'), [{opacity:0}, {opacity:1}], {duration:280, fill:'forwards'});
+  anim($('hint'), [{opacity:0}, {opacity:1}], {duration:280, fill:'forwards'});
+});
+
+/* =====================================================================
+   LOOP & SCRUBBER
+===================================================================== */
+CUES.sort((a, b) => a.t - b.t);
+
+function fmt(s){
+  const m = Math.floor(s / 60), r = s - m * 60;
+  return String(m).padStart(2, '0') + ':' +
+         String(Math.floor(r)).padStart(2, '0') + '.' +
+         String(Math.floor((r % 1) * 100)).padStart(2, '0');
+}
+function tick(t){
+  while (cueIdx < CUES.length && CUES[cueIdx].t <= t){
+    const c = CUES[cueIdx];
+    if (!c.done){ c.done = true; c.fn(); }
+    cueIdx++;
+  }
+  FRAMES.forEach(fn => fn(t, Math.max(0, t - lastT)));
+  lastT = t;
+  const clamped = Math.min(t, DUR);
+  $('prog-fill').style.width = (clamped / DUR * 100) + '%';
+  $('tcode').textContent = fmt(clamped) + ' / 00:30.00';
+  if (t >= DUR && !finished){
+    finished = true;
+    stage.style.transform = 'translate(0,0)';
+  }
+}
+function loop(now){
+  if (pauseAt === null && !finished){
+    tick((now - playStart) / 1000);
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function play(){
+  if (finished){ resetAll(); return; }
+  if (pauseAt !== null){
+    playStart += performance.now() - pauseAt;
+    pauseAt = null;
+    $('b-pause').textContent = 'PAUSE';
+  }
+}
+function pause(){
+  if (pauseAt === null){ pauseAt = performance.now(); $('b-pause').textContent = 'PLAY'; }
+  else play();
+}
+$('b-replay').onclick = () => resetAll();
+$('b-pause').onclick = pause;
+
+/* Clickable progress bar scrubber */
+$('prog').onclick = e => {
+  const rect = $('prog').getBoundingClientRect();
+  const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+  const targetT = ratio * DUR;
+  resetAll();
+  playStart = performance.now() - targetT * 1000;
+  audioResync();
+};
+
+addEventListener('keydown', e => {
+  if (e.code === 'Space'){
+    if (e.target && e.target.tagName === 'BUTTON') return;
+    e.preventDefault(); pause();
+  }
+  else if (e.key === 'r' || e.key === 'R'){ resetAll(); }
+  else if (e.key === 's' || e.key === 'S'){ $('b-sound').click(); }
+});
+
+/* =====================================================================
+   PROCEDURAL WEBAUDIO SOUNDTRACK (120 BPM, 30s)
+===================================================================== */
+let AC = null, masterGain = null, masterComp = null, soundOn = false, scheduledStep = 0, audioT0 = 0;
+let _noiseBuf = null;
+
+function ensureAC(){
+  if (AC){
+    if (AC.state === 'suspended') AC.resume();
+    return;
+  }
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+  masterComp = AC.createDynamicsCompressor();
+  masterComp.threshold.setValueAtTime(-14, AC.currentTime);
+  masterComp.knee.setValueAtTime(10, AC.currentTime);
+  masterComp.ratio.setValueAtTime(4.5, AC.currentTime);
+  masterComp.attack.setValueAtTime(0.003, AC.currentTime);
+  masterComp.release.setValueAtTime(0.18, AC.currentTime);
+  masterComp.connect(AC.destination);
+
+  masterGain = AC.createGain();
+  masterGain.gain.setValueAtTime(0.70, AC.currentTime);
+  masterGain.connect(masterComp);
+}
+
+function noiseBuf(){
+  if (_noiseBuf) return _noiseBuf;
+  _noiseBuf = AC.createBuffer(1, Math.floor(AC.sampleRate * 0.5), AC.sampleRate);
+  const d = _noiseBuf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return _noiseBuf;
+}
+function env(node, t, a, d){
+  node.gain.setValueAtTime(0.0001, t);
+  node.gain.linearRampToValueAtTime(a, t + 0.003);
+  node.gain.exponentialRampToValueAtTime(0.0001, t + d);
+}
+
+function kick(when, punchy = true){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(170, when);
+  o.frequency.exponentialRampToValueAtTime(42, when + 0.08);
+  env(g, when, punchy ? 0.95 : 0.75, 0.22);
+  o.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + 0.25);
+
+  const c = AC.createOscillator(), cg = AC.createGain();
+  c.type = 'triangle'; c.frequency.setValueAtTime(320, when);
+  c.frequency.exponentialRampToValueAtTime(50, when + 0.015);
+  env(cg, when, 0.45, 0.02);
+  c.connect(cg); cg.connect(masterGain);
+  c.start(when); c.stop(when + 0.025);
+}
+
+function snare(when, hard = true){
+  const b = AC.createBufferSource();
+  const bp = AC.createBiquadFilter(); bp.type = 'bandpass';
+  bp.frequency.value = 2200; bp.Q.value = 1.3;
+  const hp = AC.createBiquadFilter(); hp.type = 'highpass';
+  hp.frequency.value = 900;
+  const g = AC.createGain(); env(g, when, hard ? 0.65 : 0.45, 0.18);
+  b.buffer = noiseBuf();
+  b.connect(bp); bp.connect(hp); hp.connect(g); g.connect(masterGain);
+  b.start(when, Math.random() * 0.2); b.stop(when + 0.22);
+
+  const o = AC.createOscillator(), og = AC.createGain();
+  o.type = 'triangle'; o.frequency.setValueAtTime(230, when);
+  o.frequency.exponentialRampToValueAtTime(80, when + 0.04);
+  env(og, when, 0.35, 0.07);
+  o.connect(og); og.connect(masterGain);
+  o.start(when); o.stop(when + 0.08);
+}
+
+function hat(when, open = false, vol = 0.12){
+  const b = AC.createBufferSource();
+  const hp = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8500;
+  const g = AC.createGain(); env(g, when, vol, open ? 0.24 : 0.038);
+  b.buffer = noiseBuf();
+  b.connect(hp); hp.connect(g); g.connect(masterGain);
+  b.start(when, Math.random() * 0.2); b.stop(when + (open ? 0.26 : 0.045));
+}
+
+function bass(when, freq, dur = 0.20, filterCut = 1200){
+  const o1 = AC.createOscillator(), o2 = AC.createOscillator();
+  const f = AC.createBiquadFilter(), g = AC.createGain();
+  o1.type = 'sawtooth'; o1.frequency.setValueAtTime(freq, when);
+  o2.type = 'sine'; o2.frequency.setValueAtTime(freq * 0.5, when);
+  f.type = 'lowpass'; f.Q.value = 3.6;
+  f.frequency.setValueAtTime(filterCut, when);
+  f.frequency.exponentialRampToValueAtTime(120, when + dur * 0.85);
+  env(g, when, 0.38, dur);
+  o1.connect(f); o2.connect(f); f.connect(g); g.connect(masterGain);
+  o1.start(when); o1.stop(when + dur + 0.05);
+  o2.start(when); o2.stop(when + dur + 0.05);
+}
+
+function arp(when, freq, dur = 0.11){
+  const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+  o.type = 'square'; o.frequency.setValueAtTime(freq, when);
+  f.type = 'bandpass'; f.frequency.value = 1750; f.Q.value = 1.6;
+  env(g, when, 0.16, dur);
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + dur + 0.02);
+}
+
+function stabChord(when, rootFreq){
+  const intervals = [1, 1.2, 1.5, 2.0];
+  intervals.forEach((ratio, idx) => {
+    const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(rootFreq * ratio, when);
+    f.type = 'lowpass'; f.Q.value = 2.5; f.frequency.setValueAtTime(3200, when);
+    f.frequency.exponentialRampToValueAtTime(500, when + 0.28);
+    env(g, when, 0.15, 0.32);
+    o.connect(f); f.connect(g); g.connect(masterGain);
+    o.start(when); o.stop(when + 0.35);
+  });
+}
+
+function subImpact(when){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(110, when);
+  o.frequency.exponentialRampToValueAtTime(28, when + 0.8);
+  env(g, when, 0.95, 1.2);
+  o.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + 1.3);
+}
+
+function ambientChime(when){
+  const chord = [146.83, 220.00, 369.99, 554.37, 659.25];
+  chord.forEach((freq, idx) => {
+    const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(freq, when);
+    f.type = 'lowpass'; f.frequency.setValueAtTime(1200 + idx * 200, when);
+    env(g, when, 0.14, 1.8);
+    o.connect(f); f.connect(g); g.connect(masterGain);
+    o.start(when); o.stop(when + 1.9);
+  });
+}
+
+const D_BASS = [73.4, 73.4, 87.3, 98.0, 73.4, 65.4, 87.3, 110.0];
+const D_ARP = [293.7, 349.2, 440.0, 587.3, 523.3, 440.0, 349.2, 392.0];
+
+function pattern(step, when){
+  const t = step * 0.125;
+  if (t >= 30.0) return false;
+
+  /* S01: Terminal Hook (0 - 2.0s) */
+  if (t < 2.0){
+    if (step % 2 === 0) hat(when, false, 0.08);
+    if (step === 12) { kick(when, true); subImpact(when); }
+    return true;
+  }
+
+  /* S02: Prism (2.0 - 4.5s) */
+  if (t >= 2.0 && t < 4.5){
+    const s = step;
+    if (s % 4 === 0) kick(when, true);
+    if (s % 8 === 4) snare(when, true);
+    hat(when, s % 4 === 2, 0.12);
+    if (s % 2 === 0) bass(when, D_BASS[(s / 2) % D_BASS.length], 0.18, 1100);
+    return true;
+  }
+
+  /* S03 - S05: High-Speed Gameplay Groove (4.5 - 14.0s) */
+  if (t >= 4.5 && t < 14.0){
+    const s = step;
+    if (s % 4 === 0 || s % 8 === 6) kick(when, true);
+    if (s % 8 === 4) snare(when, true);
+    hat(when, s % 2 === 1, 0.14);
+    if (s % 2 === 0) bass(when, D_BASS[(s / 2) % D_BASS.length], 0.16, 1300);
+    arp(when, D_ARP[s % D_ARP.length], 0.09);
+    return true;
+  }
+
+  /* S06: Reward Shop (14.0 - 17.5s) */
+  if (t >= 14.0 && t < 17.5){
+    const s = step;
+    if (s % 4 === 0) kick(when, true);
+    if (s % 8 === 4) snare(when, true);
+    hat(when, false, 0.16);
+    if (s % 2 === 0) bass(when, D_BASS[(s / 2) % D_BASS.length], 0.14, 1500);
+    return true;
+  }
+
+  /* S07: HP Penalty (17.5 - 20.5s) */
+  if (t >= 17.5 && t < 19.6){
+    if (step % 4 === 0) kick(when, true);
+    bass(when, 36.7, 0.35, 500);
+    return true;
+  }
+  if (t >= 19.6 && t < 19.8){
+    subImpact(when);
+    snare(when, true);
+    return true;
+  }
+  if (t >= 19.8 && t < 20.5){
+    /* Drop pause */
+    return true;
+  }
+
+  /* S08: Strobe Cuts (20.5 - 23.5s) */
+  if (t >= 20.5 && t < 23.5){
+    const s = step;
+    if (s % 6 === 0) {
+      kick(when, true);
+      stabChord(when, [146.8, 174.6, 196.0, 233.0][Math.floor((s - 164) / 6) % 4] || 146.8);
+    }
+    hat(when, false, 0.15);
+    return true;
+  }
+
+  /* S09: Stair Type Climax (23.5 - 26.5s) */
+  if (t >= 23.5 && t < 26.5){
+    const s = step;
+    kick(when, true);
+    snare(when, s % 2 === 0);
+    hat(when, false, 0.18);
+    bass(when, 73.4, 0.12, 1800);
+    return true;
+  }
+
+  /* S10: Hero Landing (26.5 - 30.0s) */
+  if (t >= 26.5 && t < 26.7){
+    subImpact(when);
+    ambientChime(when);
+    return true;
+  }
+
+  return true;
+}
+
+const STEP_TIME = 0.125;
+function audioResync(){
+  if (!soundOn || !AC){ scheduledStep = 0; return; }
+  audioT0 = AC.currentTime - currentT();
+  scheduledStep = Math.max(0, Math.ceil(currentT() / STEP_TIME - 0.001));
+}
+function currentT(){
+  return pauseAt !== null
+    ? (pauseAt - playStart) / 1000
+    : Math.min(DUR, (performance.now() - playStart) / 1000);
+}
+function audioSchedule(){
+  if (!AC || !soundOn || finished) return;
+  const horizon = AC.currentTime + 0.16;
+  while (true){
+    const when = audioT0 + scheduledStep * STEP_TIME;
+    if (when > horizon) break;
+    const alive = pattern(scheduledStep, Math.max(when, AC.currentTime));
+    scheduledStep++;
+    if (!alive) break;
+  }
+}
+frame(() => audioSchedule());
+
+$('b-sound').onclick = () => {
+  soundOn = !soundOn;
+  $('b-sound').textContent = soundOn ? 'SOUND ON' : 'SOUND OFF';
+  $('b-sound').classList.toggle('on', soundOn);
+  if (soundOn){ ensureAC(); audioResync(); }
+  else { scheduledStep = 0; }
+};
+
+resetAll();
+</script>
+</body>
+</html>
