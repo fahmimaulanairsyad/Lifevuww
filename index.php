@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261029_01" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261029_02" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -509,7 +509,7 @@ if (isset($_SESSION['user_id'])) {
 
             <!-- Player Body (16:9) -->
             <div class="lp-reel-body">
-                <iframe id="lpReelIframe" data-src="assets/reel-30s.html" src="" allow="autoplay" loading="lazy" title="Lifevuww 30s High-Octane Motion Reel"></iframe>
+                <iframe id="lpReelIframe" src="assets/reel-30s.html" allow="autoplay" loading="lazy" title="Lifevuww 30s High-Octane Motion Reel"></iframe>
             </div>
         </div>
     </section>
@@ -1086,30 +1086,6 @@ if (isset($_SESSION['user_id'])) {
                         }
                     }
                 );
-            }
-        })();
-
-        // 8.5. Lazy-load 30s Motion Reel Iframe on Scroll Viewport Intersection
-        (function initReelObserver() {
-            const reelSection = document.getElementById('lp-reel');
-            const iframe = document.getElementById('lpReelIframe');
-            if (!reelSection || !iframe) return;
-
-            if ('IntersectionObserver' in window) {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            if (!iframe.src && iframe.dataset.src) {
-                                iframe.src = iframe.dataset.src;
-                            }
-                        }
-                    });
-                }, { rootMargin: '300px 0px' });
-                observer.observe(reelSection);
-            } else {
-                if (iframe.dataset.src) {
-                    iframe.src = iframe.dataset.src;
-                }
             }
         })();
 

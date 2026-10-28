@@ -797,9 +797,13 @@ function tick(t){
     finished = true;
     stage.style.transform = 'translate(0,0)';
   }
+  if (t >= DUR + 1.8 && pauseAt === null){
+    resetAll();
+    return;
+  }
 }
 function loop(now){
-  if (pauseAt === null && !finished){
+  if (pauseAt === null){
     tick((now - playStart) / 1000);
   }
   requestAnimationFrame(loop);
