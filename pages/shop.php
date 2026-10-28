@@ -461,6 +461,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
         <div class="modal-content">
             <form method="POST" action="shop.php">
                 <?php echo csrf_field(); ?>
+                <input type="hidden" name="add_reward" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-gift me-2 text-warning"></i> Buat Hadiah</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
@@ -491,7 +492,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" name="add_reward" class="btn-core btn-primary">Buat Hadiah</button>
+                    <button type="submit" name="add_reward" value="1" class="btn-core btn-primary">Buat Hadiah</button>
                 </div>
             </form>
         </div>
@@ -697,8 +698,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Intercept forms
+    // Intercept only shop item forms (never modal forms)
     document.querySelectorAll('form.ajax-shop-form').forEach(form => {
+        if (form.closest('.modal')) return;
         form.addEventListener('shop:ajax-submit', function(e) {
             submitShopAjax(form, e.detail && e.detail.triggerButton);
         });

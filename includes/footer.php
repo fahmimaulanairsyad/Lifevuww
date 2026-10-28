@@ -516,6 +516,8 @@
             if (!target) return;
             const form = target.closest('form');
             if (!form) return;
+            // Never intercept forms inside modals (such as add/edit habit, quest, reward)
+            if (form.closest('.modal')) return;
             if (target.dataset.confirmed) return;
 
             e.preventDefault();
@@ -1126,28 +1128,13 @@
                 }, true);
             })();
 
-            // 6. Lenis Smooth Momentum Scroll (Desktop only)
-            (function initLenis() {
-                if (!canHover || reduceMotion || typeof Lenis === 'undefined') return;
-                try {
-                    const lenis = new Lenis({
-                        duration: 1.15,
-                        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-                        orientation: 'vertical',
-                        gestureOrientation: 'vertical',
-                        smoothWheel: true,
-                    });
-
-                    function raf(time) {
-                        lenis.raf(time);
-                        requestAnimationFrame(raf);
-                    }
-                    requestAnimationFrame(raf);
-                    window.lvLenis = lenis;
-                } catch (e) {
-                    console.warn('Lenis init bypassed:', e);
-                }
-            })();
+            // Native Browser Scroll & Modal Body Overflow Cleanup (Safe for APK & Mobile)
+            document.addEventListener('hidden.bs.modal', function() {
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                document.documentElement.style.overflow = '';
+            });
         })();
     </script>
 </body>

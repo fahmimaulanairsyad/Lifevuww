@@ -320,6 +320,7 @@ require_once '../includes/header.php';
         <div class="modal-content">
             <form id="addHabitForm" method="POST" action="habits.php">
                 <?php echo csrf_field(); ?>
+                <input type="hidden" name="add_habit" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-plus me-2 text-accent"></i> Buat Rutinitas Baru</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
@@ -356,7 +357,7 @@ require_once '../includes/header.php';
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn-core btn-primary">Buat Rutinitas</button>
+                    <button type="submit" name="add_habit" value="1" class="btn-core btn-primary">Buat Rutinitas</button>
                 </div>
             </form>
         </div>
@@ -546,7 +547,7 @@ require_once '../includes/header.php';
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn-core btn-primary">Simpan Perubahan</button>
+                                    <button type="submit" name="edit_habit" value="1" class="btn-core btn-primary">Simpan Perubahan</button>
                                 </div>
                             </form>
                         </div>

@@ -38,10 +38,9 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261027_08" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261027_09" rel="stylesheet">
 
-    <!-- Motion & Scroll Libraries: Lenis & GSAP via CDN -->
-    <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+    <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
     <!-- Confetti library for Interactive Preview -->
@@ -929,22 +928,11 @@ if (isset($_SESSION['user_id'])) {
             requestAnimationFrame(draw);
         })();
 
-        // 8. Lenis Smooth Momentum Scroll & GSAP 3D Scroll Scrub on App Mockup
-        (function initLenisAndGsap() {
+        // 8. GSAP 3D Scroll Scrub on App Mockup (Native Scroll Friendly)
+        (function initGsapScrub() {
             const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
             const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             if (!canHover || reduceMotion) return;
-
-            if (typeof Lenis !== 'undefined') {
-                try {
-                    const lenis = new Lenis({ duration: 1.15, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)) });
-                    function raf(time) {
-                        lenis.raf(time);
-                        requestAnimationFrame(raf);
-                    }
-                    requestAnimationFrame(raf);
-                } catch (e) {}
-            }
 
             if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
                 gsap.registerPlugin(ScrollTrigger);

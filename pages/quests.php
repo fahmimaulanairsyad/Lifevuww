@@ -292,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    if (isset($_POST['quest_name'])) {
+    if (isset($_POST['add_quest']) || (isset($_POST['quest_name']) && !isset($_POST['edit_quest']))) {
         $quest_name = trim($_POST['quest_name'] ?? '');
         $difficulty = $_POST['difficulty'] ?? '';
         $start_date = trim($_POST['start_date'] ?? '');
@@ -369,6 +369,7 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="modal-content">
             <form id="addQuestForm" method="POST" action="quests.php">
                 <?php echo csrf_field(); ?>
+                <input type="hidden" name="add_quest" value="1">
                 <div class="modal-header">
                     <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-plus me-2 text-accent"></i> Buat Misi Baru</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
@@ -407,7 +408,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn-core btn-primary">Mulai Misi</button>
+                    <button type="submit" name="add_quest" value="1" class="btn-core btn-primary">Mulai Misi</button>
                 </div>
             </form>
         </div>
@@ -629,7 +630,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn-core btn-primary">Simpan Perubahan</button>
+                                    <button type="submit" name="edit_quest" value="1" class="btn-core btn-primary">Simpan Perubahan</button>
                                 </div>
                             </form>
                         </div>
