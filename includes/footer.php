@@ -636,13 +636,14 @@
             }
         });
 
-        // Shake Boss HP Bar on subtask toggle
+        // Shake Boss HP Bar on subtask toggle (Attacking only)
         document.addEventListener('change', function(e) {
             if (e.target.closest('.subtask-row')) {
                 const box = e.target.closest('.boss-card-container');
-                if (box) {
-                    box.classList.add('boss-hit-anim');
-                    setTimeout(() => box.classList.remove('boss-hit-anim'), 300);
+                // Only shake when checked (attacking boss), never on uncheck (healing/reverting)
+                if (box && e.target.checked && !e.target.classList.contains('subtask-checkbox')) {
+                    box.classList.add('boss-hit-anim', 'boss-hit-shake');
+                    setTimeout(() => box.classList.remove('boss-hit-anim', 'boss-hit-shake'), 300);
                 }
             }
         });

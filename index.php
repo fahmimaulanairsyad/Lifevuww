@@ -234,11 +234,11 @@ if (isset($_SESSION['user_id'])) {
                                         <span class="slash-animated slashed" style="font-size: 0.8rem; color: var(--text-muted); text-decoration: line-through;">Fase 1: Bangun Tepat Waktu Tanpa Snooze</span>
                                     </label>
                                     <label class="subtask-row w-100 d-flex align-items-center gap-2 p-2 m-0" style="cursor: pointer; border-radius: 8px;">
-                                        <input type="checkbox" id="mockSubtask2" onchange="updateMockBoss()" style="accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;">
+                                        <input type="checkbox" id="mockSubtask2" onchange="updateMockBoss(this)" style="accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;">
                                         <span id="mockSubText2" class="slash-animated" style="font-size: 0.8rem; color: var(--text-primary);">Fase 2: Blokir Medsos & Distraksi Ponsel</span>
                                     </label>
                                     <label class="subtask-row w-100 d-flex align-items-center gap-2 p-2 m-0" style="cursor: pointer; border-radius: 8px;">
-                                        <input type="checkbox" id="mockSubtask3" onchange="updateMockBoss()" style="accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;">
+                                        <input type="checkbox" id="mockSubtask3" onchange="updateMockBoss(this)" style="accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px;">
                                         <span id="mockSubText3" class="slash-animated" style="font-size: 0.8rem; color: var(--text-primary);">Fase 3: Selesaikan 1 Target Penting Hari Ini</span>
                                     </label>
                                 </div>
@@ -684,12 +684,15 @@ if (isset($_SESSION['user_id'])) {
                 badge.className = 'badge-status font-mono';
                 mockExp -= 12;
                 mockGold -= 12;
+                const rect = row.getBoundingClientRect();
+                spawnCombatText(rect.left + rect.width / 2, rect.top, '<span class="text-warning fw-bold"><i class="fas fa-undo-alt text-warning me-1"></i>↺ -12 EXP • -12 Gold</span>');
             }
             updateMockCapsule();
         }
 
         // 3. Tab 1: Boss Quest Simulation
-        function updateMockBoss() {
+        function updateMockBoss(el) {
+            const isChecked = el ? el.checked : true;
             const s2 = document.getElementById('mockSubtask2').checked;
             const s3 = document.getElementById('mockSubtask3').checked;
             const t2 = document.getElementById('mockSubText2');
@@ -706,16 +709,29 @@ if (isset($_SESSION['user_id'])) {
             else { t3.classList.remove('slashed'); t3.style.color = 'var(--text-primary)'; }
 
             let doneCount = 1 + (s2 ? 1 : 0) + (s3 ? 1 : 0);
-            let pct = Math.round(((3 - doneCount) / 3) * 100);
-
-            card.classList.add('boss-hit-anim');
-            setTimeout(() => card.classList.remove('boss-hit-anim'), 300);
+            let pct = Math.max(0, Math.round(((3 - doneCount) / 3) * 100));
 
             hpBar.style.width = pct + '%';
             hpLabel.textContent = 'Sisa HP: ' + pct + '%';
 
-            const rect = card.getBoundingClientRect();
-            spawnCombatText(rect.left + rect.width / 2, rect.top + 25, '<i class="fas fa-crosshairs text-danger"></i> Boss Hit! -33% HP');
+            const rect = (el && el.closest('.subtask-row')) ? el.closest('.subtask-row').getBoundingClientRect() : card.getBoundingClientRect();
+            const posX = rect.left + rect.width / 2;
+            const posY = rect.top;
+
+            if (isChecked) {
+                // Attacking Boss
+                card.classList.add('boss-hit-anim', 'boss-hit-shake');
+                setTimeout(() => card.classList.remove('boss-hit-anim', 'boss-hit-shake'), 300);
+
+                if (pct === 0) {
+                    spawnCombatText(posX, posY, '<span class="text-danger fw-bold"><i class="fas fa-skull text-danger me-1"></i>💀 Pertahanan Boss Hancur!</span>');
+                } else {
+                    spawnCombatText(posX, posY, '<span class="text-danger fw-bold"><i class="fas fa-crosshairs text-danger me-1"></i>⚔️ -33% HP Boss</span>');
+                }
+            } else {
+                // Unchecking / Healing Boss (amber/warning, without shake)
+                spawnCombatText(posX, posY, '<span class="text-warning fw-bold"><i class="fas fa-undo-alt text-warning me-1"></i>↺ +33% HP Boss Pulih</span>');
+            }
 
             if (pct === 0) {
                 hpLabel.innerHTML = '<span class="text-accent fw-bold"><i class="fas fa-trophy"></i> HP 0% — BOSS RUNTUH!</span>';

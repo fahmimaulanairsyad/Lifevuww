@@ -64,10 +64,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Toggle subtask checklist
+    // Toggle subtask checklist (Support both AJAX & form submit)
     if (isset($_POST['toggle_subtask'])) {
         $questId = intval($_POST['quest_id'] ?? 0);
         $subIndex = intval($_POST['subtask_index'] ?? -1);
+        $isDone = false;
+        $totalSub = 0;
+        $doneSub = 0;
 
         if ($questId > 0 && $subIndex >= 0) {
             $stmt = $pdo->prepare("SELECT subtasks FROM quests WHERE quest_id = ? AND user_id = ?");
@@ -76,11 +79,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $list = json_decode($raw ?: '[]', true) ?: [];
             if (isset($list[$subIndex])) {
                 $list[$subIndex]['done'] = empty($list[$subIndex]['done']);
+                $isDone = (bool)$list[$subIndex]['done'];
                 $newJson = json_encode(array_values($list), JSON_UNESCAPED_UNICODE);
                 $pdo->prepare("UPDATE quests SET subtasks = ? WHERE quest_id = ? AND user_id = ?")
                     ->execute([$newJson, $questId, $_SESSION['user_id']]);
+                $totalSub = count($list);
+                $doneSub = count(array_filter($list, fn($s) => !empty($s['done'])));
             }
         }
+
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+            || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            $bossHpPct = $totalSub > 0 ? round((($totalSub - $doneSub) / $totalSub) * 100) : 100;
+            echo json_encode([
+                'success' => true,
+                'is_done' => $isDone,
+                'total_sub' => $totalSub,
+                'done_sub' => $doneSub,
+                'boss_hp_pct' => $bossHpPct
+            ]);
+            exit();
+        }
+
         header("Location: quests.php");
         exit();
     }
@@ -519,21 +542,21 @@ require_once __DIR__ . '/../includes/header.php';
                                 <div class="boss-card-container spotlight-card holo-card mt-2 p-3" style="max-width: 520px;">
                                     <div class="d-flex justify-content-between align-items-center font-mono text-danger mb-1" style="font-size: 0.72rem;">
                                         <span><i class="fas fa-shield-virus me-1"></i> Sisa HP Boss</span>
-                                        <span><?php echo $bossHpPct; ?>% (<?php echo ($totalSub - $doneSub); ?>/<?php echo $totalSub; ?> Fase)</span>
+                                        <span class="boss-hp-label"><?php echo $bossHpPct; ?>% (<?php echo ($totalSub - $doneSub); ?>/<?php echo $totalSub; ?> Fase)</span>
                                     </div>
                                     <div class="vitals-track boss-hp-track" style="height: 6px; background-color: rgba(255,255,255,0.06); margin-bottom: 10px;">
                                         <div class="vitals-fill boss-hp-fill" style="width: <?php echo $bossHpPct; ?>%; background-color: var(--status-danger); transition: width 0.3s ease;"></div>
                                     </div>
                                     <div class="d-flex flex-column gap-1">
                                         <?php foreach ($subtasks as $idx => $st): ?>
-                                            <form method="POST" action="quests.php" class="d-flex align-items-center gap-2 m-0">
+                                            <form method="POST" action="quests.php" class="subtask-toggle-form d-flex align-items-center gap-2 m-0">
                                                 <?php echo csrf_field(); ?>
                                                 <input type="hidden" name="toggle_subtask" value="1">
                                                 <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
                                                 <input type="hidden" name="subtask_index" value="<?php echo $idx; ?>">
                                                 <label class="subtask-row w-100 d-flex align-items-center gap-2 p-2 m-0" style="cursor: pointer; border-radius: var(--radius);">
-                                                    <input type="checkbox" onchange="this.form.submit()" <?php echo !empty($st['done']) ? 'checked' : ''; ?> style="accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; flex-shrink: 0;">
-                                                    <span style="font-size: 0.8rem; line-height: 1.35; <?php echo !empty($st['done']) ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-primary);'; ?>">
+                                                    <input type="checkbox" class="subtask-checkbox" <?php echo !empty($st['done']) ? 'checked' : ''; ?> style="accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; flex-shrink: 0;">
+                                                    <span class="subtask-text" style="font-size: 0.8rem; line-height: 1.35; <?php echo !empty($st['done']) ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-primary);'; ?>">
                                                         <?php echo htmlspecialchars($st['title'] ?? ''); ?>
                                                     </span>
                                                 </label>
@@ -552,12 +575,11 @@ require_once __DIR__ . '/../includes/header.php';
                         
                         <?php if ($quest['status'] === 'Completed'): ?>
                             <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
-                        <?php elseif ($totalSub > 0 && $doneSub < $totalSub): ?>
-                            <button type="button" class="btn-core btn-outline font-mono text-danger btn-action-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; opacity: 0.65; cursor: not-allowed;" title="Kalahkan semua fase Boss Quest terlebih dahulu">
+                        <?php else: ?>
+                            <button type="button" class="btn-core btn-outline font-mono text-danger btn-action-primary boss-action-locked <?php echo ($totalSub > 0 && $doneSub < $totalSub) ? '' : 'd-none'; ?>" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; opacity: 0.65; cursor: not-allowed;" title="Kalahkan semua fase Boss Quest terlebih dahulu">
                                 <i class="fas fa-lock me-1"></i> Lawan Boss
                             </button>
-                        <?php else: ?>
-                            <form method="POST" action="quests.php" style="margin: 0;" class="form-action-primary">
+                            <form method="POST" action="quests.php" style="margin: 0;" class="form-action-primary boss-action-form <?php echo ($totalSub > 0 && $doneSub < $totalSub) ? 'd-none' : ''; ?>">
                                 <?php echo csrf_field(); ?>
                                 <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
                                 <button type="submit" name="complete_quest" class="btn-core btn-accent btn-action-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
@@ -686,5 +708,121 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </div>
 <?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.subtask-checkbox').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function(e) {
+            const isChecked = checkbox.checked;
+            const form = checkbox.closest('form');
+            const bossCard = checkbox.closest('.boss-card-container');
+            const allCheckboxes = bossCard ? Array.from(bossCard.querySelectorAll('.subtask-checkbox')) : [checkbox];
+            const totalSteps = allCheckboxes.length || 1;
+            const stepPct = Math.round(100 / totalSteps);
+            const doneCount = allCheckboxes.filter(c => c.checked).length;
+            const remainingSteps = totalSteps - doneCount;
+            const remainingPct = Math.max(0, Math.round((remainingSteps / totalSteps) * 100));
+
+            // 1. Text strike-through style
+            const labelSpan = checkbox.closest('label').querySelector('.subtask-text');
+            if (labelSpan) {
+                if (isChecked) {
+                    labelSpan.style.textDecoration = 'line-through';
+                    labelSpan.style.color = 'var(--text-muted)';
+                } else {
+                    labelSpan.style.textDecoration = 'none';
+                    labelSpan.style.color = 'var(--text-primary)';
+                }
+            }
+
+            // 2. Update HP Bar & Label
+            if (bossCard) {
+                const hpBar = bossCard.querySelector('.boss-hp-fill');
+                const hpLabel = bossCard.querySelector('.boss-hp-label');
+                if (hpBar) {
+                    hpBar.style.width = remainingPct + '%';
+                    if (remainingPct === 0) {
+                        hpBar.style.backgroundColor = 'var(--accent)';
+                    } else {
+                        hpBar.style.backgroundColor = 'var(--status-danger)';
+                    }
+                }
+                if (hpLabel) {
+                    if (remainingPct === 0) {
+                        hpLabel.innerHTML = '<span class="text-accent fw-bold"><i class="fas fa-trophy"></i> 0% (Fase Tuntas)</span>';
+                    } else {
+                        hpLabel.textContent = `${remainingPct}% (${remainingSteps}/${totalSteps} Fase)`;
+                    }
+                }
+            }
+
+            // 3. Update quest card action button (Lawan Boss / Selesaikan)
+            const questRow = checkbox.closest('.data-row');
+            if (questRow) {
+                const lockedBtn = questRow.querySelector('.boss-action-locked');
+                const formAction = questRow.querySelector('.boss-action-form');
+                if (remainingPct === 0) {
+                    if (lockedBtn) lockedBtn.classList.add('d-none');
+                    if (formAction) formAction.classList.remove('d-none');
+                } else {
+                    if (lockedBtn) lockedBtn.classList.remove('d-none');
+                    if (formAction) formAction.classList.add('d-none');
+                }
+            }
+
+            // 4. Floating combat text & Animation
+            const rect = checkbox.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top;
+
+            if (isChecked) {
+                // Attacking Boss
+                const textHtml = (remainingPct === 0)
+                    ? '<span class="text-danger fw-bold"><i class="fas fa-skull text-danger me-1"></i>💀 Pertahanan Boss Hancur!</span>'
+                    : `<span class="text-danger fw-bold"><i class="fas fa-crosshairs text-danger me-1"></i>⚔️ -${stepPct}% HP Boss</span>`;
+                
+                if (window.spawnFloatingReward) {
+                    window.spawnFloatingReward(x, y, textHtml);
+                }
+
+                if (bossCard) {
+                    bossCard.classList.add('boss-hit-shake', 'boss-hit-anim');
+                    setTimeout(() => bossCard.classList.remove('boss-hit-shake', 'boss-hit-anim'), 350);
+                }
+                if (typeof LVSound !== 'undefined') LVSound.coin();
+            } else {
+                // Reverting / Healing Boss (amber/warning, no shake)
+                const textHtml = `<span class="text-warning fw-bold"><i class="fas fa-undo-alt text-warning me-1"></i>↺ +${stepPct}% HP Boss Pulih</span>`;
+                
+                if (window.spawnFloatingReward) {
+                    window.spawnFloatingReward(x, y, textHtml);
+                }
+
+                // JANGAN memicu animasi getar serangan saat centang dibatalkan
+                if (typeof LVSound !== 'undefined') LVSound.tick();
+            }
+
+            // 5. AJAX POST submission to preserve state without full page flash
+            if (form) {
+                const formData = new FormData(form);
+                fetch('quests.php', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                }).then(res => {
+                    if (!res.ok) {
+                        form.submit();
+                    }
+                }).catch(() => {
+                    form.submit();
+                });
+            }
+        });
+    });
+});
+</script>
 
 <?php require_once("../includes/footer.php"); ?>

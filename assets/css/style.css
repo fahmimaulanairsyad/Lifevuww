@@ -822,7 +822,8 @@ a:hover {
     80% { transform: translateX(2px); }
     100% { transform: translateX(0); }
 }
-.boss-hit-anim {
+.boss-hit-anim,
+.boss-hit-shake {
     animation: bossHit 0.25s ease-in-out;
 }
 
