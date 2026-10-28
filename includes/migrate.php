@@ -78,7 +78,19 @@ function run_lifevuww_migrations(PDO $pdo): array {
     return $results;
 }
 
+function ensure_lifevuww_migrated(PDO $pdo): void {
+    static $alreadyChecked = false;
+    if ($alreadyChecked) return;
+    $alreadyChecked = true;
+
+    try {
+        $pdo->query("SELECT target_count FROM habits LIMIT 1");
+    } catch (Exception $e) {
+        run_lifevuww_migrations($pdo);
+    }
+}
+
 // If executed directly from CLI or included with active PDO
 if (isset($pdo) && $pdo instanceof PDO) {
-    run_lifevuww_migrations($pdo);
+    ensure_lifevuww_migrated($pdo);
 }

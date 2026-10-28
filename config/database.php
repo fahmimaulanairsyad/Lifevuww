@@ -46,6 +46,11 @@ try {
 }
 
 require_once __DIR__ . '/game.php';
+require_once __DIR__ . '/../includes/migrate.php';
+
+if (isset($pdo) && function_exists('ensure_lifevuww_migrated')) {
+    ensure_lifevuww_migrated($pdo);
+}
 
 if (!function_exists('calculateLevel')) {
     function calculateLevel($exp) {
@@ -394,12 +399,21 @@ if (!function_exists('run_daily_rollover')) {
                 $periodCond = "COALESCE(LOWER(reset_period), 'daily') IN ($periodSql)";
 
                 // 1. Missed habits (only those whose period just ended and were actually due)
-                $stmtMissed = $pdo->prepare("
-                    SELECT habit_id, difficulty, schedule_type, schedule_value, last_completed_at, completed_today, reset_period FROM habits
-                    WHERE user_id = ? AND completed_today = 0 AND $periodCond
-                ");
-                $stmtMissed->execute([$userId]);
-                $allMissed = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
+                try {
+                    $stmtMissed = $pdo->prepare("
+                        SELECT habit_id, difficulty, schedule_type, schedule_value, last_completed_at, completed_today, reset_period FROM habits
+                        WHERE user_id = ? AND completed_today = 0 AND $periodCond
+                    ");
+                    $stmtMissed->execute([$userId]);
+                    $allMissed = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
+                } catch (Exception $eCols) {
+                    $stmtMissed = $pdo->prepare("
+                        SELECT habit_id, difficulty, completed_today, reset_period FROM habits
+                        WHERE user_id = ? AND completed_today = 0 AND $periodCond
+                    ");
+                    $stmtMissed->execute([$userId]);
+                    $allMissed = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
+                }
 
                 // Filter agar penalti hanya dikenakan pada habit yang memang jatuh tempo kemarin
                 $missed = array_values(array_filter($allMissed, fn($h) => isHabitDueToday($h, $yesterday)));
@@ -458,8 +472,13 @@ if (!function_exists('run_daily_rollover')) {
                 }
 
                 // 3. Reset completion flags and current counter - only for periods that just ended
-                $pdo->prepare("UPDATE habits SET completed_today = 0, current_count = 0, last_reset = NOW() WHERE user_id = ? AND $periodCond")
-                    ->execute([$userId]);
+                try {
+                    $pdo->prepare("UPDATE habits SET completed_today = 0, current_count = 0, last_reset = NOW() WHERE user_id = ? AND $periodCond")
+                        ->execute([$userId]);
+                } catch (Exception $eUpd) {
+                    $pdo->prepare("UPDATE habits SET completed_today = 0, last_reset = NOW() WHERE user_id = ? AND $periodCond")
+                        ->execute([$userId]);
+                }
             }
 
             $pdo->prepare("UPDATE users SET last_daily_check = ? WHERE user_id = ?")
