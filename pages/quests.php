@@ -318,7 +318,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_quest']) || (isset($_POST['quest_name']) && !isset($_POST['edit_quest']))) {
         $quest_name = trim($_POST['quest_name'] ?? '');
         $difficulty = $_POST['difficulty'] ?? '';
-        $start_date = trim($_POST['due_date'] ?? ($_POST['start_date'] ?? ''));
         $category = $_POST['category'] ?? '';
 
         if (mb_strlen($quest_name) < 1 || mb_strlen($quest_name) > 150 || !in_array($difficulty, $validDiffs, true) || !in_array($category, $validCats, true)) {
@@ -326,8 +325,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date)) {
-            $start_date = date('Y-m-d');
+        $today = date('Y-m-d');
+        $rawDate = trim($_POST['due_date'] ?? ($_POST['start_date'] ?? ''));
+        $diffs = game_difficulties();
+        $defaultDuration = $diffs[$difficulty]['duration_days'] ?? 7;
+
+        if (!empty($rawDate) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDate)) {
+            // Jika due_date >= today, hitung durasi hari selisihnya
+            if (strtotime($rawDate) >= strtotime($today)) {
+                $start_date = $today;
+                $durationDays = max(1, (int) round((strtotime($rawDate) - strtotime($today)) / 86400));
+            } else {
+                $start_date = $rawDate;
+                $durationDays = $defaultDuration;
+            }
+        } else {
+            $start_date = $today;
+            $durationDays = $defaultDuration;
         }
 
         $rawSubtasks = trim($_POST['subtasks'] ?? '');
@@ -418,9 +432,8 @@ require_once __DIR__ . '/../includes/header.php';
                             </select>
                         </div>
                         <div class="col-6">
-                            <label for="startDate" class="form-label">Tenggat Waktu / Mulai</label>
-                            <input type="date" class="form-control" id="startDate" name="due_date" value="<?= date('Y-m-d', strtotime('+3 days')) ?>" min="<?= date('Y-m-d') ?>" onchange="const h=document.getElementById('hiddenStartDate'); if(h) h.value=this.value;" required>
-                            <input type="hidden" name="start_date" id="hiddenStartDate" value="<?= date('Y-m-d', strtotime('+3 days')) ?>">
+                            <label for="dueDate" class="form-label">Tenggat Waktu</label>
+                            <input type="date" class="form-control font-mono" id="dueDate" name="due_date" value="<?= date('Y-m-d', strtotime('+3 days')) ?>" min="<?= date('Y-m-d') ?>" required>
                         </div>
                     </div>
 
