@@ -310,8 +310,10 @@
         (function () {
             const render = (btn) => {
                 const on = LVSound.isOn();
-                btn.querySelector('i').className = on ? 'fas fa-volume-up' : 'fas fa-volume-mute';
-                btn.querySelector('span').textContent = on ? 'Suara nyala' : 'Senyap';
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = on ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+                const span = btn.querySelector('span');
+                if (span) span.textContent = on ? 'Suara nyala' : 'Senyap';
             };
             document.querySelectorAll('.btn-sound-toggle').forEach((btn) => {
                 render(btn);
@@ -830,21 +832,23 @@
                         const m = document.getElementById('addHabitModal');
                         if (m && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(m).show();
                     } else {
-                        window.location.href = 'habits.php';
+                        window.location.href = 'habits.php?open_modal=1';
                     }
                 } else if (cmd.action === 'add_quest') {
                     if (window.location.pathname.indexOf('quests.php') !== -1) {
                         const m = document.getElementById('addQuestModal');
                         if (m && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(m).show();
                     } else {
-                        window.location.href = 'quests.php';
+                        window.location.href = 'quests.php?open_modal=1';
                     }
                 } else if (cmd.action === 'toggle_sound') {
                     LVSound.toggle();
                     document.querySelectorAll('.btn-sound-toggle').forEach(btn => {
                         const on = LVSound.isOn();
-                        btn.querySelector('i').className = on ? 'fas fa-volume-up' : 'fas fa-volume-mute';
-                        btn.querySelector('span').textContent = on ? 'Suara nyala' : 'Senyap';
+                        const icon = btn.querySelector('i');
+                        if (icon) icon.className = on ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+                        const span = btn.querySelector('span');
+                        if (span) span.textContent = on ? 'Suara nyala' : 'Senyap';
                     });
                 }
             }
@@ -852,6 +856,9 @@
             window.openCommandPalette = function () {
                 const modalEl = document.getElementById('lvCommandPalette');
                 if (!modalEl || typeof bootstrap === 'undefined') return;
+                if (modalEl.parentElement !== document.body) {
+                    document.body.appendChild(modalEl);
+                }
                 const input = document.getElementById('cpSearchInput');
                 if (input) input.value = '';
                 filtered = [...commands];
@@ -860,8 +867,24 @@
 
                 const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 bsModal.show();
-                setTimeout(() => { if (input) input.focus(); }, 150);
+                setTimeout(() => { if (input) { input.focus(); input.select(); } }, 80);
             };
+
+            const cpModalEl = document.getElementById('lvCommandPalette');
+            if (cpModalEl) {
+                cpModalEl.addEventListener('shown.bs.modal', function() {
+                    const input = document.getElementById('cpSearchInput');
+                    if (input) { input.focus(); input.select(); }
+                });
+            }
+
+            // OS detection for keyboard shortcut indicator (Ctrl+K on Windows/Linux, ⌘K on Mac)
+            (function detectPlatformShortcut() {
+                const isMac = /Mac|iPod|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || '');
+                document.querySelectorAll('.cmd-shortcut-kbd').forEach(el => {
+                    el.textContent = isMac ? '⌘K' : 'Ctrl+K';
+                });
+            })();
 
             // Global Keyboard Shortcut: Ctrl+K or Cmd+K
             document.addEventListener('keydown', function(e) {

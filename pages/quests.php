@@ -836,6 +836,22 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Check URL open_modal parameter for auto-open
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('open_modal') === '1') {
+        const modalEl = document.getElementById('addQuestModal');
+        if (modalEl) {
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            if (typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
 });
 </script>
 

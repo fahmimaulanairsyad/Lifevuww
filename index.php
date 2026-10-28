@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261029_03" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261029_04" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -114,13 +114,13 @@ if (isset($_SESSION['user_id'])) {
                 <i class="fas fa-gamepad me-1"></i> GAMIFIED PRODUCTIVITY PLATFORM
             </span>
 
-            <h1 class="lp-hero-title">
-                <span class="char-reveal" style="--char-i: 1;">Disiplin</span>
-                <span class="char-reveal" style="--char-i: 2;">Nyata</span>
-                <span class="char-reveal" style="--char-i: 3;">dalam</span>
-                <span class="char-reveal" style="--char-i: 4;">Format</span>
-                <span class="char-reveal" style="--char-i: 5;">Petualangan</span>
-                <span class="char-reveal text-accent" style="--char-i: 6;">RPG</span>
+            <h1 class="lp-hero-title" style="line-height: 1.18; overflow: visible !important;">
+                <span class="char-reveal" style="--char-i: 1; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Disiplin</span>
+                <span class="char-reveal" style="--char-i: 2; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Nyata</span>
+                <span class="char-reveal" style="--char-i: 3; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">dalam</span>
+                <span class="char-reveal" style="--char-i: 4; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Format</span>
+                <span class="char-reveal" style="--char-i: 5; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Petualangan</span>
+                <span class="char-reveal text-accent" style="--char-i: 6; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">RPG</span>
             </h1>
 
             <p class="lp-hero-subtitle">

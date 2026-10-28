@@ -929,13 +929,14 @@ function toggleScheduleOptions(selectEl) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Check URL new_cat parameter for auto-open
+    // 1. Check URL new_cat or open_modal parameter for auto-open
     const params = new URLSearchParams(window.location.search);
     const newCat = params.get('new_cat');
+    const openModal = params.get('open_modal');
     const validCats = ['Intelligence', 'Physical', 'Health', 'Wealth', 'Social'];
-    if (newCat && validCats.includes(newCat)) {
+    if (openModal === '1' || (newCat && validCats.includes(newCat))) {
         const catSelect = document.getElementById('category');
-        if (catSelect) {
+        if (catSelect && newCat && validCats.includes(newCat)) {
             catSelect.value = newCat;
         }
         const modalEl = document.getElementById('addHabitModal');
