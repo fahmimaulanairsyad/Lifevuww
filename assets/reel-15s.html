@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Lifevuww - 15s Reel</title>
+<!--
+  LIFEVUWW - 15 SECOND BRAND REEL
+  Cut to a 120 BPM grid (15s = 7.5 bars, 8th note = 0.25s).
+  Cue sheet:
+    0.00-0.75   HOOK        cold-open terminal, RGB glitch, invert flash
+    0.75-2.75   PRISM       real brand hexagon assembles facet by facet, dolly-in
+    2.75-4.75   STATS       four kinetic type cuts: EXP, STREAK, GOLD, LEVEL UP (confetti)
+    4.75-7.75   CORRIDOR    perspective dolly through quest cards, speed ramp, HUD
+    7.75-7.85   black rest  (one 16th)
+    7.85-9.25   PENALTY     HP drain, debits, STREAK RESET stamp
+    9.25-9.35   black rest  (one 16th)
+    9.35-11.35  COLOUR CUTS emerald RESPAWN / violet CONTINUE / off-white AGAIN / zinc NEVER
+    11.35-13.35 STAIR TYPE  LEVEL UP YOUR LIFE. over world-lines, whip out
+    13.35-15.00 FINAL       lockup settle, tagline, hold
+  Optional procedural soundtrack (kick, snare, hats, bass at 120 BPM), off by default.
+-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&family=Geist+Mono:wght@400;600&display=swap');
+@font-face{ font-family:'Geist'; src:url('https://cdn.jsdelivr.net/npm/geist@1.5.1/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2'); font-weight:100 900; font-display:swap; }
+@font-face{ font-family:'Geist Mono'; src:url('https://cdn.jsdelivr.net/npm/geist@1.5.1/dist/fonts/geist-mono/GeistMono-Variable.woff2') format('woff2'); font-weight:100 900; font-display:swap; }
+
+:root{
+  --em:#10b981; --vi:#8b5cf6; --sl:#52525b; --bg:#09090b; --fg:#fafafa;
+  --z2:#27272a; --z4:#52525b; --z6:#a1a1aa; --red:#ef4444;
+  --sans:'Geist','Segoe UI Variable Display','Segoe UI',system-ui,-apple-system,sans-serif;
+  --mono:'Geist Mono','Cascadia Code',Consolas,'Courier New',monospace;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+body{ background:#000; overflow:hidden; font-family:var(--sans); color:var(--fg);
+  -webkit-font-smoothing:antialiased; }
+
+#frame{ position:absolute; left:50%; top:50%; width:1920px; height:1080px;
+  transform-origin:50% 50%; background:var(--bg); overflow:hidden; }
+#stage{ position:absolute; inset:0; will-change:transform; }
+
+.scene{ position:absolute; inset:0; visibility:hidden; opacity:0; }
+.scene.on{ visibility:visible; opacity:1; }
+
+/* ---------- overlays ---------- */
+#fx{ position:absolute; inset:0; pointer-events:none; z-index:40; }
+#flash{ position:absolute; inset:0; background:#fafafa; opacity:0; pointer-events:none; z-index:50; }
+#grain{ position:absolute; inset:0; pointer-events:none; z-index:45; opacity:.05;
+  background-image:repeating-conic-gradient(#52525b 0% 25%, transparent 0% 50%);
+  background-size:4px 4px; }
+#crt{ position:absolute; inset:0; pointer-events:none; z-index:46; opacity:0;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 2px, transparent 2px 5px); }
+
+/* ---------- S0 terminal hook ---------- */
+#s0{ background:var(--bg); }
+.term-wrap{ position:absolute; left:50%; top:50%; transform:translate(-50%,-58%); }
+#term{ font-family:var(--mono); font-weight:500; font-size:64px; color:var(--fg);
+  letter-spacing:-0.01em; white-space:pre; }
+#term.gl{ text-shadow:-7px 0 var(--em), 7px 0 var(--vi); transform:skewX(-7deg); }
+.term-prompt{ color:var(--em); }
+#caret{ display:inline-block; width:34px; height:58px; background:var(--fg);
+  vertical-align:-6px; margin-left:6px; }
+
+/* ---------- S1 prism ---------- */
+#s1{ background:var(--bg); }
+#prism-box{ position:absolute; left:50%; top:50%; width:520px; height:520px;
+  transform:translate(-50%,-54%); }
+#prism-box svg{ width:100%; height:100%; overflow:visible; }
+#sweep{ position:absolute; left:118px; top:118px; width:180px; height:130px;
+  background:linear-gradient(105deg, transparent 20%, rgba(250,250,250,.35) 50%, transparent 80%);
+  opacity:0; pointer-events:none; mix-blend-mode:screen; }
+#s1-cap{ position:absolute; left:0; right:0; bottom:170px; text-align:center;
+  font-family:var(--mono); font-size:19px; letter-spacing:.46em; color:var(--z6); opacity:0; }
+
+/* ---------- S2 stat cuts ---------- */
+.cut{ position:absolute; inset:0; background:var(--bg); display:none; }
+.cut .stack{ position:absolute; left:50%; top:50%; transform:translate(-50%,-56%);
+  text-align:center; }
+.cut .k{ font-family:var(--mono); font-size:21px; letter-spacing:.42em; color:var(--z6);
+  margin-bottom:26px; }
+.cut .big{ font-size:172px; font-weight:750; letter-spacing:-0.045em; line-height:1;
+  white-space:nowrap; }
+.cut .big em{ font-style:normal; }
+.cut .chips{ margin-top:34px; display:flex; gap:14px; justify-content:center; }
+.chip{ font-family:var(--mono); font-size:17px; letter-spacing:.24em; color:var(--z6);
+  border:1px solid var(--z2); border-radius:999px; padding:9px 20px; }
+.chip.em{ color:var(--em); border-color:rgba(16,185,129,.5); }
+.chip.vi{ color:#b79afc; border-color:rgba(139,92,246,.55); }
+.ul{ width:0px; height:5px; margin:26px auto 0; background:var(--em); }
+.coinbox{ display:inline-block; vertical-align:16px; perspective:600px; margin-left:26px; }
+#coin{ will-change:transform; }
+
+/* ---------- S3 corridor ---------- */
+#s3{ perspective:1100px; perspective-origin:50% 46%; background:var(--bg); }
+#corr{ position:absolute; inset:0; transform-style:preserve-3d; }
+.card{ position:absolute; left:50%; top:50%; width:360px; height:212px;
+  margin-left:-180px; margin-top:-106px; background:#101013;
+  border:1px solid var(--z2); border-radius:14px; padding:22px; }
+.card .top{ height:3px; width:64px; border-radius:2px; margin-bottom:24px; }
+.card .t1{ font-family:var(--mono); font-size:15px; letter-spacing:.3em; color:var(--z4);
+  margin-bottom:10px; }
+.card .t2{ font-size:40px; font-weight:640; letter-spacing:-0.02em; margin-bottom:16px; }
+.card .t3{ font-family:var(--mono); font-size:15px; color:var(--z6); }
+#hud{ position:absolute; left:64px; top:56px; right:64px; display:flex;
+  justify-content:space-between; font-family:var(--mono); opacity:0; }
+.hud-cell{ display:flex; align-items:center; gap:14px; font-size:24px; letter-spacing:.08em; }
+.hud-bar{ width:190px; height:10px; background:var(--z2); border-radius:99px; overflow:hidden; }
+.hud-bar i{ display:block; height:100%; background:var(--em); width:100%; }
+.hud-chip{ border:1px solid var(--z2); padding:6px 14px; border-radius:99px; color:var(--z6); }
+
+/* ---------- S4 penalty ---------- */
+#s4{ background:var(--bg); }
+#hpwrap{ position:absolute; left:180px; top:390px; width:1180px; }
+#hp-label{ font-family:var(--mono); font-size:24px; letter-spacing:.4em; color:var(--z6);
+  display:flex; justify-content:space-between; margin-bottom:18px; }
+#hpnum{ color:var(--fg); font-variant-numeric:tabular-nums; }
+#hp-track{ height:56px; background:#131316; border:1px solid var(--z2); border-radius:10px;
+  padding:7px; }
+#hp-fill{ height:100%; width:100%; background:var(--red); border-radius:5px; }
+.debit{ position:absolute; font-family:var(--mono); font-size:30px; color:var(--red);
+  opacity:0; white-space:nowrap; }
+#stamp{ position:absolute; left:50%; top:560px; transform:translateX(-50%) rotate(-6deg);
+  font-family:var(--mono); font-weight:700; font-size:62px; letter-spacing:.2em;
+  color:var(--red); border:4px solid var(--red); padding:18px 42px; border-radius:8px;
+  background:rgba(9,9,11,.55); opacity:0; }
+#pen-copy{ position:absolute; left:0; right:0; bottom:210px; text-align:center;
+  font-size:44px; font-weight:640; letter-spacing:-0.02em; color:var(--fg); opacity:0; }
+
+/* ---------- S5 colour cuts ---------- */
+.pal{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; }
+.pal .pw{ font-weight:840; font-size:224px; letter-spacing:-0.05em; }
+#pal0{ background:var(--em); } #pal0 .pw{ color:#09090b; }
+#pal1{ background:var(--vi); } #pal1 .pw{ color:#09090b; }
+#pal2{ background:var(--fg); } #pal2 .pw{ color:#09090b; }
+#pal3{ background:var(--bg); } #pal3 .pw{ color:var(--fg); font-size:148px; }
+#pal3 .pw u{ text-decoration:none; border-bottom:6px solid var(--em); }
+
+/* ---------- S6 stair type ---------- */
+#s6{ background:var(--bg); }
+#lines{ position:absolute; inset:-30%; transform:rotate(-16deg); opacity:.55; }
+#lines i{ position:absolute; left:-100%; right:-100%; height:1px; background:#1c1c20; }
+.w6{ position:absolute; font-weight:800; letter-spacing:-0.04em; line-height:1; opacity:0; }
+#w0{ left:118px;  top:290px; font-size:168px; color:var(--em); }
+#w1{ left:520px;  top:430px; font-size:196px; color:var(--fg); }
+#w2{ left:960px;  top:568px; font-size:168px; color:var(--fg); }
+#w3{ left:1250px; top:700px; font-size:212px; color:var(--vi); }
+#merge{ position:absolute; left:0; right:0; top:44%; text-align:center; opacity:0;
+  font-weight:820; font-size:150px; letter-spacing:-0.04em; white-space:nowrap; }
+
+/* ---------- S7 final ---------- */
+#s7{ background:var(--bg); }
+#fin{ position:absolute; left:50%; top:44%; transform:translate(-50%,-50%);
+  text-align:center; opacity:0; }
+#fin .sym{ display:block; margin:0 auto 28px; width:120px; height:120px; }
+#fin .wordmark{ font-size:104px; font-weight:680; letter-spacing:-0.03em; line-height:1; }
+#fin .wordmark b{ color:var(--em); font-weight:680; }
+#tagline{ position:absolute; left:0; right:0; top:62%; text-align:center; opacity:0;
+  font-family:var(--mono); font-size:22px; letter-spacing:.48em; color:var(--z6); }
+#fin-chips{ position:absolute; left:0; right:0; top:70%; display:flex; gap:14px;
+  justify-content:center; opacity:0; }
+#fin-chips .chip{ font-size:14px; padding:8px 18px; color:var(--z6); }
+#credit{ position:absolute; right:64px; bottom:58px; font-family:var(--mono);
+  font-size:15px; letter-spacing:.3em; color:var(--z4); opacity:0; }
+#hint{ position:absolute; left:64px; bottom:58px; font-family:var(--mono);
+  font-size:13px; letter-spacing:.22em; color:#3f3f46; opacity:0; }
+
+/* ---------- viewer chrome ---------- */
+#bar{ position:fixed; left:50%; bottom:18px; transform:translateX(-50%);
+  width:min(920px,92vw); background:rgba(12,12,15,.86); border:1px solid #1f1f23;
+  border-radius:14px; padding:10px 14px; display:flex; align-items:center; gap:12px;
+  backdrop-filter:blur(10px); font-family:var(--mono); z-index:99; }
+#bar button{ font-family:var(--mono); font-size:12px; letter-spacing:.14em;
+  background:transparent; color:var(--fg); border:1px solid var(--z2);
+  border-radius:9px; padding:7px 13px; cursor:pointer; }
+#bar button:hover{ border-color:var(--em); color:var(--em); }
+#tcode{ font-size:12px; color:var(--z6); letter-spacing:.12em; white-space:nowrap;
+  font-variant-numeric:tabular-nums; }
+#prog{ flex:1; height:4px; background:var(--z2); border-radius:99px; position:relative; }
+#prog-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--fg);
+  border-radius:99px; }
+.tick{ position:absolute; top:-3px; width:2px; height:10px; background:#3f3f46; }
+
+#poster{ display:none; }
+@media (prefers-reduced-motion: reduce){
+  .scene{ display:none !important; }
+  #poster{ display:flex !important; position:absolute; inset:0; align-items:center;
+    justify-content:center; flex-direction:column; gap:22px; }
+}
+</style>
+</head>
+<body>
+
+<div id="frame">
+  <div id="stage">
+
+    <!-- S0 terminal hook -->
+    <div class="scene on" id="s0">
+      <div id="crt"></div>
+      <div class="term-wrap">
+        <div id="term"><span class="term-prompt">C:\&gt; </span><span id="typed">lifevuww --launch</span><i id="caret"></i></div>
+      </div>
+    </div>
+
+    <!-- S1 prism assembly -->
+    <div class="scene" id="s1">
+      <div id="prism-box">
+        <svg viewBox="0 0 256 256" aria-hidden="true">
+          <g id="fL" opacity="0"><polygon points="41.4 88 124.6 136 124.6 226 41.4 178" fill="#10b981"/></g>
+          <g id="fR" opacity="0"><polygon points="131.4 136 214.6 88 214.6 178 131.4 226" fill="#8b5cf6"/></g>
+          <g id="fT" opacity="0"><path fill="#52525b" fill-rule="evenodd"
+            d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/></g>
+        </svg>
+        <div id="sweep"></div>
+      </div>
+      <div id="s1-cap">HABIT &middot; PROGRESS &middot; REWARD</div>
+    </div>
+
+    <!-- S2 stat cuts -->
+    <div class="scene" id="s2">
+      <div class="cut" id="cutA">
+        <div class="stack">
+          <div class="k">HABIT COMPLETE</div>
+          <div class="big" style="color:#fafafa"><em id="cutA-num" style="color:#10b981">+0</em> <span style="color:#8b5cf6">EXP</span></div>
+          <div class="ul" id="cutA-ul"></div>
+        </div>
+      </div>
+      <div class="cut" id="cutB">
+        <div class="stack">
+          <div class="k">DAY 7 AND COUNTING</div>
+          <div class="big" style="color:#fafafa">STREAK <em style="color:#10b981">&times;1.5</em></div>
+          <div class="chips"><span class="chip em">7+ DAYS</span><span class="chip">EXP &amp; GOLD MULTIPLIER</span></div>
+        </div>
+      </div>
+      <div class="cut" id="cutC">
+        <div class="stack">
+          <div class="k">QUEST CLEARED</div>
+          <div class="big" style="color:#fafafa"><em style="color:#8b5cf6">+60</em> <span style="color:#8b5cf6">GOLD</span>
+            <span class="coinbox" id="coinbox">
+              <svg width="72" height="80" viewBox="0 0 256 256" id="coin">
+                <path fill="#8b5cf6" fill-rule="evenodd"
+                  d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+              </svg>
+            </span>
+          </div>
+          <div class="chips"><span class="chip vi">SPEND IT ON REAL THINGS</span></div>
+        </div>
+      </div>
+      <div class="cut" id="cutD">
+        <div class="stack">
+          <div class="k">LEVEL UP</div>
+          <div class="big" style="color:#fafafa"><span style="color:#52525b">6</span> <em style="color:#10b981">&rarr;</em> 7</div>
+          <div class="chips"><span class="chip em">RANK: EXPLORER</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3 corridor dolly -->
+    <div class="scene" id="s3">
+      <div id="corr"></div>
+      <div id="hud">
+        <div style="display:flex; gap:22px; align-items:center">
+          <div class="hud-cell"><span style="color:#10b981">&#9646;</span> LV 7</div>
+          <div class="hud-bar"><i id="hud-hp"></i></div>
+          <div class="hud-cell" style="color:#a1a1aa">HP 100</div>
+        </div>
+        <div class="hud-chip">GOLD 340</div>
+      </div>
+    </div>
+
+    <!-- S4 penalty -->
+    <div class="scene" id="s4">
+      <div id="hpwrap">
+        <div id="hp-label"><span>HEALTH</span><span id="hpnum">100 / 100</span></div>
+        <div id="hp-track"><div id="hp-fill"></div></div>
+        <div class="debit" id="db0">GYM - HARD &nbsp;-15</div>
+        <div class="debit" id="db1">SLEEP - MEDIUM &nbsp;-10</div>
+        <div class="debit" id="db2">JOURNAL - EASY &nbsp;-5</div>
+        <div class="debit" id="db3">DEEP WORK - HARD &nbsp;-15</div>
+      </div>
+      <div id="stamp">STREAK RESET</div>
+      <div id="pen-copy">MISS A DAY, PAY IN HP.</div>
+    </div>
+
+    <!-- S5 colour cuts -->
+    <div class="scene" id="s5">
+      <div class="pal" id="pal0"><div class="pw">RESPAWN</div></div>
+      <div class="pal" id="pal1"><div class="pw">CONTINUE</div></div>
+      <div class="pal" id="pal2"><div class="pw">AGAIN.</div></div>
+      <div class="pal" id="pal3"><div class="pw">IT <u>NEVER</u> PAUSES</div></div>
+    </div>
+
+    <!-- S6 stair type -->
+    <div class="scene" id="s6">
+      <div id="lines"></div>
+      <div class="w6" id="w0">LEVEL</div>
+      <div class="w6" id="w1">UP</div>
+      <div class="w6" id="w2">YOUR</div>
+      <div class="w6" id="w3">LIFE.</div>
+      <div id="merge"><span style="color:#10b981">LEVEL</span> UP <span style="color:#8b5cf6">YOUR LIFE.</span></div>
+    </div>
+
+    <!-- S7 final frame -->
+    <div class="scene" id="s7">
+      <div id="fin">
+        <svg class="sym" viewBox="0 0 256 256" aria-label="Lifevuww symbol">
+          <path fill="#52525b" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+          <polygon fill="#10b981" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+          <polygon fill="#8b5cf6" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+        </svg>
+        <div class="wordmark">Life<b>vuww</b></div>
+      </div>
+      <div id="tagline">LIFE IS THE GAME</div>
+      <div id="fin-chips">
+        <span class="chip">HABIT TRACKER RPG</span>
+        <span class="chip">PWA + ANDROID</span>
+        <span class="chip">PHP 8 &middot; MYSQL</span>
+      </div>
+      <div id="credit">MIVUWW &middot; MMXXVI</div>
+      <div id="hint">SPACE PAUSE &nbsp;&middot;&nbsp; R REPLAY &nbsp;&middot;&nbsp; S SOUND</div>
+    </div>
+
+    <!-- poster shown when the user prefers reduced motion -->
+    <div id="poster">
+      <svg width="110" height="110" viewBox="0 0 256 256" aria-label="Lifevuww symbol">
+        <path fill="#52525b" fill-rule="evenodd" d="M 128 34 L 211.2 82 L 128 130 L 44.8 82 Z M 128 58 L 169.6 82 L 128 106 L 86.4 82 Z"/>
+        <polygon fill="#10b981" points="41.4 88 124.6 136 124.6 226 41.4 178"/>
+        <polygon fill="#8b5cf6" points="131.4 136 214.6 88 214.6 178 131.4 226"/>
+      </svg>
+      <div style="font-size:84px; font-weight:680; letter-spacing:-0.03em">Life<span style="color:#10b981">vuww</span></div>
+      <div style="font-family:var(--mono); letter-spacing:.4em; color:#a1a1aa">LIFE IS THE GAME</div>
+    </div>
+
+    <canvas id="fx" width="1920" height="1080"></canvas>
+    <div id="grain"></div>
+    <div id="flash"></div>
+  </div>
+</div>
+
+<div id="bar">
+  <button id="b-replay">REPLAY</button>
+  <button id="b-pause">PAUSE</button>
+  <button id="b-sound">SOUND OFF</button>
+  <span id="tcode">00:00.00 / 00:15.00</span>
+  <div id="prog"><div id="prog-fill"></div></div>
+</div>
+
+<script>
+'use strict';
+/* ================= stage fit ================= */
+const frameEl = document.getElementById('frame');
+function fit(){
+  const s = Math.min(innerWidth/1920, innerHeight/1080) * 0.97;
+  frameEl.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+}
+addEventListener('resize', fit); fit();
+
+/* ================= refs & helpers ================= */
+const $ = id => document.getElementById(id);
+const E = $;
+const stage = $('stage'), flash = $('flash'), fx = $('fx'), fctx = fx.getContext('2d');
+const EASE_O = 'cubic-bezier(0.16,1,0.3,1)';
+const EASE_I = 'cubic-bezier(0.7,0,0.84,0)';
+const DUR = 15.0;
+const CUTS = [0, 0.75, 2.75, 4.75, 7.85, 9.35, 11.35, 13.35, 15];
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ================= master clock ================= */
+let playStart = performance.now();
+let pauseAt = null;
+let lastT = 0;
+let cueIdx = 0;
+let finished = false;
+
+CUTS.slice(1, -1).forEach(c => {
+  const t = document.createElement('div');
+  t.className = 'tick'; t.style.left = (c / DUR * 100) + '%';
+  $('prog').appendChild(t);
+});
+
+/* ================= timeline engine ================= */
+const CUES = [];   /* {t, fn, done} */
+const FRAMES = []; /* fn(t, dt) */
+const cue = (t, fn) => CUES.push({ t, fn, done:false });
+const frame = fn => FRAMES.push(fn);
+
+function cancelAll(){
+  try { stage.getAnimations({ subtree:true }).forEach(a => a.cancel()); } catch(e){}
+}
+function resetAll(){
+  CUES.forEach(c => c.done = false);
+  cueIdx = 0; lastT = 0; finished = false;
+  shake = 0; stage.style.transform = 'translate(0,0)';
+  particles.length = 0;
+  fctx.clearRect(0, 0, 1920, 1080);
+  flash.style.opacity = 0;
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('on'));
+  E('s0').classList.add('on');
+  document.querySelectorAll('.cut').forEach(c => c.style.display = 'none');
+  document.querySelectorAll('.pal').forEach(c => c.style.display = 'none');
+  corrCards.forEach((c, i) => { c.phase = i / CARD_N; });
+  corridorFrozen = false;
+  $('corr').style.filter = 'none';
+  $('hp-fill').style.width = '100%';
+  $('hpnum').textContent = '100 / 100';
+  $('s1-cap').style.opacity = 0;
+  $('sweep').style.opacity = 0;
+  ['s6', 's7'].forEach(id => { const el = E(id); if (el) { el.style.transform = ''; el.style.opacity = ''; } });
+  ['fin', 'tagline', 'fin-chips', 'credit', 'hint', 'merge', 'w0', 'w1', 'w2', 'w3'].forEach(id => {
+    const el = $(id); if (el) { el.style.opacity = ''; el.style.transform = ''; }
+  });
+  cancelAll();
+  playStart = performance.now();
+  $('b-pause').textContent = 'PAUSE';
+  audioResync();
+}
+
+/* ================= shared ================= */
+let shake = 0;
+const addShake = a => { shake = Math.max(shake, a); };
+frame((t, dt) => {
+  if (shake > 0.08){
+    stage.style.transform = 'translate(' + ((Math.random()-0.5)*shake).toFixed(1) + 'px,' +
+                            ((Math.random()-0.5)*shake).toFixed(1) + 'px)';
+    shake *= 0.82;
+  } else if (shake > 0){
+    stage.style.transform = 'translate(0,0)'; shake = 0;
+  }
+});
+function whiteFlash(out){
+  flash.style.transition = 'none';
+  flash.style.opacity = 1;
+  requestAnimationFrame(() => {
+    flash.style.transition = 'opacity ' + (out || 0.14) + 's linear';
+    flash.style.opacity = 0;
+  });
+}
+const anim = (el, kf, opt) => el.animate(kf, opt);
+
+/* particles */
+const particles = [];
+const PCOL = ['#10b981', '#8b5cf6', '#fafafa', '#52525b'];
+function burst(x, y, n){
+  for (let i = 0; i < n; i++){
+    const a = Math.random() * Math.PI * 2, v = 500 + Math.random() * 700;
+    particles.push({ x, y, vx: Math.cos(a)*v, vy: Math.sin(a)*v - 380,
+      r: 4 + Math.random()*7, rot: Math.random()*6.28, vr: (Math.random()-0.5)*18,
+      life: 0.75 + Math.random()*0.45, c: PCOL[i % 4] });
+  }
+}
+frame((t, dt) => {
+  if (!particles.length){ fctx.clearRect(0,0,1920,1080); return; }
+  fctx.clearRect(0, 0, 1920, 1080);
+  for (let i = particles.length - 1; i >= 0; i--){
+    const p = particles[i];
+    p.life -= dt; if (p.life <= 0){ particles.splice(i,1); continue; }
+    p.vy += 1500 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt;
+    fctx.save(); fctx.globalAlpha = Math.min(1, p.life * 2.4);
+    fctx.fillStyle = p.c; fctx.translate(p.x, p.y); fctx.rotate(p.rot);
+    fctx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 1.7); fctx.restore();
+  }
+});
+
+/* =====================================================================
+   S0 HOOK  0.00-0.75
+===================================================================== */
+const CMD = 'lifevuww --launch';
+frame(t => {
+  if (t <= 0.75){
+    const n = Math.floor(Math.min(1, Math.max(0, (t - 0.02) / 0.38)) * CMD.length);
+    $('typed').textContent = CMD.slice(0, n);
+    $('caret').style.opacity = (t < 0.44 && Math.floor(t/0.09) % 2 === 0) ? '0.15' : '1';
+  }
+});
+cue(0.00, () => { E('s0').classList.add('on'); });
+cue(0.50, () => { $('term').classList.add('gl'); addShake(9); });
+cue(0.56, () => { $('crt').style.opacity = 0.5; whiteFlash(0.12); });
+cue(0.62, () => { $('term').classList.remove('gl'); });
+cue(0.70, () => {
+  E('s0').animate([{opacity:1},{opacity:0}], {duration:60, fill:'forwards', easing:'linear'});
+});
+cue(0.75, () => { E('s0').classList.remove('on'); $('crt').style.opacity = 0; });
+
+/* =====================================================================
+   S1 PRISM ASSEMBLY  0.75-2.75
+===================================================================== */
+frame(t => {
+  if (t >= 0.75 && t < 2.78){
+    const p = Math.min(1, (t - 0.75) / 1.9);
+    E('prism-box').style.transform =
+      'translate(-50%,-54%) scale(' + (1 + 0.14 * p).toFixed(4) + ') rotate(' + (-2.5 + 2.5 * p).toFixed(3) + 'deg)';
+  }
+});
+cue(0.75, () => { E('s1').classList.add('on'); });
+cue(0.78, () => {
+  anim(E('fT'), [{opacity:0, transform:'translateY(-560px) rotate(9deg)'},
+                 {opacity:1, transform:'translateY(0) rotate(0deg)'}],
+       {duration:280, easing:EASE_O, fill:'forwards'});
+  anim(E('fL'), [{opacity:0, transform:'translate(-680px, 300px) scale(.6)'},
+                 {opacity:1, transform:'translate(0,0) scale(1)'}],
+       {duration:300, delay:80, easing:EASE_O, fill:'forwards'});
+  anim(E('fR'), [{opacity:0, transform:'translate(760px, -280px) scale(.6)'},
+                 {opacity:1, transform:'translate(0,0) scale(1)'}],
+       {duration:300, delay:150, easing:EASE_O, fill:'forwards'});
+});
+cue(1.25, () => { addShake(5); });
+cue(1.38, () => {
+  anim(E('sweep'), [{opacity:0, transform:'translateX(-160px)'},
+                    {opacity:1, offset:.4},
+                    {opacity:0, transform:'translateX(220px)'}],
+       {duration:520, easing:'linear', fill:'forwards'});
+});
+cue(1.55, () => {
+  anim(E('s1-cap'), [{opacity:0, transform:'translateY(14px)'},
+                     {opacity:1, transform:'translateY(0)'}],
+       {duration:240, easing:EASE_O, fill:'forwards'});
+});
+cue(2.55, () => {
+  anim(E('s1'), [{opacity:1, transform:'translateX(0) skewX(0)', filter:'blur(0px)'},
+                 {opacity:0, transform:'translateX(560px) skewX(-9deg)', filter:'blur(7px)'}],
+       {duration:170, easing:EASE_I, fill:'forwards'});
+});
+cue(2.74, () => {
+  ['fT','fL','fR','sweep','s1-cap','prism-box'].forEach(id => {
+    const n = $(id); if (n) n.getAnimations().forEach(a => a.cancel());
+  });
+  E('prism-box').style.transform = 'translate(-50%,-54%)';
+});
+cue(2.75, () => { E('s1').classList.remove('on'); });
+
+/* =====================================================================
+   S2 STAT CUTS  2.75-4.75
+===================================================================== */
+const statCuts = [
+  { id:'cutA', t:2.75 },
+  { id:'cutB', t:3.25 },
+  { id:'cutC', t:3.75 },
+  { id:'cutD', t:4.25 },
+];
+statCuts.forEach(sc => {
+  const root = $(sc.id), stack = root.querySelector('.stack');
+  cue(sc.t, () => {
+    root.style.display = 'block';
+    E('s2').classList.add('on');
+    anim(stack, [{transform:'translate(-32%,-56%) skewX(-9deg)', opacity:0.9},
+                 {transform:'translate(-50%,-56%) skewX(0)', opacity:1}],
+         {duration:130, easing:EASE_O, fill:'forwards'});
+  });
+  cue(sc.t + 0.37, () => {
+    anim(stack, [{transform:'translate(-50%,-56%) skewX(0)', opacity:1},
+                 {transform:'translate(-66%,-56%) skewX(7deg)', opacity:0}],
+         {duration:110, easing:EASE_I, fill:'forwards'});
+  });
+  cue(sc.t + 0.485, () => {
+    root.style.display = 'none';
+    stack.getAnimations().forEach(a => a.cancel());
+  });
+});
+frame(t => {
+  if (t >= 2.75 && t < 3.25){
+    const p = Math.min(1, (t - 2.75) / 0.4);
+    $('cutA-num').textContent = '+' + Math.round(125 * (1 - Math.pow(1 - p, 3)));
+    $('cutA-ul').style.width = Math.round(560 * p) + 'px';
+  }
+  if (t >= 3.75 && t < 4.25){
+    const p = Math.min(1, Math.max(0, (t - 3.79) / 0.32));
+    $('coin').style.transform = 'rotateY(' + ((1 - Math.pow(1 - p, 2)) * 520).toFixed(1) + 'deg)';
+  }
+});
+cue(4.28, () => { addShake(7); burst(960, 490, 44); });
+
+/* =====================================================================
+   S3 CORRIDOR DOLLY  4.75-7.75
+===================================================================== */
+const CARD_N = 9;
+const corrCards = [];
+const LANE = [
+  { x:-470, y:  230 }, { x: 430, y: -190 }, { x:-380, y: -140 }, { x: 470, y:  250 },
+  { x: -90, y: -300 }, { x: 520, y:   60 }, { x:-540, y:   40 }, { x:  90, y:  300 },
+  { x: -40, y:  -60 },
+];
+const CARDS = [
+  ['GM WT', 'DAILY MOVE', '+150 EXP'],
+  ['STREAK', 'GOLD +25 / DAY', 'BEST: 9'],
+  ['HARD', '+15 HP PENALTY', 'GYM SESSION'],
+  ['BONUS', 'STREAK SHIELD', '50 GOLD'],
+  ['PILLAR', 'PHYSICAL ELITE', 'RADAR 82%'],
+  ['RANK', 'C-RANK VANGUARD', 'LV 10'],
+  ['QUEST', 'DEEP WORK BLOCK', '90 MIN'],
+  ['SHOP', 'FULL ELIXIR', '75 GOLD'],
+  ['CORE', 'F-NOVICE TO', 'S-SOVEREIGN'],
+];
+(function buildCards(){
+  const corr = $('corr');
+  for (let i = 0; i < CARD_N; i++){
+    const d = document.createElement('div');
+    d.className = 'card';
+    const em = i % 2 === 0;
+    d.innerHTML =
+      '<div class="top" style="background:' + (em ? '#10b981' : '#8b5cf6') + '"></div>' +
+      '<div class="t1">' + CARDS[i][0] + '</div>' +
+      '<div class="t2">' + CARDS[i][1] + '</div>' +
+      '<div class="t3">' + CARDS[i][2] + '</div>';
+    corr.appendChild(d);
+    corrCards.push({ el: d, phase: i / CARD_N });
+  }
+})();
+let corridorFrozen = false;
+cue(4.75, () => { E('s3').classList.add('on'); corridorFrozen = false; });
+frame(t => {
+  if (t < 4.75 || t > 7.80) return;
+  const dt = t - lastT;
+  if (dt <= 0 || dt > 0.25) return;
+  const p = Math.min(1, (t - 4.75) / 2.9);
+  if (!corridorFrozen){
+    const spd = 0.26 + 0.5 * p * p;
+    corrCards.forEach(c => { c.phase = (c.phase + spd * dt) % 1; });
+  }
+  corrCards.forEach((c, i) => {
+    const L = LANE[i];
+    const z = -2700 + c.phase * 3700;
+    const fadeIn = Math.min(1, Math.max(0, (c.phase - 0.02) / 0.18));
+    const fadeOut = Math.min(1, Math.max(0, (0.97 - c.phase) / 0.06));
+    c.el.style.transform =
+      'translate3d(' + (L.x * (0.4 + p)).toFixed(1) + 'px,' +
+      (L.y * (0.4 + p)).toFixed(1) + 'px,' + z.toFixed(1) + 'px)' +
+      ' rotateY(' + (L.x * -0.02).toFixed(2) + 'deg)';
+    c.el.style.opacity = Math.min(fadeIn, fadeOut).toFixed(2);
+  });
+  $('corr').style.transform = 'rotateZ(' + (-2.4 + 4.0 * p).toFixed(3) + 'deg)';
+  $('corr').style.filter = p > 0.75 ? ('blur(' + Math.min(4, (p - 0.75) * 22).toFixed(1) + 'px)') : 'none';
+});
+cue(5.75, () => {
+  anim($('hud'), [{opacity:0, transform:'translateY(-16px)'},
+                  {opacity:1, transform:'translateY(0)'}],
+       {duration:200, easing:EASE_O, fill:'forwards'});
+});
+cue(7.58, () => { corridorFrozen = true; addShake(8); });
+cue(7.66, () => {
+  E('s3').animate([{opacity:1},{opacity:0}], {duration:80, fill:'forwards', easing:'linear'});
+});
+cue(7.74, () => { E('s3').classList.remove('on'); });
+
+/* =====================================================================
+   S4 PENALTY  7.85-9.25
+===================================================================== */
+const debits = [$('db0'), $('db1'), $('db2'), $('db3')];
+const HP_TICKS = [
+  { t:7.92, hp:85, db:0 }, { t:8.06, hp:75, db:1 },
+  { t:8.18, hp:70, db:2 }, { t:8.32, hp:55, db:3 },
+];
+frame(t => {
+  if (t < 7.85 || t > 9.3) return;
+  let hp = 100;
+  HP_TICKS.forEach(h => { if (t >= h.t) hp = h.hp; });
+  const drop = Math.min(1, Math.max(0, (t - 7.85) / 0.9));
+  const animHp = 100 - (100 - hp) * Math.min(1, drop * 1.9);
+  $('hp-fill').style.width = animHp + '%';
+  $('hpnum').textContent = Math.round(animHp) + ' / 100';
+  HP_TICKS.forEach((h, i) => {
+    const el = debits[i];
+    if (t >= h.t && t < h.t + 0.7){
+      const q = (t - h.t) / 0.7;
+      const x = 1180 - 200 + (i % 2 ? 60 : 0);
+      el.style.left = x + 'px';
+      el.style.top = (170 - q * 140) + 'px';
+      el.style.opacity = (1 - q).toFixed(2);
+    }
+  });
+});
+cue(7.85, () => {
+  E('s4').classList.add('on');
+  anim($('hpwrap'), [{opacity:0, transform:'translateY(30px) scale(.97)'},
+                     {opacity:1, transform:'none'}],
+       {duration:160, easing:EASE_O, fill:'forwards'});
+});
+HP_TICKS.forEach(h => cue(h.t + 0.02, () => {
+  addShake(6);
+  flash.style.opacity = 0.05;
+  setTimeout(() => { flash.style.opacity = 0; }, 40);
+}));
+cue(8.55, () => {
+  anim($('stamp'), [{opacity:0, transform:'translateX(-50%) rotate(-6deg) scale(1.9)'},
+                    {opacity:1, transform:'translateX(-50%) rotate(-6deg) scale(1)'}],
+       {duration:120, easing:EASE_O, fill:'forwards'});
+  addShake(10);
+});
+cue(8.75, () => {
+  anim($('pen-copy'), [{opacity:0, transform:'translateY(18px)'},
+                       {opacity:1, transform:'translateY(0)'}],
+       {duration:160, easing:EASE_O, fill:'forwards'});
+});
+cue(9.18, () => {
+  E('s4').animate([{opacity:1},{opacity:0}], {duration:60, fill:'forwards', easing:'linear'});
+});
+cue(9.24, () => { E('s4').classList.remove('on'); });
+
+/* =====================================================================
+   S5 COLOUR CUTS  9.35-11.35
+===================================================================== */
+const pals = [$('pal0'), $('pal1'), $('pal2'), $('pal3')];
+[9.35, 9.85, 10.35, 10.85].forEach((t, i) => {
+  cue(t, () => {
+    E('s5').classList.add('on');
+    const pal = pals[i]; pal.style.display = 'flex';
+    const pw = pal.querySelector('.pw');
+    anim(pw, [{transform:'scale(1.35)', opacity:0},
+              {transform:'scale(1)', opacity:1}],
+         {duration:110, easing:EASE_O, fill:'forwards'});
+  });
+  cue(t + 0.49, () => {
+    pals[i].style.display = 'none';
+    pals[i].querySelector('.pw').getAnimations().forEach(a => a.cancel());
+  });
+});
+cue(11.33, () => { E('s5').classList.remove('on'); });
+
+/* =====================================================================
+   S6 STAIR TYPE  11.35-13.35
+===================================================================== */
+(function buildLines(){
+  const box = $('lines');
+  for (let i = 0; i < 26; i++){
+    const l = document.createElement('i');
+    l.style.top = (i * 96) + 'px';
+    box.appendChild(l);
+  }
+})();
+const lineEls = [];
+(function cacheLines(){
+  $('lines').querySelectorAll('i').forEach(l => lineEls.push(l));
+})();
+frame(t => {
+  if (t < 11.35 || t > 13.4) return;
+  const off = (t * 900) % 96;
+  lineEls.forEach((l, i) => {
+    l.style.transform = 'translateX(' + (-(off + i * 31) % 4000) + 'px)';
+  });
+});
+const w6s = [$('w0'), $('w1'), $('w2'), $('w3')];
+cue(11.35, () => {
+  E('s6').classList.add('on');
+});
+[11.55, 11.80, 12.05, 12.30].forEach((t, i) => cue(t, () => {
+  anim(w6s[i], [{opacity:0, transform:'translateX(-130px) skewX(-8deg)'},
+                {opacity:1, transform:'translateX(0) skewX(0)'}],
+       {duration:120, easing:EASE_O, fill:'forwards'});
+  if (i === 3) addShake(6);
+}));
+cue(12.80, () => {
+  anim($('merge'), [{opacity:0, transform:'scale(.9)'},
+                    {opacity:1, transform:'scale(1)'}],
+       {duration:130, easing:EASE_O, fill:'forwards'});
+  w6s.forEach(w => anim(w, [{opacity:1}, {opacity:0}], {duration:90, fill:'forwards', easing:'linear'}));
+});
+cue(13.20, () => {
+  anim(E('s6'), [{opacity:1, transform:'translateX(0)'},
+                 {opacity:0, transform:'translateX(-480px) skewX(7deg)'}],
+       {duration:140, easing:EASE_I, fill:'forwards'});
+});
+cue(13.33, () => {
+  w6s.forEach(w => { w.getAnimations().forEach(a => a.cancel()); });
+  $('merge').getAnimations().forEach(a => a.cancel());
+});
+cue(13.35, () => { E('s6').classList.remove('on'); });
+
+/* =====================================================================
+   S7 FINAL  13.35-15.00
+===================================================================== */
+cue(13.35, () => {
+  E('s7').classList.add('on');
+});
+cue(13.40, () => {
+  anim($('fin'), [{opacity:0, transform:'translate(-50%,-53%) scale(1.05)'},
+                  {opacity:1, transform:'translate(-50%,-50%) scale(1)'}],
+       {duration:420, easing:EASE_O, fill:'forwards'});
+});
+cue(13.85, () => {
+  anim($('tagline'), [{opacity:0, transform:'translateY(14px)'},
+                      {opacity:1, transform:'translateY(0)'}],
+       {duration:260, easing:EASE_O, fill:'forwards'});
+});
+cue(14.10, () => {
+  anim($('fin-chips'), [{opacity:0, transform:'translateY(10px)'},
+                        {opacity:1, transform:'translateY(0)'}],
+       {duration:240, easing:EASE_O, fill:'forwards'});
+  anim($('credit'), [{opacity:0}, {opacity:1}], {duration:240, fill:'forwards'});
+  anim($('hint'), [{opacity:0}, {opacity:1}], {duration:240, fill:'forwards'});
+});
+
+/* =====================================================================
+   viewer chrome + loop
+===================================================================== */
+CUES.sort((a, b) => a.t - b.t);
+
+function fmt(s){
+  const m = Math.floor(s / 60), r = s - m * 60;
+  return '00:' + String(Math.floor(r)).padStart(2, '0') + '.' +
+         String(Math.floor((r % 1) * 100)).padStart(2, '0');
+}
+function tick(t){
+  while (cueIdx < CUES.length && CUES[cueIdx].t <= t){
+    const c = CUES[cueIdx];
+    if (!c.done){ c.done = true; c.fn(); }
+    cueIdx++;
+  }
+  FRAMES.forEach(fn => fn(t, Math.max(0, t - lastT)));
+  lastT = t;
+  const clamped = Math.min(t, DUR);
+  $('prog-fill').style.width = (clamped / DUR * 100) + '%';
+  $('tcode').textContent = fmt(clamped) + ' / 00:15.00';
+  if (t >= DUR && !finished){
+    finished = true;
+    stage.style.transform = 'translate(0,0)';
+  }
+  if (t >= DUR + 1.8 && pauseAt === null){
+    resetAll();
+    return;
+  }
+}
+function loop(now){
+  if (pauseAt === null){
+    tick((performance.now() - playStart) / 1000);
+  }
+  requestAnimationFrame(loop);
+}
+tick(0);
+requestAnimationFrame(loop);
+setInterval(() => {
+  if (pauseAt === null){
+    tick((performance.now() - playStart) / 1000);
+  }
+}, 50);
+
+function play(){
+  if (finished){ resetAll(); return; }
+  if (pauseAt !== null){
+    playStart += performance.now() - pauseAt;
+    pauseAt = null;
+    $('b-pause').textContent = 'PAUSE';
+  }
+}
+function pause(){
+  if (pauseAt === null){ pauseAt = performance.now(); $('b-pause').textContent = 'PLAY'; }
+  else play();
+}
+$('b-replay').onclick = () => resetAll();
+$('b-pause').onclick = pause;
+addEventListener('keydown', e => {
+  if (e.code === 'Space'){
+    if (e.target && e.target.tagName === 'BUTTON') return;
+    e.preventDefault(); pause();
+  }
+  else if (e.key === 'r' || e.key === 'R'){ resetAll(); }
+  else if (e.key === 's' || e.key === 'S'){ $('b-sound').click(); }
+});
+
+/* =====================================================================
+   cinematic / electronic procedural soundtrack, 120 BPM
+   16th-note grid (0.125s), full dynamic synth, drums & SFX synced to reel
+===================================================================== */
+let AC = null, masterGain = null, masterComp = null, soundOn = false, scheduledStep = 0, audioT0 = 0;
+let _noiseBuf = null;
+
+function ensureAC(){
+  if (AC){
+    if (AC.state === 'suspended') AC.resume();
+    return;
+  }
+  AC = new (window.AudioContext || window.webkitAudioContext)();
+  
+  /* Master compressor / limiter for maximum punch & zero clipping */
+  masterComp = AC.createDynamicsCompressor();
+  masterComp.threshold.setValueAtTime(-14, AC.currentTime);
+  masterComp.knee.setValueAtTime(10, AC.currentTime);
+  masterComp.ratio.setValueAtTime(4.5, AC.currentTime);
+  masterComp.attack.setValueAtTime(0.003, AC.currentTime);
+  masterComp.release.setValueAtTime(0.18, AC.currentTime);
+  masterComp.connect(AC.destination);
+
+  masterGain = AC.createGain();
+  masterGain.gain.setValueAtTime(0.70, AC.currentTime);
+  masterGain.connect(masterComp);
+}
+
+function noiseBuf(){
+  if (_noiseBuf) return _noiseBuf;
+  _noiseBuf = AC.createBuffer(1, Math.floor(AC.sampleRate * 0.5), AC.sampleRate);
+  const d = _noiseBuf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  return _noiseBuf;
+}
+
+function env(node, t, a, d){
+  node.gain.setValueAtTime(0.0001, t);
+  node.gain.linearRampToValueAtTime(a, t + 0.003);
+  node.gain.exponentialRampToValueAtTime(0.0001, t + d);
+}
+
+/* --- Kick: Punchy 808 / Tech Transient --- */
+function kick(when, punchy = true){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(170, when);
+  o.frequency.exponentialRampToValueAtTime(42, when + 0.08);
+  env(g, when, punchy ? 0.95 : 0.75, 0.22);
+  o.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + 0.25);
+
+  /* Click transient for top-end snap */
+  const c = AC.createOscillator(), cg = AC.createGain();
+  c.type = 'triangle';
+  c.frequency.setValueAtTime(320, when);
+  c.frequency.exponentialRampToValueAtTime(50, when + 0.015);
+  env(cg, when, 0.45, 0.02);
+  c.connect(cg); cg.connect(masterGain);
+  c.start(when); c.stop(when + 0.025);
+}
+
+/* --- Snare / Clap: Crisp layered noise + pitched body --- */
+function snare(when, hard = true){
+  const b = AC.createBufferSource();
+  const bp = AC.createBiquadFilter(); bp.type = 'bandpass';
+  bp.frequency.value = 2200; bp.Q.value = 1.3;
+  const hp = AC.createBiquadFilter(); hp.type = 'highpass';
+  hp.frequency.value = 900;
+  const g = AC.createGain(); env(g, when, hard ? 0.65 : 0.45, 0.18);
+  b.buffer = noiseBuf();
+  b.connect(bp); bp.connect(hp); hp.connect(g); g.connect(masterGain);
+  b.start(when, Math.random() * 0.2); b.stop(when + 0.22);
+
+  /* Pitched snap */
+  const o = AC.createOscillator(), og = AC.createGain();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(230, when);
+  o.frequency.exponentialRampToValueAtTime(80, when + 0.04);
+  env(og, when, 0.35, 0.07);
+  o.connect(og); og.connect(masterGain);
+  o.start(when); o.stop(when + 0.08);
+}
+
+/* --- Hi-Hat: Crisp 16th rolling hats & open hats --- */
+function hat(when, open = false, vol = 0.12){
+  const b = AC.createBufferSource();
+  const hp = AC.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 8500;
+  const g = AC.createGain();
+  env(g, when, vol, open ? 0.24 : 0.038);
+  b.buffer = noiseBuf();
+  b.connect(hp); hp.connect(g); g.connect(masterGain);
+  b.start(when, Math.random() * 0.2); b.stop(when + (open ? 0.26 : 0.045));
+}
+
+/* --- Bass: Heavy analog synth bass with resonant filter sweep --- */
+function bass(when, freq, dur = 0.20, filterCut = 1200){
+  const o1 = AC.createOscillator(), o2 = AC.createOscillator();
+  const f = AC.createBiquadFilter(), g = AC.createGain();
+  o1.type = 'sawtooth'; o1.frequency.setValueAtTime(freq, when);
+  o2.type = 'sine'; o2.frequency.setValueAtTime(freq * 0.5, when); /* sub */
+  
+  f.type = 'lowpass'; f.Q.value = 3.8;
+  f.frequency.setValueAtTime(filterCut, when);
+  f.frequency.exponentialRampToValueAtTime(130, when + dur * 0.85);
+
+  env(g, when, 0.38, dur);
+  o1.connect(f); o2.connect(f); f.connect(g); g.connect(masterGain);
+  o1.start(when); o1.stop(when + dur + 0.05);
+  o2.start(when); o2.stop(when + dur + 0.05);
+}
+
+/* --- Cyber Arp Pluck: Bright melodic hook --- */
+function arp(when, freq, dur = 0.11){
+  const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+  o.type = 'square'; o.frequency.setValueAtTime(freq, when);
+  f.type = 'bandpass'; f.frequency.value = 1700; f.Q.value = 1.6;
+  env(g, when, 0.18, dur);
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + dur + 0.02);
+}
+
+/* --- French-Electro Synth Stabs (for Colour Cuts) --- */
+function stabChord(when, rootFreq){
+  const intervals = [1, 1.2, 1.5, 2.0];
+  intervals.forEach((ratio, idx) => {
+    const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(rootFreq * ratio, when);
+    o.detune.setValueAtTime((idx - 1.5) * 8, when);
+    f.type = 'lowpass'; f.Q.value = 2.5;
+    f.frequency.setValueAtTime(3200, when);
+    f.frequency.exponentialRampToValueAtTime(500, when + 0.28);
+    env(g, when, 0.15, 0.32);
+    o.connect(f); f.connect(g); g.connect(masterGain);
+    o.start(when); o.stop(when + 0.35);
+  });
+}
+
+/* --- UI / Game FX --- */
+function typingBleep(when){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'square';
+  o.frequency.setValueAtTime(1400 + Math.random() * 400, when);
+  env(g, when, 0.06, 0.012);
+  o.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + 0.02);
+}
+
+function coinSound(when){
+  [ { f: 987.8, t: 0 }, { f: 1318.5, t: 0.06 } ].forEach(n => {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(n.f, when + n.t);
+    env(g, when + n.t, 0.28, 0.16);
+    o.connect(g); g.connect(masterGain);
+    o.start(when + n.t); o.stop(when + n.t + 0.18);
+  });
+}
+
+function levelUpSound(when){
+  [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(freq, when + idx * 0.04);
+    env(g, when + idx * 0.04, 0.25, 0.18);
+    o.connect(g); g.connect(masterGain);
+    o.start(when + idx * 0.04); o.stop(when + idx * 0.04 + 0.2);
+  });
+}
+
+function alarmHit(when){
+  const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(260, when);
+  o.frequency.exponentialRampToValueAtTime(120, when + 0.16);
+  f.type = 'bandpass'; f.frequency.value = 650; f.Q.value = 3.0;
+  env(g, when, 0.40, 0.18);
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + 0.20);
+}
+
+function subImpact(when){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(110, when);
+  o.frequency.exponentialRampToValueAtTime(28, when + 0.8);
+  env(g, when, 0.95, 1.2);
+  o.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + 1.3);
+
+  /* Low rumble noise */
+  const b = AC.createBufferSource(), lp = AC.createBiquadFilter(), ng = AC.createGain();
+  b.buffer = noiseBuf();
+  lp.type = 'lowpass'; lp.frequency.value = 160;
+  env(ng, when, 0.5, 0.4);
+  b.connect(lp); lp.connect(ng); ng.connect(masterGain);
+  b.start(when, 0); b.stop(when + 0.45);
+}
+
+function ambientChime(when){
+  /* Warm lush Dmaj9 resolution chord: D3, A3, F#4, C#5, E5 */
+  const chord = [146.83, 220.00, 369.99, 554.37, 659.25];
+  chord.forEach((freq, idx) => {
+    const o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(freq, when);
+    f.type = 'lowpass';
+    f.frequency.setValueAtTime(1200 + idx * 200, when);
+    env(g, when, 0.14, 1.55);
+    o.connect(f); f.connect(g); g.connect(masterGain);
+    o.start(when); o.stop(when + 1.6);
+  });
+}
+
+function riser(when, dur = 1.8){
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.type = 'sawtooth';
+  o.frequency.setValueAtTime(140, when);
+  o.frequency.exponentialRampToValueAtTime(980, when + dur);
+  const f = AC.createBiquadFilter(); f.type = 'lowpass';
+  f.frequency.setValueAtTime(500, when);
+  f.frequency.exponentialRampToValueAtTime(3500, when + dur);
+  env(g, when, 0.22, dur);
+  o.connect(f); f.connect(g); g.connect(masterGain);
+  o.start(when); o.stop(when + dur);
+}
+
+const D_BASS = [73.4, 73.4, 87.3, 98.0, 73.4, 65.4, 87.3, 110.0];
+const D_ARP = [293.7, 349.2, 440.0, 587.3, 523.3, 440.0, 349.2, 392.0];
+
+function pattern(step, when){
+  const t = step * 0.125;
+  if (t >= 15.0) return false;
+
+  /* 0.00 - 0.75: Hook (steps 0 - 5) */
+  if (step < 6){
+    if (step === 0) kick(when, false);
+    if (step >= 1 && step <= 3) typingBleep(when);
+    if (step === 4) { kick(when, true); hat(when, true, 0.25); }
+    return true;
+  }
+
+  /* 0.75 - 2.75: Prism Assembly (steps 6 - 21) */
+  if (step >= 6 && step <= 21){
+    const s = step - 6;
+    if (s % 4 === 0) kick(when, true);
+    if (s % 8 === 4) snare(when, true);
+    if (s % 4 === 2) hat(when, true, 0.16);
+    else hat(when, false, 0.10);
+    if (s % 2 === 0) bass(when, D_BASS[(s / 2) % D_BASS.length], 0.18, 1100);
+    arp(when, D_ARP[s % D_ARP.length], 0.10);
+    return true;
+  }
+
+  /* 2.75 - 4.75: Stat Cuts (steps 22 - 37) */
+  if (step >= 22 && step <= 37){
+    const s = step - 22;
+    /* 2.75 (s=0): EXP */
+    if (s === 0){ kick(when, true); bass(when, 73.4, 0.22, 1600); }
+    /* 3.25 (s=4): STREAK */
+    if (s === 4){ kick(when, true); snare(when, true); bass(when, 87.3, 0.22, 1800); }
+    /* 3.75 (s=8): GOLD */
+    if (s === 8){ kick(when, true); coinSound(when); }
+    /* 4.25 (s=12): LEVEL UP */
+    if (s === 12){ kick(when, true); levelUpSound(when); subImpact(when); }
+    
+    /* Drum pulse underneath */
+    if (s % 2 === 1) hat(when, false, 0.11);
+    if (s === 14 || s === 15) snare(when, false);
+    return true;
+  }
+
+  /* 4.75 - 7.75: 3D Corridor Dolly (steps 38 - 61) */
+  if (step >= 38 && step <= 61){
+    const s = step - 38;
+    /* Driving four-on-the-floor kick + double kicks */
+    if (s % 4 === 0 || s === 10 || s === 18) kick(when, true);
+    if (s % 8 === 4) snare(when, true);
+    /* Rolling 16th hats with trap rolls on climax */
+    if (s >= 20) {
+      hat(when, false, 0.18);
+      hat(when + 0.0625, false, 0.12);
+    } else {
+      hat(when, s % 4 === 2, s % 2 === 1 ? 0.16 : 0.09);
+    }
+    /* Running bass */
+    bass(when, D_BASS[s % D_BASS.length], 0.12, 1300 + s * 30);
+    arp(when, D_ARP[(s * 2) % D_ARP.length], 0.09);
+    return true;
+  }
+
+  /* 7.75 - 7.85: Drop Musical Rest (step 62) */
+  if (step === 62){
+    /* Silence! Maximum dynamic impact */
+    return true;
+  }
+
+  /* 7.85 - 9.35: Penalty & Streak Reset (steps 63 - 74) */
+  if (step >= 63 && step <= 74){
+    const s = step - 63;
+    /* HP debit ticks */
+    if (s === 0 || s === 1 || s === 2 || s === 3) alarmHit(when);
+    /* 8.55 (s=5): STREAK RESET slam! */
+    if (s === 5){
+      subImpact(when);
+      snare(when, true);
+    }
+    /* Dark low drone */
+    if (s % 4 === 0 && s < 8) bass(when, 43.65, 0.45, 400); /* F1 drone */
+    return true;
+  }
+
+  /* 9.35 - 11.35: Colour Cuts (steps 75 - 90) */
+  if (step >= 75 && step <= 90){
+    const s = step - 75;
+    /* Stabs on the 4 color shifts */
+    if (s === 0) { kick(when, true); stabChord(when, 146.83); } /* D3 RESPAWN */
+    if (s === 4) { kick(when, true); snare(when, true); stabChord(when, 174.61); } /* F3 CONTINUE */
+    if (s === 8) { kick(when, true); stabChord(when, 196.00); } /* G3 AGAIN */
+    if (s === 12) { kick(when, true); snare(when, true); stabChord(when, 233.08); } /* Bb3 NEVER */
+    if (s % 2 === 1) hat(when, false, 0.14);
+    return true;
+  }
+
+  /* 11.35 - 13.35: Stair Type Climactic Riser (steps 91 - 106) */
+  if (step >= 91 && step <= 106){
+    const s = step - 91;
+    if (s === 0) riser(when, 1.8);
+    /* Accelerating snare machine-gun roll */
+    if (s < 6) {
+      if (s % 2 === 0) snare(when, false);
+    } else if (s < 12) {
+      snare(when, s % 2 === 0);
+      if (s % 4 === 0) kick(when, true);
+    } else {
+      snare(when, true);
+      snare(when + 0.0625, false);
+      kick(when, true);
+    }
+    return true;
+  }
+
+  /* 13.35 - 15.00: The Hero Landing (steps 107 - 120) */
+  if (step === 107){
+    /* MASSIVE SUB IMPACT BOOM + LUSH RESOLVING CHIME CHORD */
+    subImpact(when);
+    ambientChime(when);
+    return true;
+  }
+
+  return true;
+}
+
+const STEP_TIME = 0.125;
+function audioResync(){
+  if (!soundOn || !AC){ scheduledStep = 0; return; }
+  audioT0 = AC.currentTime - currentT();
+  scheduledStep = Math.max(0, Math.ceil(currentT() / STEP_TIME - 0.001));
+}
+function currentT(){
+  return pauseAt !== null
+    ? (pauseAt - playStart) / 1000
+    : Math.min(DUR, (performance.now() - playStart) / 1000);
+}
+function audioSchedule(){
+  if (!AC || !soundOn || finished) return;
+  const horizon = AC.currentTime + 0.16;
+  while (true){
+    const when = audioT0 + scheduledStep * STEP_TIME;
+    if (when > horizon) break;
+    const alive = pattern(scheduledStep, Math.max(when, AC.currentTime));
+    scheduledStep++;
+    if (!alive) break;
+  }
+}
+frame(() => audioSchedule());
+
+$('b-sound').onclick = () => {
+  soundOn = !soundOn;
+  $('b-sound').textContent = soundOn ? 'SOUND ON' : 'SOUND OFF';
+  $('b-sound').style.borderColor = soundOn ? 'var(--em)' : '';
+  $('b-sound').style.color = soundOn ? 'var(--em)' : '';
+  $('b-sound').style.background = soundOn ? 'rgba(16,185,129,0.14)' : '';
+  if (soundOn){ ensureAC(); audioResync(); }
+  else { scheduledStep = 0; }
+};
+
+/* =====================================================================
+   start
+===================================================================== */
+if (REDUCED){
+  $('tcode').textContent = '00:15.00 / 00:15.00';
+  $('prog-fill').style.width = '100%';
+  $('b-replay').onclick = null;
+  finished = true;
+} else {
+  resetAll();
+}
+</script>
+</body>
+</html>
