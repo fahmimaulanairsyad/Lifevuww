@@ -134,29 +134,36 @@ if (!function_exists('ensure_demo_user')) {
             $stmtQuestCount->execute([$demoId]);
             $questCount = (int) $stmtQuestCount->fetchColumn();
 
-            // Jika kebiasaan < 3 atau quest aktif < 1, re-seed otomatis agar pengunjung baru selalu mendapati data lengkap
-            if ($habitCount < 3 || $questCount < 1) {
-                // Pulihkan status vitals
-                $pdo->prepare("UPDATE users SET hp = 90, max_hp = 100, gold = GREATEST(125, gold), streak_freeze = GREATEST(1, streak_freeze) WHERE user_id = ?")
+            $hasMultiCount = 0;
+            try {
+                $stmtCheckMulti = $pdo->prepare("SELECT COUNT(*) FROM habits WHERE user_id = ? AND target_count > 1 AND current_count >= 1");
+                $stmtCheckMulti->execute([$demoId]);
+                $hasMultiCount = (int) $stmtCheckMulti->fetchColumn();
+            } catch (Exception $e) {}
+
+            // Jika kebiasaan < 3, quest aktif < 1, atau belum ada habit multi-count aktif, re-seed otomatis
+            if ($habitCount < 3 || $questCount < 1 || $hasMultiCount === 0) {
+                // Pulihkan status vitals & kunci last_daily_check hari ini agar tidak langsung direset oleh rollover
+                $pdo->prepare("UPDATE users SET hp = 90, max_hp = 100, gold = GREATEST(125, gold), streak_freeze = GREATEST(1, streak_freeze), last_daily_check = CURDATE() WHERE user_id = ?")
                     ->execute([$demoId]);
 
-                if ($habitCount < 3) {
+                if ($habitCount < 3 || $hasMultiCount === 0) {
                     $pdo->prepare("DELETE FROM habit_logs WHERE user_id = ?")->execute([$demoId]);
                     $pdo->prepare("DELETE FROM habits WHERE user_id = ?")->execute([$demoId]);
                     $starters = [
-                        ['Membaca 20 Halaman Buku', 'Easy', 'daily', 'Intelligence', 4, 1],
-                        ['Workout 30 Menit', 'Medium', 'daily', 'Physical', 6, 0],
-                        ['Minum 2.5 Liter Air', 'Easy', 'daily', 'Health', 12, 1],
-                        ['Review Pengeluaran Harian', 'Easy', 'daily', 'Wealth', 3, 0],
-                        ['Hubungi Teman / Keluarga', 'Easy', 'weekly', 'Social', 1, 0]
+                        ['Membaca 20 Halaman Buku', 'Easy', 'daily', 'Intelligence', 4, 1, 1, 1, 'daily', '1'],
+                        ['Hidrasi 3 Botol Air', 'Easy', 'daily', 'Health', 12, 0, 3, 1, 'daily', '1'],
+                        ['Workout / Latihan Fisik', 'Medium', 'weekly', 'Physical', 6, 0, 1, 0, 'weekly_days', '1,3,5'],
+                        ['Review Pengeluaran Harian', 'Easy', 'daily', 'Wealth', 3, 0, 1, 0, 'daily', '1'],
+                        ['Hubungi Teman / Keluarga', 'Easy', 'weekly', 'Social', 1, 0, 1, 0, 'interval_days', '3']
                     ];
                     $stmtH = $pdo->prepare("
-                        INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, streak, completed_today, last_reset)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                        INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, streak, completed_today, target_count, current_count, schedule_type, schedule_value, last_reset)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
                     ");
                     foreach ($starters as $s) {
                         $exp = exp_for_difficulty($s[1]);
-                        $stmtH->execute([$demoId, $s[0], $s[1], $exp, $s[2], $s[3], $s[4], $s[5]]);
+                        $stmtH->execute([$demoId, $s[0], $s[1], $exp, $s[2], $s[3], $s[4], $s[5], $s[6], $s[7], $s[8], $s[9]]);
                         $habitId = (int) $pdo->lastInsertId();
                         if ($s[5] === 1) {
                             $pdo->prepare("INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward) VALUES (?, ?, CURDATE(), 'Completed', ?)")
@@ -197,23 +204,23 @@ if (!function_exists('ensure_demo_user')) {
         $stmt->execute([$targetId, $demoUsername, $demoPass, $demoEmail]);
         $userId = $targetId;
 
-        // Tambahkan kebiasaan demo
+        // Tambahkan kebiasaan demo (lengkap dengan Multi-Count Stepper & Jadwal Fleksibel)
         $starters = [
-            ['Membaca 20 Halaman Buku', 'Easy', 'daily', 'Intelligence', 4, 1],
-            ['Workout 30 Menit', 'Medium', 'daily', 'Physical', 6, 0],
-            ['Minum 2.5 Liter Air', 'Easy', 'daily', 'Health', 12, 1],
-            ['Review Pengeluaran Harian', 'Easy', 'daily', 'Wealth', 3, 0],
-            ['Hubungi Teman / Keluarga', 'Easy', 'weekly', 'Social', 1, 0]
+            ['Membaca 20 Halaman Buku', 'Easy', 'daily', 'Intelligence', 4, 1, 1, 1, 'daily', '1'],
+            ['Hidrasi 3 Botol Air', 'Easy', 'daily', 'Health', 12, 0, 3, 1, 'daily', '1'],
+            ['Workout / Latihan Fisik', 'Medium', 'weekly', 'Physical', 6, 0, 1, 0, 'weekly_days', '1,3,5'],
+            ['Review Pengeluaran Harian', 'Easy', 'daily', 'Wealth', 3, 0, 1, 0, 'daily', '1'],
+            ['Hubungi Teman / Keluarga', 'Easy', 'weekly', 'Social', 1, 0, 1, 0, 'interval_days', '3']
         ];
 
         $stmtH = $pdo->prepare("
-            INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, streak, completed_today, last_reset)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, streak, completed_today, target_count, current_count, schedule_type, schedule_value, last_reset)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         ");
 
         foreach ($starters as $s) {
             $exp = exp_for_difficulty($s[1]);
-            $stmtH->execute([$userId, $s[0], $s[1], $exp, $s[2], $s[3], $s[4], $s[5]]);
+            $stmtH->execute([$userId, $s[0], $s[1], $exp, $s[2], $s[3], $s[4], $s[5], $s[6], $s[7], $s[8], $s[9]]);
             $habitId = (int) $pdo->lastInsertId();
 
             if ($s[5] === 1) {

@@ -318,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_quest']) || (isset($_POST['quest_name']) && !isset($_POST['edit_quest']))) {
         $quest_name = trim($_POST['quest_name'] ?? '');
         $difficulty = $_POST['difficulty'] ?? '';
-        $start_date = trim($_POST['start_date'] ?? '');
+        $start_date = trim($_POST['due_date'] ?? ($_POST['start_date'] ?? ''));
         $category = $_POST['category'] ?? '';
 
         if (mb_strlen($quest_name) < 1 || mb_strlen($quest_name) > 150 || !in_array($difficulty, $validDiffs, true) || !in_array($category, $validCats, true)) {
@@ -418,8 +418,9 @@ require_once __DIR__ . '/../includes/header.php';
                             </select>
                         </div>
                         <div class="col-6">
-                            <label for="startDate" class="form-label">Tanggal mulai</label>
-                            <input type="date" class="form-control" id="startDate" name="start_date" required>
+                            <label for="startDate" class="form-label">Tenggat Waktu / Mulai</label>
+                            <input type="date" class="form-control" id="startDate" name="due_date" value="<?= date('Y-m-d', strtotime('+3 days')) ?>" min="<?= date('Y-m-d') ?>" onchange="const h=document.getElementById('hiddenStartDate'); if(h) h.value=this.value;" required>
+                            <input type="hidden" name="start_date" id="hiddenStartDate" value="<?= date('Y-m-d', strtotime('+3 days')) ?>">
                         </div>
                     </div>
 

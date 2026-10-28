@@ -189,14 +189,32 @@ if (isset($_SESSION['user_id'])) {
                                 <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.85rem;">Checklist Kebiasaan</h4>
                                 
                                 <div class="d-flex flex-column gap-2">
-                                    <div class="d-flex justify-content-between align-items-center p-2" style="background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                                    <!-- Habit 1: Multi-Count Stepper (1/2) -->
+                                    <div class="d-flex justify-content-between align-items-center p-2" id="mockStepperRow" style="background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); transition: all 0.15s ease;">
                                         <div class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-check-circle text-accent" style="font-size: 0.88rem;"></i>
-                                            <span style="font-size: 0.82rem; text-decoration: line-through; color: var(--text-muted);">Minum 2.5 Liter Air</span>
+                                            <i class="fas fa-circle text-muted" id="mockStepperIcon" style="font-size: 0.8rem;"></i>
+                                            <div>
+                                                <span id="mockStepperText" style="font-size: 0.82rem; color: var(--text-primary); font-weight: 500;">Hidrasi Air Minum (Botol)</span>
+                                                <div class="text-muted font-mono" style="font-size: 0.65rem;">Multi-Count • +10 EXP</div>
+                                            </div>
                                         </div>
-                                        <span class="font-mono text-accent" style="font-size: 0.72rem;">+5 EXP</span>
+                                        <div class="habit-stepper" style="padding: 2px;">
+                                            <button type="button" class="btn-stepper btn-stepper-dec" id="mockStepDec" onclick="stepMockHabit(-1, this)" title="Kurangi progres">
+                                                <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
+                                            </button>
+                                            <div class="stepper-display font-mono" id="mockStepDisplay" style="min-width: 54px; padding: 1px 6px;">
+                                                <span class="stepper-text" id="mockStepText" style="font-size: 0.76rem;">1/2</span>
+                                                <div class="stepper-progress-track" style="height: 3px;">
+                                                    <div class="stepper-progress-fill" id="mockStepFill" style="width: 50%;"></div>
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn-stepper btn-stepper-inc" id="mockStepInc" onclick="stepMockHabit(1, this)" title="Tambah progres">
+                                                <i class="fas fa-plus" style="font-size: 0.7rem;"></i>
+                                            </button>
+                                        </div>
                                     </div>
 
+                                    <!-- Habit 2: Single-Click Checklist -->
                                     <div class="d-flex justify-content-between align-items-center p-2" id="mockHabitRow" onclick="toggleMockHabit()" style="background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: all 0.15s ease;">
                                         <div class="d-flex align-items-center gap-2">
                                             <i class="far fa-circle text-muted" id="mockHabitIcon" style="font-size: 0.88rem;"></i>
@@ -206,7 +224,7 @@ if (isset($_SESSION['user_id'])) {
                                     </div>
                                 </div>
                                 <div class="text-muted mt-3" style="font-size: 0.7rem;">
-                                    <i class="fas fa-info-circle me-1"></i> Klik kebiasaan di atas untuk menguji penambahan EXP & Gold secara real-time.
+                                    <i class="fas fa-info-circle me-1"></i> Klik kebiasaan atau tombol stepper [ - ] [ + ] di atas untuk menguji penambahan EXP & Gold secara real-time.
                                 </div>
                             </div>
                         </div>
@@ -658,7 +676,74 @@ if (isset($_SESSION['user_id'])) {
             if (pane) pane.classList.add('active');
         }
 
-        // 2. Tab 1: Habit Row Simulation
+        // 2. Tab 1: Multi-Count Stepper & Single-Click Habit Simulation
+        let mockStepCur = 1;
+        const mockStepTarget = 2;
+        let mockStepCompleted = false;
+
+        function stepMockHabit(delta, btn) {
+            const next = Math.max(0, Math.min(mockStepTarget, mockStepCur + delta));
+            if (next === mockStepCur) return;
+
+            const wasCompleted = (mockStepCur === mockStepTarget);
+            mockStepCur = next;
+
+            const text = document.getElementById('mockStepText');
+            const fill = document.getElementById('mockStepFill');
+            const icon = document.getElementById('mockStepperIcon');
+            const title = document.getElementById('mockStepperText');
+            const display = document.getElementById('mockStepDisplay');
+            const btnDec = document.getElementById('mockStepDec');
+            const btnInc = document.getElementById('mockStepInc');
+
+            if (fill) fill.style.width = Math.min(100, Math.round((mockStepCur / mockStepTarget) * 100)) + '%';
+            if (btnDec) btnDec.disabled = (mockStepCur <= 0);
+            if (btnInc) btnInc.disabled = (mockStepCur >= mockStepTarget);
+
+            const rect = btn.getBoundingClientRect();
+            const posX = rect.left + rect.width / 2;
+            const posY = rect.top;
+
+            if (mockStepCur === mockStepTarget) {
+                mockStepCompleted = true;
+                if (text) text.innerHTML = '<i class="fas fa-check text-accent me-1"></i>2/2';
+                if (display) display.classList.add('completed');
+                if (icon) icon.className = 'fas fa-check-circle text-accent';
+                if (title) {
+                    title.style.color = 'var(--text-muted)';
+                    title.style.textDecoration = 'line-through';
+                }
+                mockExp += 10;
+                mockGold += 10;
+                spawnCombatText(posX, posY, '<span class="text-accent fw-bold"><i class="fas fa-star text-accent me-1"></i>+10 EXP • +10 Gold (Tuntas 2/2!)</span>');
+                if (typeof confetti === 'function') {
+                    try {
+                        confetti({ particleCount: 25, spread: 45, origin: { x: posX / window.innerWidth, y: posY / window.innerHeight } });
+                    } catch(e){}
+                }
+            } else {
+                if (title) {
+                    title.style.textDecoration = 'none';
+                    title.style.color = 'var(--text-primary)';
+                }
+                if (icon) icon.className = 'fas fa-circle text-muted';
+                if (display) display.classList.remove('completed');
+
+                if (wasCompleted) {
+                    mockStepCompleted = false;
+                    mockExp -= 10;
+                    mockGold -= 10;
+                    spawnCombatText(posX, posY, `<span class="text-warning fw-bold"><i class="fas fa-undo-alt text-warning me-1"></i>↺ Progres ${mockStepCur}/${mockStepTarget} (-10 EXP)</span>`);
+                } else if (delta > 0) {
+                    spawnCombatText(posX, posY, `<span class="text-primary fw-bold">⚡ Progres ${mockStepCur}/${mockStepTarget}</span>`);
+                } else {
+                    spawnCombatText(posX, posY, `<span class="text-warning fw-bold">↺ Progres ${mockStepCur}/${mockStepTarget}</span>`);
+                }
+                if (text) text.textContent = `${mockStepCur}/${mockStepTarget}`;
+            }
+            updateMockCapsule();
+        }
+
         function toggleMockHabit() {
             habitToggled = !habitToggled;
             const icon = document.getElementById('mockHabitIcon');
