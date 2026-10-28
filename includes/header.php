@@ -22,7 +22,7 @@ secure_session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261027_07" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261027_08" rel="stylesheet">
     <!-- Motion & Scroll Libraries: Lenis & GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -154,18 +154,18 @@ secure_session_start();
                     <div class="hud-unified-capsule">
                         <div class="hud-cap-item text-danger" title="Poin Kesehatan (HP)">
                             <i class="fas fa-heart"></i>
-                            <span class="font-mono"><?php echo $navUser['hp'] ?? 100; ?></span>
+                            <span class="font-mono" id="hudHpVal"><?php echo $navUser['hp'] ?? 100; ?></span>
                         </div>
                         <div class="hud-cap-divider"></div>
                         <div class="hud-cap-item text-accent" title="Tingkat <?php echo $navLevel; ?> (<?php echo $navExp; ?>/<?php echo $navNextExp; ?> EXP)">
                             <i class="fas fa-bolt"></i>
-                            <span class="font-mono">Lv.<?php echo $navLevel; ?></span>
+                            <span class="font-mono" id="hudLevelVal">Lv.<?php echo $navLevel; ?></span>
                             <span class="hud-cap-sub d-none d-md-inline font-mono"><?php echo $navExp; ?>/<?php echo $navNextExp; ?></span>
                         </div>
                         <div class="hud-cap-divider"></div>
                         <div class="hud-cap-item text-warning" title="Saldo Gold">
                             <i class="fas fa-coins"></i>
-                            <span class="font-mono"><?php echo number_format($navUser['gold'] ?? 0); ?></span>
+                            <span class="font-mono" id="hudGoldVal"><?php echo number_format($navUser['gold'] ?? 0); ?></span>
                         </div>
                     </div>
 

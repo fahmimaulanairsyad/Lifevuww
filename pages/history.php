@@ -305,20 +305,22 @@ function status_badge($status) {
 </div>
 
 <div class="bento-panel">
-    <form method="GET" action="history.php" class="d-flex flex-wrap gap-2 align-items-center mb-4">
-        <div class="btn-group" role="group" aria-label="Rentang">
-            <?php foreach ([7, 14, 30] as $r): ?>
-                <a href="history.php?range=<?php echo $r; ?>&type=<?php echo $type; ?>"
-                   class="btn-core <?php echo $range === $r ? 'btn-primary' : 'btn-outline'; ?>"
-                   style="padding: 0.4rem 0.8rem; font-size: 0.78rem;"><?php echo $r; ?> hari</a>
-            <?php endforeach; ?>
-        </div>
-        <div class="btn-group" role="group" aria-label="Tipe">
-            <?php foreach (['all' => 'Semua', 'habit' => 'Kebiasaan', 'quest' => 'Misi'] as $k => $label): ?>
-                <a href="history.php?range=<?php echo $range; ?>&type=<?php echo $k; ?>"
-                   class="btn-core <?php echo $type === $k ? 'btn-primary' : 'btn-outline'; ?>"
-                   style="padding: 0.4rem 0.8rem; font-size: 0.78rem;"><?php echo $label; ?></a>
-            <?php endforeach; ?>
+    <form method="GET" action="history.php" class="task-filter-bar mb-4">
+        <div class="filter-pills-category">
+            <div class="btn-group" role="group" aria-label="Rentang">
+                <?php foreach ([7, 14, 30] as $r): ?>
+                    <a href="history.php?range=<?php echo $r; ?>&type=<?php echo $type; ?>"
+                       class="btn-core <?php echo $range === $r ? 'btn-primary' : 'btn-outline'; ?>"
+                       style="padding: 0.4rem 0.8rem; font-size: 0.78rem; white-space: nowrap;"><?php echo $r; ?> hari</a>
+                <?php endforeach; ?>
+            </div>
+            <div class="btn-group" role="group" aria-label="Tipe">
+                <?php foreach (['all' => 'Semua', 'habit' => 'Kebiasaan', 'quest' => 'Misi'] as $k => $label): ?>
+                    <a href="history.php?range=<?php echo $range; ?>&type=<?php echo $k; ?>"
+                       class="btn-core <?php echo $type === $k ? 'btn-primary' : 'btn-outline'; ?>"
+                       style="padding: 0.4rem 0.8rem; font-size: 0.78rem; white-space: nowrap;"><?php echo $label; ?></a>
+                <?php endforeach; ?>
+            </div>
         </div>
     </form>
 

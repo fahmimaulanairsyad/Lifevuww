@@ -531,11 +531,18 @@
             window.showConfirmDialog(title, msg, function() {
                 target.dataset.confirmed = '1';
                 if (target.name) {
-                    const hidden = document.createElement('input');
-                    hidden.type = 'hidden';
-                    hidden.name = target.name;
+                    let hidden = form.querySelector(`input[type="hidden"][name="${target.name}"]`);
+                    if (!hidden) {
+                        hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = target.name;
+                        form.appendChild(hidden);
+                    }
                     hidden.value = target.value || '1';
-                    form.appendChild(hidden);
+                }
+                if (form.classList.contains('ajax-shop-form') || form.dataset.ajax) {
+                    form.dispatchEvent(new CustomEvent('shop:ajax-submit', { detail: { triggerButton: target } }));
+                    return;
                 }
                 form.submit();
             }, { variant, confirmText });
@@ -561,6 +568,36 @@
             el.style.top = (y || (window.innerHeight / 2)) + 'px';
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 900);
+        };
+
+        /* ============ Dynamic Floating Toast Notification ============ */
+        window.showToast = function(title, message, icon = 'fa-check', type = 'accent') {
+            const existing = document.getElementById('dopamineToast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'dopamine-toast';
+            toast.id = 'dopamineToast';
+            toast.setAttribute('role', 'status');
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="toast-body">
+                    <div class="toast-title">${title}</div>
+                    <div class="toast-rewards">
+                        <span class="toast-reward ${type}">${message}</span>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
         };
 
         // Capture clicks on completion buttons

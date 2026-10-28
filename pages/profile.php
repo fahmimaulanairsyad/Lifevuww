@@ -471,37 +471,35 @@ require_once __DIR__ . '/../includes/header.php';
         </span>
     </div>
 
-    <div class="row g-3">
+    <div class="achievements-grid">
         <?php foreach ($achievements as $ach): ?>
-            <div class="col-md-3 col-6">
-                <div class="p-3 h-100 d-flex flex-column justify-content-between holo-card spotlight-card" style="background-color: var(--bg-surface-hover); border: 1px solid <?php echo $ach['unlocked'] ? 'var(--accent-border)' : 'var(--border-hairline)'; ?>; border-radius: var(--radius); transition: all 0.15s ease; <?php echo !$ach['unlocked'] ? 'opacity: 0.6;' : 'box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);'; ?>">
-                    <div>
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div style="width: 36px; height: 36px; border-radius: 50%; background-color: <?php echo $ach['unlocked'] ? 'var(--accent-dim)' : 'rgba(255, 255, 255, 0.04)'; ?>; color: <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--text-muted)'; ?>; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--border-hairline)'; ?>;">
-                                <i class="fas <?php echo htmlspecialchars($ach['icon']); ?>"></i>
-                            </div>
-                            <?php if ($ach['unlocked']): ?>
-                                <span class="badge-status accent font-mono" style="font-size: 0.62rem; padding: 0.15rem 0.45rem;">
-                                    <i class="fas fa-check"></i> Terbuka
-                                </span>
-                            <?php else: ?>
-                                <span class="badge-status font-mono" style="font-size: 0.62rem; padding: 0.15rem 0.45rem;">
-                                    <i class="fas fa-lock"></i> <?php echo $ach['current']; ?>/<?php echo $ach['target']; ?>
-                                </span>
-                            <?php endif; ?>
+            <div class="achievement-card holo-card spotlight-card" style="background-color: var(--bg-surface-hover); border: 1px solid <?php echo $ach['unlocked'] ? 'var(--accent-border)' : 'var(--border-hairline)'; ?>; border-radius: var(--radius); transition: all 0.15s ease; <?php echo !$ach['unlocked'] ? 'opacity: 0.6;' : 'box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);'; ?>">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div style="width: 36px; height: 36px; border-radius: 50%; background-color: <?php echo $ach['unlocked'] ? 'var(--accent-dim)' : 'rgba(255, 255, 255, 0.04)'; ?>; color: <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--text-muted)'; ?>; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--border-hairline)'; ?>;">
+                            <i class="fas <?php echo htmlspecialchars($ach['icon']); ?>"></i>
                         </div>
-                        <h4 style="font-size: 0.88rem; font-weight: 600; margin-bottom: 0.25rem; color: <?php echo $ach['unlocked'] ? 'var(--text-primary)' : 'var(--text-secondary)'; ?>;">
-                            <?php echo htmlspecialchars($ach['title']); ?>
-                        </h4>
-                        <p class="text-muted mb-3" style="font-size: 0.73rem; line-height: 1.4;">
-                            <?php echo htmlspecialchars($ach['desc']); ?>
-                        </p>
+                        <?php if ($ach['unlocked']): ?>
+                            <span class="badge-status accent font-mono" style="font-size: 0.62rem; padding: 0.15rem 0.45rem;">
+                                <i class="fas fa-check"></i> Terbuka
+                            </span>
+                        <?php else: ?>
+                            <span class="badge-status font-mono" style="font-size: 0.62rem; padding: 0.15rem 0.45rem;">
+                                <i class="fas fa-lock"></i> <?php echo $ach['current']; ?>/<?php echo $ach['target']; ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
+                    <h4 class="achievement-title" style="font-size: 0.88rem; font-weight: 600; margin-bottom: 0.25rem; color: <?php echo $ach['unlocked'] ? 'var(--text-primary)' : 'var(--text-secondary)'; ?>;">
+                        <?php echo htmlspecialchars($ach['title']); ?>
+                    </h4>
+                    <p class="text-muted mb-3" style="font-size: 0.73rem; line-height: 1.4;">
+                        <?php echo htmlspecialchars($ach['desc']); ?>
+                    </p>
+                </div>
 
-                    <div>
-                        <div class="vitals-track" style="height: 4px;">
-                            <div class="vitals-fill" style="width: <?php echo $ach['progress_pct']; ?>%; background-color: <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--text-muted)'; ?>;"></div>
-                        </div>
+                <div>
+                    <div class="vitals-track" style="height: 4px;">
+                        <div class="vitals-fill" style="width: <?php echo $ach['progress_pct']; ?>%; background-color: <?php echo $ach['unlocked'] ? 'var(--accent)' : 'var(--text-muted)'; ?>;"></div>
                     </div>
                 </div>
             </div>

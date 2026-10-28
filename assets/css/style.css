@@ -1056,6 +1056,27 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     margin-left: auto;
 }
 
+/* Achievements Grid (Desktop: 4 columns) */
+.achievements-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.achievement-card {
+    padding: 1rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.achievement-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
 /* Badges (Subdued Palette with Specular Restraint) */
 .badge-status {
     display: inline-flex;
@@ -1516,6 +1537,9 @@ body.nag-active .app-main {
         gap: 6px !important;
         padding-bottom: 4px !important;
         width: 100%;
+        -webkit-mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+        mask-image: linear-gradient(to right, #000 88%, transparent 100%);
+        padding-right: 24px;
     }
 
     .filter-pills-category .btn-filter-pill {
@@ -1587,8 +1611,75 @@ body.nag-active .app-main {
     }
 }
 
-/* Ergonomi Tombol Kartu Tugas di Layar HP (< 640px) */
+/* Native Bottom-Sheet Modals, Ergonomi Tombol & Etalase Lencana di Layar HP (< 640px) */
 @media (max-width: 640px) {
+    /* 1. Native iOS/Android Bottom Sheet Modals */
+    .modal {
+        padding: 0 !important;
+    }
+
+    .modal-dialog,
+    .modal-dialog-centered {
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        min-height: 100% !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    .modal-content,
+    .custom-modal-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: 22px 22px 0 0 !important;
+        border-bottom: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        max-height: 86dvh !important;
+        overflow-y: auto !important;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom, 12px)) !important;
+        animation: sheetSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.75) !important;
+    }
+
+    .modal-content::before,
+    .custom-modal-box::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.2);
+        margin: 0 auto 14px;
+        flex-shrink: 0;
+    }
+
+    /* 2. Etalase 2-Kolom Kompak Lencana (Achievements) */
+    .achievements-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+    }
+
+    .achievement-card {
+        padding: 12px !important;
+    }
+
+    .achievement-title {
+        font-size: 13px !important;
+    }
+
+    /* 3. Tombol Kartu Toko & Tugas Melebar Penuh */
+    .shop-buy-btn,
+    .buy-reward-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        min-height: 40px !important;
+    }
+
     .data-row {
         flex-direction: column;
         align-items: stretch;
@@ -1635,6 +1726,17 @@ body.nag-active .app-main {
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+    }
+}
+
+@keyframes sheetSlideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0.6;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
 }
 
