@@ -286,6 +286,26 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
     <script>
+        /* ============ Teleport all .modal elements directly to document.body ============ */
+        (function teleportModalsToBody() {
+            function moveModals() {
+                document.querySelectorAll('.modal').forEach(function(modalEl) {
+                    if (modalEl.parentElement !== document.body) {
+                        document.body.appendChild(modalEl);
+                    }
+                });
+            }
+            moveModals();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', moveModals);
+            }
+            document.addEventListener('show.bs.modal', function(e) {
+                if (e.target && e.target.parentElement !== document.body) {
+                    document.body.appendChild(e.target);
+                }
+            }, true);
+        })();
+
         /* ============ Sound toggles (sidebar + profile) ============ */
         (function () {
             const render = (btn) => {

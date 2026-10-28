@@ -574,9 +574,14 @@ document.addEventListener('DOMContentLoaded', function() {
             catSelect.value = newCat;
         }
         const modalEl = document.getElementById('addHabitModal');
-        if (modalEl && typeof bootstrap !== 'undefined') {
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.show();
+        if (modalEl) {
+            if (modalEl.parentElement !== document.body) {
+                document.body.appendChild(modalEl);
+            }
+            if (typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
         }
         window.history.replaceState({}, document.title, window.location.pathname);
     }
