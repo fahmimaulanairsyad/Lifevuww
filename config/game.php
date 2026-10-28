@@ -248,3 +248,119 @@ function game_achievements(array $stats): array {
 
     return $badges;
 }
+
+// --- 8. Jadwal Fleksibel & Helper Kebiasaan ---
+function formatHabitScheduleLabel(array $habit): string {
+    $type = $habit['schedule_type'] ?? '';
+    $val = trim((string)($habit['schedule_value'] ?? '1'));
+
+    if (empty($type)) {
+        $period = strtolower($habit['reset_period'] ?? 'daily');
+        return match ($period) {
+            'weekly' => 'Tiap Minggu',
+            'monthly' => 'Tiap Bulan',
+            default => 'Setiap Hari'
+        };
+    }
+
+    $dayShort = [1 => 'Sen', 2 => 'Sel', 3 => 'Rab', 4 => 'Kam', 5 => 'Jum', 6 => 'Sab', 7 => 'Min'];
+    $dayFull = [1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'];
+
+    switch ($type) {
+        case 'daily':
+            return 'Setiap Hari';
+
+        case 'interval_days':
+            $num = max(1, (int)$val);
+            return $num === 1 ? 'Setiap Hari' : 'Tiap ' . $num . ' Hari';
+
+        case 'weekly_days':
+            $rawDays = array_filter(array_map('intval', explode(',', $val)));
+            sort($rawDays);
+            if (empty($rawDays)) return 'Setiap Hari';
+            if (count($rawDays) === 7) return 'Setiap Hari';
+            if (count($rawDays) === 1) {
+                $d = reset($rawDays);
+                return 'Tiap ' . ($dayFull[$d] ?? 'Hari');
+            }
+            $names = array_map(fn($d) => $dayShort[$d] ?? (string)$d, $rawDays);
+            return implode(', ', $names);
+
+        case 'interval_weeks':
+            $num = max(1, (int)$val);
+            return $num === 1 ? 'Tiap Minggu' : 'Tiap ' . $num . ' Minggu';
+
+        case 'interval_months':
+            $num = max(1, (int)$val);
+            return $num === 1 ? 'Tiap Bulan' : 'Tiap ' . $num . ' Bulan';
+
+        default:
+            return 'Setiap Hari';
+    }
+}
+
+function isHabitDueToday(array $habit, ?string $todayDate = null): bool {
+    $today = $todayDate ?: date('Y-m-d');
+    $type = $habit['schedule_type'] ?? '';
+    $val = trim((string)($habit['schedule_value'] ?? '1'));
+
+    if (empty($type)) {
+        $period = strtolower($habit['reset_period'] ?? 'daily');
+        if ($period === 'weekly') {
+            return (int)date('N', strtotime($today)) === 1; // default senin
+        }
+        if ($period === 'monthly') {
+            return (int)date('j', strtotime($today)) === 1; // tgl 1
+        }
+        return true;
+    }
+
+    switch ($type) {
+        case 'daily':
+            return true;
+
+        case 'weekly_days':
+            $isoDay = (int)date('N', strtotime($today));
+            $rawDays = array_filter(array_map('intval', explode(',', $val)));
+            return in_array($isoDay, $rawDays, true);
+
+        case 'interval_days':
+            if (!empty($habit['completed_today'])) {
+                return true;
+            }
+            if (empty($habit['last_completed_at'])) {
+                return true;
+            }
+            $lastDate = date('Y-m-d', strtotime($habit['last_completed_at']));
+            $diffDays = (int) floor((strtotime($today) - strtotime($lastDate)) / 86400);
+            $interval = max(1, (int)$val);
+            return $diffDays >= $interval;
+
+        case 'interval_weeks':
+            if (!empty($habit['completed_today'])) {
+                return true;
+            }
+            if (empty($habit['last_completed_at'])) {
+                return true;
+            }
+            $lastDate = date('Y-m-d', strtotime($habit['last_completed_at']));
+            $diffDays = (int) floor((strtotime($today) - strtotime($lastDate)) / 86400);
+            $intervalWeeks = max(1, (int)$val);
+            return $diffDays >= ($intervalWeeks * 7);
+
+        case 'interval_months':
+            if (!empty($habit['completed_today'])) {
+                return true;
+            }
+            if (empty($habit['last_completed_at'])) {
+                return true;
+            }
+            $lastDate = date('Y-m-d', strtotime($habit['last_completed_at']));
+            $diffDays = (int) floor((strtotime($today) - strtotime($lastDate)) / 86400);
+            $intervalMonths = max(1, (int)$val);
+            return $diffDays >= ($intervalMonths * 30);
+
+        default:
+            return true;
+    }
+}

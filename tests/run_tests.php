@@ -109,6 +109,23 @@ assert_test("Lencana 'Perisai Abadi' terbuka untuk 100 HP + 1 perisai", $unlocke
 assert_test("Lencana 'Penakluk Misi' terbuka untuk 6 misi", $unlockedMap['quest_master'] === true);
 assert_test("Lencana 'Kedaulatan Disiplin' terkunci untuk 16 tugas (target 50)", $unlockedMap['sovereign_champion'] === false);
 
+echo "\n8. Pengujian Jadwal Rutinitas Fleksibel (formatHabitScheduleLabel & isHabitDueToday):\n";
+assert_test("Label jadwal daily adalah 'Setiap Hari'", formatHabitScheduleLabel(['schedule_type' => 'daily']) === 'Setiap Hari');
+assert_test("Label jadwal interval 2 hari adalah 'Tiap 2 Hari'", formatHabitScheduleLabel(['schedule_type' => 'interval_days', 'schedule_value' => '2']) === 'Tiap 2 Hari');
+assert_test("Label jadwal 1 hari sabtu adalah 'Tiap Sabtu'", formatHabitScheduleLabel(['schedule_type' => 'weekly_days', 'schedule_value' => '6']) === 'Tiap Sabtu');
+assert_test("Label jadwal senin rabu jumat adalah 'Sen, Rab, Jum'", formatHabitScheduleLabel(['schedule_type' => 'weekly_days', 'schedule_value' => '1,3,5']) === 'Sen, Rab, Jum');
+assert_test("Label jadwal interval 3 minggu adalah 'Tiap 3 Minggu'", formatHabitScheduleLabel(['schedule_type' => 'interval_weeks', 'schedule_value' => '3']) === 'Tiap 3 Minggu');
+assert_test("Label jadwal interval 1 bulan adalah 'Tiap Bulan'", formatHabitScheduleLabel(['schedule_type' => 'interval_months', 'schedule_value' => '1']) === 'Tiap Bulan');
+
+// Test isHabitDueToday with fixed dates: 2026-10-28 is Wednesday (ISO day 3)
+$testDateWed = '2026-10-28';
+assert_test("Daily selalu jatuh tempo", isHabitDueToday(['schedule_type' => 'daily'], $testDateWed) === true);
+assert_test("Weekly days (1,3,5) jatuh tempo di hari Rabu", isHabitDueToday(['schedule_type' => 'weekly_days', 'schedule_value' => '1,3,5'], $testDateWed) === true);
+assert_test("Weekly days (2,6) tidak jatuh tempo di hari Rabu", isHabitDueToday(['schedule_type' => 'weekly_days', 'schedule_value' => '2,6'], $testDateWed) === false);
+assert_test("Interval 2 hari jatuh tempo jika belum pernah selesai", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '2', 'last_completed_at' => null], $testDateWed) === true);
+assert_test("Interval 2 hari tidak jatuh tempo jika baru selesai kemarin", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '2', 'last_completed_at' => '2026-10-27 12:00:00'], $testDateWed) === false);
+assert_test("Interval 2 hari jatuh tempo jika selesai 2 hari lalu", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '2', 'last_completed_at' => '2026-10-26 12:00:00'], $testDateWed) === true);
+
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";
 if ($failed > 0) {

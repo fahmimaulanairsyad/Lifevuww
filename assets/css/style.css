@@ -827,6 +827,115 @@ a:hover {
     animation: bossHit 0.25s ease-in-out;
 }
 
+/* Stepper Habit Controls */
+.habit-stepper {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius);
+    padding: 3px;
+    gap: 4px;
+}
+
+.btn-stepper {
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-surface-hover);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+
+.btn-stepper:hover:not(:disabled) {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent-border);
+}
+
+.btn-stepper:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.stepper-display {
+    min-width: 68px;
+    padding: 2px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.stepper-text {
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+}
+
+.stepper-display.completed .stepper-text {
+    color: var(--accent);
+}
+
+.stepper-progress-track {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.stepper-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Day Checkbox Pills in Modal */
+.day-checkbox-pill {
+    cursor: pointer;
+    margin: 0;
+}
+
+.day-checkbox-pill input {
+    display: none;
+}
+
+.day-checkbox-pill span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: var(--radius);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    color: var(--text-muted);
+    font-size: 0.76rem;
+    font-family: var(--font-mono);
+    transition: all 0.15s ease;
+}
+
+.day-checkbox-pill input:checked + span {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+    color: var(--accent);
+    font-weight: 600;
+}
+
 /* Floating RPG Combat / Reward Text (+EXP / +Gold) */
 @keyframes floatReward {
     0% {
@@ -1748,6 +1857,19 @@ body.nag-active .app-main {
         width: 100% !important;
         justify-content: center !important;
         min-height: 40px !important;
+    }
+
+    .habit-stepper {
+        flex: 1;
+        justify-content: space-between;
+    }
+    .btn-stepper {
+        width: 38px;
+        height: 38px;
+        min-height: 38px;
+    }
+    .stepper-display {
+        flex: 1;
     }
 
     .data-row {
