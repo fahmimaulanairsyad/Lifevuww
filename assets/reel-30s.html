@@ -405,6 +405,8 @@ html,body{ height:100%; width:100%; background:#000; overflow:hidden; font-famil
   <div id="prog"><div id="prog-fill"></div></div>
 </div>
 
+<div id="reel-progress-strip" style="position:fixed; left:0; bottom:0; width:0%; height:4px; background:linear-gradient(90deg, #10b981, #6366f1); z-index:9999; pointer-events:none; transition:width 0.05s linear;"></div>
+
 <script>
 'use strict';
 /* ================= stage fit ================= */
@@ -472,6 +474,8 @@ function resetAll(){
   $('hint').style.opacity = '0';
   ['sw0','sw1','sw2','sw3'].forEach(id => { const el = $(id); if (el) el.style.opacity = '0'; });
 
+  const strip = $('reel-progress-strip');
+  if (strip) strip.style.width = '0%';
   cancelAll();
   playStart = performance.now();
   $('b-pause').textContent = 'PAUSE';
@@ -792,6 +796,8 @@ function tick(t){
   lastT = t;
   const clamped = Math.min(t, DUR);
   $('prog-fill').style.width = (clamped / DUR * 100) + '%';
+  const strip = $('reel-progress-strip');
+  if (strip) strip.style.width = (clamped / DUR * 100) + '%';
   $('tcode').textContent = fmt(clamped) + ' / 00:30.00';
   if (t >= DUR && !finished){
     finished = true;
@@ -804,26 +810,65 @@ function tick(t){
 }
 function loop(now){
   if (pauseAt === null){
-    tick((now - playStart) / 1000);
+    tick((performance.now() - playStart) / 1000);
   }
   requestAnimationFrame(loop);
 }
+tick(0);
 requestAnimationFrame(loop);
+setInterval(() => {
+  if (pauseAt === null){
+    tick((performance.now() - playStart) / 1000);
+  }
+}, 50);
 
-function play(){
+function reelPlay(){
   if (finished){ resetAll(); return; }
   if (pauseAt !== null){
     playStart += performance.now() - pauseAt;
     pauseAt = null;
-    $('b-pause').textContent = 'PAUSE';
+    const b = $('b-pause');
+    if (b) b.textContent = 'PAUSE';
+    if (soundOn && AC) {
+      if (AC.state === 'suspended') AC.resume();
+      audioResync();
+    }
   }
 }
-function pause(){
-  if (pauseAt === null){ pauseAt = performance.now(); $('b-pause').textContent = 'PLAY'; }
-  else play();
+function reelPause(){
+  if (pauseAt === null){
+    pauseAt = performance.now();
+    const b = $('b-pause');
+    if (b) b.textContent = 'PLAY';
+    if (soundOn && AC && AC.state === 'running') {
+      AC.suspend();
+    }
+  }
 }
-$('b-replay').onclick = () => resetAll();
+function reelRestart(){
+  resetAll();
+  reelPlay();
+}
+
+function play(){ reelPlay(); }
+function pause(){
+  if (pauseAt === null) reelPause();
+  else reelPlay();
+}
+$('b-replay').onclick = () => reelRestart();
 $('b-pause').onclick = pause;
+
+window.addEventListener('message', function(e) {
+  if (!e.data) return;
+  const type = typeof e.data === 'string' ? e.data : (e.data.type || e.data.action);
+  if (type === 'REEL_RESTART') {
+    reelRestart();
+  } else if (type === 'REEL_PAUSE') {
+    reelPause();
+  } else if (type === 'REEL_PLAY') {
+    reelPlay();
+  }
+});
 
 /* Clickable progress bar scrubber */
 $('prog').onclick = e => {

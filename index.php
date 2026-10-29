@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261029_04" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261029_05" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -494,22 +494,33 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
         <div class="lp-reel-window spotlight-card">
-            <!-- Window Topbar -->
+            <!-- Window Topbar with Interactive Player Controls -->
             <div class="lp-window-topbar">
                 <div class="lp-window-dots">
                     <span class="lp-dot red"></span>
                     <span class="lp-dot yellow"></span>
                     <span class="lp-dot green"></span>
-                    <span class="text-muted ms-2 font-mono" style="font-size: 0.7rem;">lifevuww-reel-15s // 120-bpm</span>
+                    <span class="text-muted ms-2 font-mono d-none d-sm-inline" style="font-size: 0.7rem;" id="lpReelTopbarLabel">lifevuww-reel-15s // 120-bpm</span>
                 </div>
-                <div class="lp-mock-capsule font-mono d-none d-sm-inline-flex" style="font-size: 0.68rem; padding: 2px 10px;">
-                    <i class="fas fa-code text-accent me-1"></i> 100% Code & Synth Audio
+                <div class="lp-reel-controls">
+                    <button type="button" class="lp-reel-btn lp-reel-duration-btn active" id="btnReel15" onclick="switchReelDuration('15s', this)" title="Versi 15 detik">
+                        <i class="fas fa-bolt text-accent"></i> <span>15s Cut</span>
+                    </button>
+                    <button type="button" class="lp-reel-btn lp-reel-duration-btn" id="btnReel30" onclick="switchReelDuration('30s', this)" title="Versi 30 detik">
+                        <i class="fas fa-film text-warning"></i> <span>30s Cut</span>
+                    </button>
+                    <button type="button" class="lp-reel-btn" id="btnReelReplay" onclick="replayReel()" title="Putar ulang animasi dari frame 0.00s">
+                        <i class="fas fa-redo-alt"></i> <span>Replay</span>
+                    </button>
+                    <button type="button" class="lp-reel-btn" id="btnReelFullscreen" onclick="toggleReelFullscreen()" title="Layar Penuh (1920x1080)">
+                        <i class="fas fa-expand"></i> <span>Fullscreen</span>
+                    </button>
                 </div>
             </div>
 
             <!-- Player Body (16:9) -->
-            <div class="lp-reel-body">
-                <iframe id="lpReelIframe" src="assets/reel-15s.html" allow="autoplay" title="Lifevuww 15s High-Octane Motion Reel"></iframe>
+            <div class="lp-reel-body" id="lpReelBody">
+                <iframe id="lpReelIframe" src="assets/reel-15s.html" allow="autoplay; fullscreen" allowfullscreen="true" title="Lifevuww 15s High-Octane Motion Reel"></iframe>
             </div>
         </div>
     </section>
@@ -1086,6 +1097,113 @@ if (isset($_SESSION['user_id'])) {
                         }
                     }
                 );
+            }
+        })();
+
+        // 8.5. Motion Reel Interactive Player Controls & Viewport Optimizer
+        function switchReelDuration(duration, btn) {
+            const iframe = document.getElementById('lpReelIframe');
+            const label = document.getElementById('lpReelTopbarLabel');
+            const navLink = document.querySelector('.lp-nav-link[href="#lp-reel"]');
+            if (!iframe) return;
+
+            document.querySelectorAll('.lp-reel-duration-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            const targetSrc = (duration === '30s') ? 'assets/reel-30s.html' : 'assets/reel-15s.html';
+            if (iframe.getAttribute('src') !== targetSrc) {
+                iframe.src = targetSrc;
+            } else {
+                replayReel();
+            }
+
+            if (label) {
+                label.textContent = `lifevuww-reel-${duration} // 120-bpm`;
+            }
+            if (navLink) {
+                navLink.textContent = `Teaser ${duration}`;
+            }
+        }
+
+        function replayReel() {
+            const iframe = document.getElementById('lpReelIframe');
+            if (!iframe) return;
+            try {
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({ type: 'REEL_RESTART' }, '*');
+                }
+            } catch (e) {
+                iframe.src = iframe.src;
+            }
+        }
+
+        function toggleReelFullscreen() {
+            const container = document.getElementById('lpReelBody');
+            const iframe = document.getElementById('lpReelIframe');
+            const elem = container || iframe;
+            if (!elem) return;
+
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                } else if (iframe && iframe.requestFullscreen) {
+                    iframe.requestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        document.addEventListener('fullscreenchange', updateReelFullscreenState);
+        document.addEventListener('webkitfullscreenchange', updateReelFullscreenState);
+        function updateReelFullscreenState() {
+            const btn = document.getElementById('btnReelFullscreen');
+            if (!btn) return;
+            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+            if (icon) icon.className = isFs ? 'fas fa-compress' : 'fas fa-expand';
+            if (span) span.textContent = isFs ? 'Exit' : 'Fullscreen';
+        }
+
+        (function initReelViewportObserver() {
+            const reelSection = document.getElementById('lp-reel');
+            const iframe = document.getElementById('lpReelIframe');
+            if (!reelSection || !iframe) return;
+
+            function sendReelMsg(action) {
+                try {
+                    if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({ type: action }, '*');
+                    }
+                } catch (e) {}
+            }
+
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            sendReelMsg('REEL_PLAY');
+                        } else {
+                            sendReelMsg('REEL_PAUSE');
+                        }
+                    });
+                }, { threshold: 0.15 });
+                observer.observe(reelSection);
             }
         })();
 

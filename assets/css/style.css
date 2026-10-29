@@ -2374,12 +2374,73 @@ html.is-apk #btn-install-app {
     box-shadow: 0 40px 120px rgba(0, 0, 0, 0.9), 0 -1px 0 rgba(255, 255, 255, 0.22) inset, 0 0 100px rgba(16, 185, 129, 0.14);
 }
 
+.lp-reel-window .lp-window-topbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 10px 18px !important;
+    background: rgba(18, 18, 22, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 12px;
+}
+
+.lp-reel-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lp-reel-btn {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 4px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-sans);
+}
+
+.lp-reel-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.lp-reel-btn.active {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.45);
+    color: #10b981;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+}
+
 .lp-reel-body {
     position: relative;
     width: 100%;
     aspect-ratio: 16/9;
     background: #000;
     overflow: hidden;
+}
+
+.lp-reel-body:fullscreen,
+.lp-reel-body:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    background: #000 !important;
+}
+
+.lp-reel-body:fullscreen iframe,
+.lp-reel-body:-webkit-full-screen iframe {
+    width: 100% !important;
+    height: 100% !important;
 }
 
 .lp-reel-body iframe {
@@ -2618,7 +2679,31 @@ html.is-apk #btn-install-app {
     .lp-mockup-window.straightened {
         transform: none !important;
     }
-    .lp-window-topbar {
+    .lp-reel-window .lp-window-topbar {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 8px 12px !important;
+        gap: 6px !important;
+    }
+    .lp-reel-controls {
+        gap: 4px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+    }
+    .lp-reel-controls::-webkit-scrollbar {
+        display: none;
+    }
+    .lp-reel-btn {
+        padding: 3px 8px !important;
+        font-size: 0.68rem !important;
+        gap: 3px !important;
+    }
+    .lp-reel-btn span {
+        font-size: 0.68rem !important;
+    }
+    .lp-mockup-window .lp-window-topbar {
         display: grid !important;
         grid-template-columns: auto 1fr !important;
         grid-template-areas:
