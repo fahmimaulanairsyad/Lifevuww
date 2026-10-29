@@ -43,6 +43,28 @@ function run_lifevuww_migrations(PDO $pdo): array {
         }
     }
 
+    // Explicit check & migration for user specialization & relics
+    $userCols = $pdo->query("DESCRIBE users")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    if (!in_array('specialization', $userCols, true)) {
+        try {
+            $pdo->exec("ALTER TABLE `users` ADD COLUMN `specialization` VARCHAR(50) NOT NULL DEFAULT 'Obsidian Vanguard'");
+            $results[] = "Added column specialization to users";
+        } catch (Exception $e) {}
+    }
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `user_relics` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `user_id` int(11) NOT NULL,
+            `relic_key` varchar(50) NOT NULL,
+            `acquired_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `uniq_user_relic` (`user_id`, `relic_key`),
+            KEY `user_id` (`user_id`),
+            CONSTRAINT `fk_user_relics_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    ");
+
     // Also run any pending .sql files in migrations/
     $migrationDir = dirname(__DIR__) . '/migrations';
     if (is_dir($migrationDir)) {
@@ -85,6 +107,8 @@ function ensure_lifevuww_migrated(PDO $pdo): void {
 
     try {
         $pdo->query("SELECT target_count FROM habits LIMIT 1");
+        $pdo->query("SELECT specialization FROM users LIMIT 1");
+        $pdo->query("SELECT id FROM user_relics LIMIT 1");
     } catch (Exception $e) {
         run_lifevuww_migrations($pdo);
     }

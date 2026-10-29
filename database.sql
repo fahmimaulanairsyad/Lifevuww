@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `streak_freeze` int(11) DEFAULT 0,
   `last_daily_check` date DEFAULT NULL,
   `reminder_time` time DEFAULT '20:00:00',
+  `specialization` varchar(50) NOT NULL DEFAULT 'Obsidian Vanguard',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`),
@@ -203,6 +204,20 @@ CREATE TABLE IF NOT EXISTS `login_attempts` (
   `attempted_at` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `ip_time` (`ip`,`attempted_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- Table: user_relics
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `user_relics` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `relic_key` varchar(50) NOT NULL,
+  `acquired_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_user_relic` (`user_id`, `relic_key`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `fk_user_relics_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 SET foreign_key_checks = 1;

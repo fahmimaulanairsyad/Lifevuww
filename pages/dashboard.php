@@ -101,16 +101,39 @@ try {
         $activityData[] = (int) ($rawActivity[$dateKey] ?? 0);
     }
 
+    // RPG Expansion v2: Boss Mastery, Specializations, Relics, and Radar Stats for PNG Card
+    $bossMastery = getBossMasteryStats($pdo, $_SESSION['user_id']);
+    $userRelics = getUserRelics($pdo, $_SESSION['user_id']);
+    $relicsList = game_relics();
+    $userSpec = $user['specialization'] ?? 'Obsidian Vanguard';
+
+    $stmtS = $pdo->prepare("SELECT skill_id, progress FROM skills WHERE user_id = ?");
+    $stmtS->execute([$_SESSION['user_id']]);
+    $userSkillsMap = $stmtS->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
+    $radarAttrData = [];
+    foreach (game_categories() as $catKey => $catMeta) {
+        $sId = $catMeta['id'];
+        $radarAttrData[$catKey] = (int)($userSkillsMap[$sId] ?? 0);
+    }
+
 } catch (PDOException $e) {
     error_log("Dashboard error: " . $e->getMessage());
     die("Error loading dashboard. Please try again later.");
 }
 ?>
 
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
         <h1 class="page-title">Dasbor</h1>
         <p class="page-subtitle">Status real-time progres karakter, disiplin harian, dan statistik vital.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn-core btn-outline font-mono" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="Buka Focus Rift Pomodoro Battle Timer">
+            <i class="fas fa-hourglass-half text-accent me-1"></i> Focus Rift
+        </button>
+        <button type="button" class="btn-core btn-outline font-mono" id="btnDownloadCardDashboard" title="Unduh Kartu Status PNG">
+            <i class="fas fa-camera text-accent me-1"></i> Unduh Kartu (PNG)
+        </button>
     </div>
 </div>
 
@@ -222,7 +245,10 @@ try {
                 </div>
                 <p class="text-muted mt-2 mb-0" style="font-size: 0.78rem;">Kumpulkan gold dengan menjaga kebiasaan dan menuntaskan misi.</p>
             </div>
-            <div class="mt-3">
+            <div class="mt-3 d-flex flex-column gap-2">
+                <button type="button" class="btn-core btn-accent w-100 font-mono" onclick="window.openFocusRiftModal && window.openFocusRiftModal();">
+                    <i class="fas fa-hourglass-half me-1"></i> Mulai Focus Rift
+                </button>
                 <a href="shop.php" class="btn-core btn-outline w-100">
                     <i class="fas fa-store me-1"></i> Toko Hadiah
                 </a>
@@ -384,6 +410,40 @@ try {
             requestAnimationFrame(animate);
         });
     })();
+
+    // Download Character Card PNG trigger
+    document.getElementById('btnDownloadCardDashboard')?.addEventListener('click', function() {
+        if (typeof window.generateCharacterCard === 'function') {
+            window.generateCharacterCard({
+                username: <?php echo json_encode($user['username'] ?? 'Player'); ?>,
+                rank: <?php echo json_encode($rank); ?>,
+                specialization: <?php echo json_encode($userSpec); ?>,
+                level: <?php echo (int)$level; ?>,
+                hp: <?php echo (int)($user['hp'] ?? 100); ?>,
+                max_hp: <?php echo (int)($user['max_hp'] ?? 100); ?>,
+                exp: <?php echo (int)$totalExp; ?>,
+                streak: <?php echo (int)$maxStreak; ?>,
+                gold: <?php echo (int)($user['gold'] ?? 0); ?>,
+                trophies_count: <?php echo (int)($bossMastery['count'] ?? 0); ?>,
+                relics: <?php 
+                    $ownedNames = [];
+                    foreach ($userRelics as $rk => $dt) {
+                        if (isset($relicsList[$rk])) $ownedNames[] = $relicsList[$rk]['name'];
+                    }
+                    echo json_encode($ownedNames);
+                ?>,
+                attributes: <?php echo json_encode($radarAttrData); ?>
+            });
+            if (typeof LVSound !== 'undefined') LVSound.coin();
+        }
+    });
+
+    // Auto-open Focus Rift modal if query string contains rift=1
+    if (window.location.search.includes('rift=1')) {
+        setTimeout(() => {
+            if (window.openFocusRiftModal) window.openFocusRiftModal();
+        }, 300);
+    }
 </script>
 
 <?php require_once("../includes/footer.php"); ?>

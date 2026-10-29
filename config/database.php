@@ -186,8 +186,33 @@ if (!function_exists('ensure_demo_user')) {
                     ");
                     $stmtQ->execute([$demoId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence', null]);
                     $stmtQ->execute([$demoId, 'Lari 5K Tanpa Henti (Boss Quest)', 'Hard', 15, 21, 'Physical', $demoSubtasks]);
+
+                    // Tambahkan 1 Boss Quest yang sudah ditaklukkan agar trofi langsung tampil di profil demo
+                    $stmtQ->execute([$demoId, 'Tuntaskan Proyek Web RPG (Boss Quest)', 'Hard', 15, 7, 'Intelligence', '[]']);
+                    $conqueredBossId = (int) $pdo->lastInsertId();
+                    $pdo->prepare("UPDATE quests SET status = 'Completed' WHERE quest_id = ?")->execute([$conqueredBossId]);
+                    $pdo->prepare("INSERT INTO quest_logs (quest_id, user_id, status, completed_at, exp_reward) VALUES (?, ?, 'Completed', DATE_SUB(NOW(), INTERVAL 2 DAY), 23)")
+                        ->execute([$conqueredBossId, $demoId]);
                 }
+
+                // Berikan relik awal untuk showcase di toko & profil demo
+                try {
+                    $pdo->prepare("INSERT IGNORE INTO user_relics (user_id, relic_key) VALUES (?, 'chrono_blade')")
+                        ->execute([$demoId]);
+                } catch (Exception $e) {}
             }
+
+            // Pastikan selalu ada minimal 1 Boss Quest yang sudah ditaklukkan agar etalase trofi langsung aktif
+            $stmtBossCheck = $pdo->prepare("SELECT COUNT(*) FROM quests WHERE user_id = ? AND status = 'Completed' AND difficulty = 'Hard'");
+            $stmtBossCheck->execute([$demoId]);
+            if ((int)$stmtBossCheck->fetchColumn() === 0) {
+                $stmtQ = $pdo->prepare("INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category, subtasks) VALUES (?, ?, 'Hard', CURDATE(), 15, 7, 'Completed', 'Intelligence', '[]')");
+                $stmtQ->execute([$demoId, 'Tuntaskan Proyek Web RPG (Boss Quest)']);
+                $conqueredBossId = (int) $pdo->lastInsertId();
+                $pdo->prepare("INSERT INTO quest_logs (quest_id, user_id, status, completed_at, exp_reward) VALUES (?, ?, 'Completed', DATE_SUB(NOW(), INTERVAL 2 DAY), 23)")
+                    ->execute([$conqueredBossId, $demoId]);
+            }
+
             return $demoId;
         }
 
@@ -198,8 +223,8 @@ if (!function_exists('ensure_demo_user')) {
         // Buat akun demo baru dengan saldo awal & level 5
         $demoPass = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("
-            INSERT INTO users (user_id, username, password, email, rank, level, exp, hp, max_hp, gold, streak_freeze, last_daily_check)
-            VALUES (?, ?, ?, ?, 'D-Rank Explorer', 5, 450, 90, 100, 125, 1, CURDATE())
+            INSERT INTO users (user_id, username, password, email, rank, level, exp, hp, max_hp, gold, streak_freeze, last_daily_check, specialization)
+            VALUES (?, ?, ?, ?, 'D-Rank Explorer', 5, 450, 90, 100, 125, 1, CURDATE(), 'Obsidian Vanguard')
         ");
         $stmt->execute([$targetId, $demoUsername, $demoPass, $demoEmail]);
         $userId = $targetId;
@@ -244,6 +269,19 @@ if (!function_exists('ensure_demo_user')) {
         ");
         $stmtQ->execute([$userId, 'Menyelesaikan Modul Belajar Javascript', 'Medium', 10, 14, 'Intelligence', null]);
         $stmtQ->execute([$userId, 'Lari 5K Tanpa Henti (Boss Quest)', 'Hard', 15, 21, 'Physical', $demoSubtasks]);
+
+        // Tambahkan 1 Boss Quest yang sudah ditaklukkan
+        $stmtQ->execute([$userId, 'Tuntaskan Proyek Web RPG (Boss Quest)', 'Hard', 15, 7, 'Intelligence', '[]']);
+        $conqueredBossId = (int) $pdo->lastInsertId();
+        $pdo->prepare("UPDATE quests SET status = 'Completed' WHERE quest_id = ?")->execute([$conqueredBossId]);
+        $pdo->prepare("INSERT INTO quest_logs (quest_id, user_id, status, completed_at, exp_reward) VALUES (?, ?, 'Completed', DATE_SUB(NOW(), INTERVAL 2 DAY), 23)")
+            ->execute([$conqueredBossId, $userId]);
+
+        // Berikan relik awal untuk showcase
+        try {
+            $pdo->prepare("INSERT IGNORE INTO user_relics (user_id, relic_key) VALUES (?, 'chrono_blade')")
+                ->execute([$userId]);
+        } catch (Exception $e) {}
 
         return $userId;
     }

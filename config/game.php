@@ -364,3 +364,201 @@ function isHabitDueToday(array $habit, ?string $todayDate = null): bool {
             return true;
     }
 }
+
+// --- 9. Boss Mastery & Conquered Trophies ---
+function getBossMasteryStats(PDO $pdo, int $userId): array {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT q.quest_id, q.quest_name, q.category, q.difficulty, q.subtasks,
+                   COALESCE(ql.completed_at, ql.completion_date, q.end_date) AS completed_at
+            FROM quests q
+            LEFT JOIN quest_logs ql ON q.quest_id = ql.quest_id AND ql.user_id = q.user_id AND ql.status = 'Completed'
+            WHERE q.user_id = ? AND q.status = 'Completed'
+            ORDER BY completed_at DESC, q.quest_id DESC
+        ");
+        $stmt->execute([$userId]);
+        $completed = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $trophies = [];
+        $seen = [];
+        foreach ($completed as $q) {
+            if (isset($seen[$q['quest_id']])) continue;
+            $subs = !empty($q['subtasks']) ? json_decode($q['subtasks'], true) : [];
+            $isBoss = ($q['difficulty'] === 'Hard' || (!empty($subs) && count($subs) > 0));
+            if ($isBoss) {
+                $seen[$q['quest_id']] = true;
+                $trophies[] = [
+                    'quest_id' => (int)$q['quest_id'],
+                    'quest_name' => $q['quest_name'],
+                    'category' => $q['category'] ?? 'General',
+                    'difficulty' => $q['difficulty'],
+                    'completed_at' => $q['completed_at'] ?? date('Y-m-d')
+                ];
+            }
+        }
+
+        $count = count($trophies);
+        $bonusPct = min(20, $count * 2);
+        $multiplier = 1.0 + ($bonusPct / 100);
+
+        return [
+            'count' => $count,
+            'bonus_pct' => $bonusPct,
+            'multiplier' => $multiplier,
+            'trophies' => $trophies
+        ];
+    } catch (Exception $e) {
+        return [
+            'count' => 0,
+            'bonus_pct' => 0,
+            'multiplier' => 1.0,
+            'trophies' => []
+        ];
+    }
+}
+
+// --- 10. Relik & Equipment Permanen Toko ---
+function game_relics(): array {
+    return [
+        'chrono_blade' => [
+            'key' => 'chrono_blade',
+            'name' => 'Obsidian Chrono Blade',
+            'cost' => 150,
+            'icon' => 'fa-khanda',
+            'slot' => 'Weapon',
+            'badge' => 'Senjata',
+            'effect' => 'Ketajaman fokus eksekusi tugas & disiplin waktu',
+            'desc' => 'Pedang obsidian legendaris yang ditempa dari kristal waktu murni.'
+        ],
+        'archon_signet' => [
+            'key' => 'archon_signet',
+            'name' => 'Signet of the Archon',
+            'cost' => 300,
+            'icon' => 'fa-ring',
+            'slot' => 'Ring',
+            'badge' => 'Cincin',
+            'effect' => 'Penguat stabilitas finansial & kejernihan intelektual',
+            'desc' => 'Cincin meterai kuno para arsitek disiplin.'
+        ],
+        'sovereign_mantle' => [
+            'key' => 'sovereign_mantle',
+            'name' => 'Aegis Sovereign Mantle',
+            'cost' => 500,
+            'icon' => 'fa-shield-halved',
+            'slot' => 'Armor',
+            'badge' => 'Armor',
+            'effect' => 'Jubah pelindung kasta tertinggi penakluk konsistensi',
+            'desc' => 'Mantle pelindung yang memancarkan aura wibawa bagi mereka yang berdisiplin tanpa henti.'
+        ],
+    ];
+}
+
+function getUserRelics(PDO $pdo, int $userId): array {
+    try {
+        $stmt = $pdo->prepare("SELECT relic_key, acquired_at FROM user_relics WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $owned = [];
+        foreach ($rows as $r) {
+            $owned[$r['relic_key']] = $r['acquired_at'];
+        }
+        return $owned;
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+// --- 11. Spesialisasi Karakter (Specialization Classes) & Aura Themes ---
+function game_specializations(): array {
+    return [
+        'Obsidian Vanguard' => [
+            'id' => 'Obsidian Vanguard',
+            'title' => 'Obsidian Vanguard',
+            'aura' => 'emerald',
+            'aura_name' => 'Emerald Core',
+            'color' => '#10b981',
+            'focus' => 'Disiplin Seimbang (All-Rounder)',
+            'desc' => 'Garda terdepan yang teguh menjaga keseimbangan seluruh aspek produktivitas tanpa kompromi.',
+            'icon' => 'fa-shield-alt'
+        ],
+        'Arcane Scholar' => [
+            'id' => 'Arcane Scholar',
+            'title' => 'Arcane Scholar',
+            'aura' => 'cyan',
+            'aura_name' => 'Cyan Pulse',
+            'color' => '#06b6d4',
+            'focus' => 'Fokus Intelligence & Deep Work',
+            'desc' => 'Cendekiawan taktis pemecah masalah rumit yang mendedikasikan waktu untuk eksplorasi pengetahuan murni.',
+            'icon' => 'fa-brain'
+        ],
+        'Crimson Striker' => [
+            'id' => 'Crimson Striker',
+            'title' => 'Crimson Striker',
+            'aura' => 'crimson',
+            'aura_name' => 'Crimson Blaze',
+            'color' => '#f43f5e',
+            'focus' => 'Fokus Physical & Health',
+            'desc' => 'Petarung gigih berkekuatan fisik prima yang mengubah keringat dan vitalitas menjadi kemenangan disiplin.',
+            'icon' => 'fa-dumbbell'
+        ],
+        'Solar Sovereign' => [
+            'id' => 'Solar Sovereign',
+            'title' => 'Solar Sovereign',
+            'aura' => 'amber',
+            'aura_name' => 'Amber Gold',
+            'color' => '#f59e0b',
+            'focus' => 'Fokus Wealth & Social',
+            'desc' => 'Pemimpin visioner penguasa kemakmuran finansial dan jejaring relasi sosial yang berpengaruh luas.',
+            'icon' => 'fa-coins'
+        ],
+        'Abyssal Archon' => [
+            'id' => 'Abyssal Archon',
+            'title' => 'Abyssal Archon',
+            'aura' => 'violet',
+            'aura_name' => 'Phantom Violet',
+            'color' => '#8b5cf6',
+            'focus' => 'Spesialisasi Elit & Eksplorasi Ekstrem',
+            'desc' => 'Arsitek misterius penjelajah zona terdalam produktivitas yang mampu menaklukkan Boss tersulit dengan tenang.',
+            'icon' => 'fa-wand-magic-sparkles'
+        ]
+    ];
+}
+
+// --- 12. Focus Rift (Pomodoro RPG Deep Work Raid) Configurations ---
+function game_focus_rifts(): array {
+    return [
+        'alpha' => [
+            'key' => 'alpha',
+            'title' => 'Alpha Rift',
+            'badge' => 'Fokus Cepat',
+            'color' => '#10b981',
+            'duration_minutes' => 15,
+            'duration_seconds' => 900,
+            'exp_reward' => 10,
+            'gold_reward' => 8,
+            'desc' => '15 Menit Fokus Cepat untuk sprint tugas kilat.'
+        ],
+        'beta' => [
+            'key' => 'beta',
+            'title' => 'Beta Rift',
+            'badge' => 'Deep Work',
+            'color' => '#06b6d4',
+            'duration_minutes' => 25,
+            'duration_seconds' => 1500,
+            'exp_reward' => 20,
+            'gold_reward' => 15,
+            'desc' => '25 Menit Deep Work standar Pomodoro taktis.'
+        ],
+        'crimson' => [
+            'key' => 'crimson',
+            'title' => 'Crimson Overdrive Rift',
+            'badge' => 'Fokus Intensif',
+            'color' => '#f43f5e',
+            'duration_minutes' => 45,
+            'duration_seconds' => 2700,
+            'exp_reward' => 40,
+            'gold_reward' => 30,
+            'desc' => '45 Menit Fokus Intensif. Tetap fokus hingga waktu habis untuk membuka segel hadiah penuh!'
+        ],
+    ];
+}

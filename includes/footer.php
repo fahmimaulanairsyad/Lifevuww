@@ -96,16 +96,20 @@
     <?php if (isset($_SESSION['reward_toast'])):
         $toast = $_SESSION['reward_toast'];
         unset($_SESSION['reward_toast']);
+        $isBossToast = !empty($toast['is_boss']) || ($toast['type'] === 'boss');
     ?>
         <div class="dopamine-toast" id="dopamineToast" role="status">
             <div class="toast-icon">
-                <i class="fas <?php echo ($toast['type'] === 'quest') ? 'fa-scroll' : 'fa-check'; ?>"></i>
+                <i class="fas <?php echo $isBossToast ? 'fa-crown text-warning' : (($toast['type'] === 'quest') ? 'fa-scroll' : 'fa-check'); ?>"></i>
             </div>
             <div class="toast-body">
-                <div class="toast-title"><?php echo htmlspecialchars($toast['name']); ?> selesai!</div>
+                <div class="toast-title"><?php echo htmlspecialchars($toast['name']); ?><?php echo $isBossToast ? '' : ' selesai!'; ?></div>
                 <div class="toast-rewards">
                     <span class="toast-reward exp">+<?php echo $toast['exp']; ?> EXP</span>
                     <span class="toast-reward gold"><i class="fas fa-coins"></i> +<?php echo $toast['gold']; ?></span>
+                    <?php if ($isBossToast): ?>
+                        <span class="toast-reward streak" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4);"><i class="fas fa-trophy"></i> +1 Mastery Trophy</span>
+                    <?php endif; ?>
                     <?php if (isset($toast['streak']) && $toast['streak'] > 1): ?>
                         <span class="toast-reward streak"><i class="fas fa-fire"></i> <?php echo $toast['streak']; ?>x streak</span>
                     <?php endif; ?>
@@ -115,8 +119,8 @@
 
         <script>
             // Confetti blast + celebration chime
-            fireConfetti({ particleCount: 70, spread: 55, origin: { y: 0.85 } });
-            LVSound.<?php echo ($toast['type'] === 'quest') ? 'quest' : 'fanfare'; ?>();
+            fireConfetti({ particleCount: <?php echo $isBossToast ? '110' : '70'; ?>, spread: 65, origin: { y: 0.82 } });
+            LVSound.<?php echo $isBossToast ? 'fanfare' : (($toast['type'] === 'quest') ? 'quest' : 'fanfare'); ?>();
 
             // Hilangkan toast setelah 4.5 detik
             setTimeout(() => {
@@ -258,6 +262,90 @@
                 <div class="p-2 px-3 d-flex justify-content-between align-items-center" style="border-top: 1px solid var(--border-hairline); background-color: var(--bg-surface-hover); font-size: 0.72rem; color: var(--text-muted);">
                     <span>Gunakan <kbd style="font-size: 0.65rem;">↑</kbd> <kbd style="font-size: 0.65rem;">↓</kbd> untuk memilih, <kbd style="font-size: 0.65rem;">Enter</kbd> untuk eksekusi</span>
                     <span class="font-mono text-accent">Lifevuww v2.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Focus Rift (Pomodoro RPG Deep Work Raid) Modal -->
+    <div class="modal fade" id="focusRiftModal" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+            <div class="modal-content p-4" style="background-color: var(--bg-surface); border: 1px solid var(--accent-border); border-radius: var(--radius); box-shadow: 0 25px 60px rgba(0,0,0,0.85);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title mb-0" style="font-size: 1rem; font-weight: 600;">Focus Rift</h5>
+                            <span class="text-muted" style="font-size: 0.72rem;">Deep Work Raid • Pomodoro RPG</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+
+                <!-- Intensity Selection (Alpha, Beta, Crimson) -->
+                <div class="mb-3">
+                    <label class="form-label text-muted" style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em;">Pilih Intensitas Rift</label>
+                    <div class="row g-2" id="riftIntensityGroup">
+                        <div class="col-4">
+                            <div class="rift-intensity-card" data-key="alpha" data-seconds="900" data-exp="10" data-gold="8" style="border-color: rgba(16, 185, 129, 0.3);">
+                                <div class="badge-status accent font-mono mb-1" style="font-size: 0.65rem;">15 MNT</div>
+                                <div style="font-weight: 600; font-size: 0.78rem;">Alpha Rift</div>
+                                <div class="text-muted" style="font-size: 0.68rem;">+10 EXP / +8 G</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="rift-intensity-card active" data-key="beta" data-seconds="1500" data-exp="20" data-gold="15" style="border-color: var(--accent);">
+                                <div class="badge-status info font-mono mb-1" style="font-size: 0.65rem;">25 MNT</div>
+                                <div style="font-weight: 600; font-size: 0.78rem;">Beta Rift</div>
+                                <div class="text-muted" style="font-size: 0.68rem;">+20 EXP / +15 G</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="rift-intensity-card" data-key="crimson" data-seconds="2700" data-exp="40" data-gold="30" style="border-color: rgba(244, 63, 94, 0.3);">
+                                <div class="badge-status danger font-mono mb-1" style="font-size: 0.65rem;">45 MNT</div>
+                                <div style="font-weight: 600; font-size: 0.78rem;">Crimson Rift</div>
+                                <div class="text-muted" style="font-size: 0.68rem;">+40 EXP / +30 G</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attribute Training Selection -->
+                <div class="mb-3">
+                    <label class="form-label text-muted" style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em;">Latih Atribut Fokus</label>
+                    <div class="d-flex flex-wrap gap-1" id="riftAttributeGroup">
+                        <button type="button" class="rift-attr-pill active" data-attr="Intelligence"><i class="fas fa-brain"></i> Intelligence</button>
+                        <button type="button" class="rift-attr-pill" data-attr="Physical"><i class="fas fa-dumbbell"></i> Physical</button>
+                        <button type="button" class="rift-attr-pill" data-attr="Health"><i class="fas fa-heart"></i> Health</button>
+                        <button type="button" class="rift-attr-pill" data-attr="Wealth"><i class="fas fa-coins"></i> Wealth</button>
+                        <button type="button" class="rift-attr-pill" data-attr="Social"><i class="fas fa-users"></i> Social</button>
+                    </div>
+                </div>
+
+                <!-- SVG Dial & Timer Display -->
+                <div class="rift-dial-container">
+                    <svg class="rift-svg-dial" viewBox="0 0 200 200">
+                        <circle class="rift-svg-track" cx="100" cy="100" r="85"></circle>
+                        <circle class="rift-svg-progress" id="riftProgressCircle" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <div class="rift-timer-display" id="riftTimerText">25:00</div>
+                    <div class="text-muted font-mono mt-1" id="riftRewardText" style="font-size: 0.75rem;">+20 EXP • +15 Gold</div>
+                </div>
+
+                <div class="p-2 mb-3 text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-hairline); border-radius: var(--radius); font-size: 0.75rem; color: var(--text-secondary);" id="riftChallengeNote">
+                    <i class="fas fa-shield-alt text-accent me-1"></i> Tetap fokus hingga waktu habis untuk membuka segel hadiah penuh!
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn-core btn-outline flex-grow-1" id="btnRiftToggle">
+                        <i class="fas fa-play me-1 text-accent"></i> Mulai Fokus
+                    </button>
+                    <button type="button" class="btn-core btn-ghost text-muted" id="btnRiftReset" title="Reset Waktu">
+                        <i class="fas fa-undo"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -632,9 +720,15 @@
                 const x = rect.left + rect.width / 2;
                 const y = rect.top;
                 const row = btn.closest('.data-row');
-                const expVal = row && row.dataset.exp ? `+${row.dataset.exp} EXP` : '+EXP!';
-                window.spawnFloatingReward(x, y, `<i class="fas fa-bolt text-accent"></i> ${expVal}`);
-                LVSound.coin();
+                const isBoss = row && (row.dataset.isBoss === '1' || row.querySelector('.badge-status.danger'));
+                if (btn.name === 'complete_quest' && isBoss) {
+                    window.spawnFloatingReward(x, y, `<span class="text-warning fw-bold"><i class="fas fa-crown text-warning me-1"></i>⚔️ BOSS CONQUERED! [ ⚡ +1 Mastery Trophy ]</span>`);
+                    if (typeof LVSound !== 'undefined') LVSound.fanfare();
+                } else {
+                    const expVal = row && row.dataset.exp ? `+${row.dataset.exp} EXP` : '+EXP!';
+                    window.spawnFloatingReward(x, y, `<i class="fas fa-bolt text-accent"></i> ${expVal}`);
+                    if (typeof LVSound !== 'undefined') LVSound.coin();
+                }
             }
         });
 
@@ -781,6 +875,7 @@
                 { title: 'Profil & Kredensial', category: 'Navigasi', icon: 'fa-user-circle', url: 'profile.php', keywords: 'profil profile akun settings kata sandi backup' },
                 { title: 'Buat Kebiasaan Baru', category: 'Aksi Cepat', icon: 'fa-plus', action: 'add_habit', keywords: 'tambah buat habit kebiasaan baru' },
                 { title: 'Buat Misi Baru', category: 'Aksi Cepat', icon: 'fa-plus-circle', action: 'add_quest', keywords: 'tambah buat misi quest baru boss' },
+                { title: '🌀 Focus Rift (Deep Work Raid)', category: 'Aksi Cepat', icon: 'fa-hourglass-half', action: 'open_focus_rift', keywords: 'focus rift pomodoro timer deep work raid fokus konsentrasi' },
                 { title: 'Toggle Efek Suara (On/Off)', category: 'Preferensi', icon: 'fa-volume-up', action: 'toggle_sound', keywords: 'suara sound audio mute senyap toggle' },
                 { title: 'Keluar dari Akun', category: 'Akun', icon: 'fa-sign-out-alt', url: '../logout.php', keywords: 'keluar logout signout exit' }
             ];
@@ -840,6 +935,10 @@
                         if (m && typeof bootstrap !== 'undefined') bootstrap.Modal.getOrCreateInstance(m).show();
                     } else {
                         window.location.href = 'quests.php?open_modal=1';
+                    }
+                } else if (cmd.action === 'open_focus_rift') {
+                    if (window.openFocusRiftModal) {
+                        window.openFocusRiftModal();
                     }
                 } else if (cmd.action === 'toggle_sound') {
                     LVSound.toggle();
@@ -934,6 +1033,511 @@
                 }
             });
         })();
+
+        /* ============ Focus Rift Pomodoro Timer Engine ============ */
+        (function() {
+            let timerInterval = null;
+            let totalSeconds = 1500;
+            let remainingSeconds = 1500;
+            let isRunning = false;
+            let currentRiftKey = 'beta';
+            let selectedAttribute = 'Intelligence';
+            const circleCircumference = 534; // 2 * PI * 85 ~ 534
+
+            function formatTime(secs) {
+                const m = Math.floor(secs / 60);
+                const s = secs % 60;
+                return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+
+            function updateDisplay() {
+                const textEl = document.getElementById('riftTimerText');
+                const circleEl = document.getElementById('riftProgressCircle');
+                if (textEl) textEl.textContent = formatTime(remainingSeconds);
+                if (circleEl) {
+                    const fraction = remainingSeconds / Math.max(1, totalSeconds);
+                    const offset = circleCircumference * (1 - fraction);
+                    circleEl.style.strokeDashoffset = offset;
+                }
+            }
+
+            function setRift(key, secs, exp, gold) {
+                currentRiftKey = key;
+                totalSeconds = secs;
+                remainingSeconds = secs;
+                isRunning = false;
+                clearInterval(timerInterval);
+                timerInterval = null;
+
+                const toggleBtn = document.getElementById('btnRiftToggle');
+                if (toggleBtn) {
+                    toggleBtn.innerHTML = '<i class="fas fa-play me-1 text-accent"></i> Mulai Fokus';
+                    toggleBtn.className = 'btn-core btn-outline flex-grow-1';
+                }
+
+                const rewEl = document.getElementById('riftRewardText');
+                if (rewEl) {
+                    rewEl.textContent = `+${exp} EXP • +${gold} Gold`;
+                }
+                updateDisplay();
+            }
+
+            window.openFocusRiftModal = function(key) {
+                const modalEl = document.getElementById('focusRiftModal');
+                if (!modalEl || typeof bootstrap === 'undefined') return;
+                if (modalEl.parentElement !== document.body) {
+                    document.body.appendChild(modalEl);
+                }
+                if (key) {
+                    const card = document.querySelector(`.rift-intensity-card[data-key="${key}"]`);
+                    if (card) card.click();
+                }
+                const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                bsModal.show();
+            };
+
+            document.addEventListener('DOMContentLoaded', function() {
+                // Intensity card click
+                document.querySelectorAll('.rift-intensity-card').forEach(card => {
+                    card.addEventListener('click', function() {
+                        if (isRunning) return; // Prevent change mid-run
+                        document.querySelectorAll('.rift-intensity-card').forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+                        const key = this.dataset.key;
+                        const secs = parseInt(this.dataset.seconds, 10);
+                        const exp = this.dataset.exp;
+                        const gold = this.dataset.gold;
+                        setRift(key, secs, exp, gold);
+                    });
+                });
+
+                // Attribute pill click
+                document.querySelectorAll('.rift-attr-pill').forEach(pill => {
+                    pill.addEventListener('click', function() {
+                        document.querySelectorAll('.rift-attr-pill').forEach(p => p.classList.remove('active'));
+                        this.classList.add('active');
+                        selectedAttribute = this.dataset.attr || 'Intelligence';
+                    });
+                });
+
+                // Start / Pause toggle
+                const toggleBtn = document.getElementById('btnRiftToggle');
+                if (toggleBtn) {
+                    toggleBtn.addEventListener('click', function() {
+                        if (isRunning) {
+                            // Pause
+                            isRunning = false;
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            toggleBtn.innerHTML = '<i class="fas fa-play me-1 text-accent"></i> Lanjutkan';
+                            toggleBtn.className = 'btn-core btn-outline flex-grow-1';
+                        } else {
+                            // Start / Resume
+                            isRunning = true;
+                            toggleBtn.innerHTML = '<i class="fas fa-pause me-1 text-warning"></i> Jeda Fokus';
+                            toggleBtn.className = 'btn-core btn-outline flex-grow-1 text-warning';
+                            if (typeof LVSound !== 'undefined') LVSound.tick();
+
+                            timerInterval = setInterval(async () => {
+                                remainingSeconds--;
+                                updateDisplay();
+                                if (remainingSeconds <= 0) {
+                                    clearInterval(timerInterval);
+                                    timerInterval = null;
+                                    isRunning = false;
+                                    await completeFocusRift();
+                                }
+                            }, 1000);
+                        }
+                    });
+                }
+
+                // Reset button
+                const resetBtn = document.getElementById('btnRiftReset');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', function() {
+                        isRunning = false;
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        remainingSeconds = totalSeconds;
+                        const toggleBtn = document.getElementById('btnRiftToggle');
+                        if (toggleBtn) {
+                            toggleBtn.innerHTML = '<i class="fas fa-play me-1 text-accent"></i> Mulai Fokus';
+                            toggleBtn.className = 'btn-core btn-outline flex-grow-1';
+                        }
+                        updateDisplay();
+                    });
+                }
+
+                // Complete Focus Rift AJAX Claim
+                async function completeFocusRift() {
+                    const formData = new FormData();
+                    formData.append('csrf_token', '<?php echo csrf_token(); ?>');
+                    formData.append('rift_key', currentRiftKey);
+                    formData.append('attribute', selectedAttribute);
+
+                    try {
+                        const res = await fetch('focus_rift.php', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            // Celebrate!
+                            if (typeof fireConfetti === 'function') {
+                                fireConfetti({ particleCount: 90, spread: 65, origin: { y: 0.6 } });
+                            }
+                            if (typeof LVSound !== 'undefined') {
+                                LVSound.fanfare();
+                            }
+                            if (window.spawnFloatingReward) {
+                                window.spawnFloatingReward(window.innerWidth / 2, window.innerHeight / 2, `<span class="text-accent fw-bold">[ ⚡ FOCUS RIFT CLEARED ]</span>`);
+                            }
+                            if (window.showToast) {
+                                window.showToast('Focus Rift Cleared!', data.message, 'fa-hourglass-end', 'accent');
+                            }
+
+                            // Real-time HUD update
+                            if (data.user) {
+                                const hudGold = document.getElementById('hudGoldVal');
+                                if (hudGold) hudGold.textContent = Number(data.user.gold).toLocaleString('id-ID');
+                                const hudLevel = document.getElementById('hudLevelVal');
+                                if (hudLevel) hudLevel.textContent = 'Lv.' + data.user.level;
+                            }
+
+                            // Reset Timer back to ready
+                            remainingSeconds = totalSeconds;
+                            updateDisplay();
+                            const toggleBtn = document.getElementById('btnRiftToggle');
+                            if (toggleBtn) {
+                                toggleBtn.innerHTML = '<i class="fas fa-play me-1 text-accent"></i> Mulai Fokus';
+                                toggleBtn.className = 'btn-core btn-outline flex-grow-1';
+                            }
+
+                            // Close modal after celebration
+                            setTimeout(() => {
+                                const modalEl = document.getElementById('focusRiftModal');
+                                if (modalEl && typeof bootstrap !== 'undefined') {
+                                    const bsModal = bootstrap.Modal.getInstance(modalEl);
+                                    if (bsModal) bsModal.hide();
+                                }
+                            }, 1800);
+                        } else {
+                            alert(data.message || 'Gagal mengklaim Focus Rift.');
+                        }
+                    } catch (err) {
+                        console.error('Focus Rift claim error:', err);
+                        alert('Terjadi kesalahan jaringan.');
+                    }
+                }
+            });
+        })();
+
+        /* ============ HTML5 Canvas Status Card PNG Generator (1080x1350) ============ */
+        window.generateCharacterCard = function(data) {
+            if (!data) return;
+            const canvas = document.createElement('canvas');
+            canvas.width = 1080;
+            canvas.height = 1350;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            const auraColors = {
+                'emerald': { primary: '#10b981', glow: 'rgba(16, 185, 129, 0.35)', dim: 'rgba(16, 185, 129, 0.15)' },
+                'cyan': { primary: '#06b6d4', glow: 'rgba(6, 182, 212, 0.35)', dim: 'rgba(6, 182, 212, 0.15)' },
+                'crimson': { primary: '#f43f5e', glow: 'rgba(244, 63, 94, 0.35)', dim: 'rgba(244, 63, 94, 0.15)' },
+                'amber': { primary: '#f59e0b', glow: 'rgba(245, 158, 11, 0.35)', dim: 'rgba(245, 158, 11, 0.15)' },
+                'violet': { primary: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.35)', dim: 'rgba(139, 92, 246, 0.15)' }
+            };
+            const activeAura = document.documentElement.getAttribute('data-aura') || 'emerald';
+            const aura = auraColors[activeAura] || auraColors.emerald;
+
+            // 1. Deep Obsidian Base
+            ctx.fillStyle = '#09090b';
+            ctx.fillRect(0, 0, 1080, 1350);
+
+            // 2. Aura Ambient Glows
+            const radialGrad = ctx.createRadialGradient(540, 150, 20, 540, 250, 500);
+            radialGrad.addColorStop(0, aura.glow);
+            radialGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = radialGrad;
+            ctx.fillRect(0, 0, 1080, 700);
+
+            const bottomGlow = ctx.createRadialGradient(540, 1050, 40, 540, 1050, 450);
+            bottomGlow.addColorStop(0, aura.dim);
+            bottomGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = bottomGlow;
+            ctx.fillRect(0, 700, 1080, 650);
+
+            // 3. Grid Pattern
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+            ctx.lineWidth = 1;
+            for (let x = 40; x < 1080; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, 1350);
+                ctx.stroke();
+            }
+            for (let y = 40; y < 1350; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(1080, y);
+                ctx.stroke();
+            }
+
+            // 4. Outer Border Frame
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(40, 40, 1000, 1270);
+            ctx.strokeStyle = aura.primary;
+            ctx.lineWidth = 4;
+            const bLen = 30;
+            ctx.beginPath(); ctx.moveTo(40, 40 + bLen); ctx.lineTo(40, 40); ctx.lineTo(40 + bLen, 40); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(1040 - bLen, 40); ctx.lineTo(1040, 40); ctx.lineTo(1040, 40 + bLen); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(40, 1310 - bLen); ctx.lineTo(40, 1310); ctx.lineTo(40 + bLen, 1310); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(1040 - bLen, 1310); ctx.lineTo(1040, 1310); ctx.lineTo(1040, 1310 - bLen); ctx.stroke();
+
+            // 5. Header / Watermark Bar
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '600 20px "Geist Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('LIFEVUWW TACTICAL OPERATING SYSTEM', 80, 95);
+
+            ctx.textAlign = 'right';
+            ctx.fillStyle = aura.primary;
+            ctx.fillText('LIFEVUWW.42WEB.IO', 1000, 95);
+
+            // Separator line
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(80, 120); ctx.lineTo(1000, 120); ctx.stroke();
+
+            // 6. Username & Level
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#fafafa';
+            ctx.font = '700 48px "Geist", sans-serif';
+            ctx.fillText(data.username || 'PLAYER', 80, 185);
+
+            // Level Pill
+            const lvlText = 'LEVEL ' + (data.level || 1);
+            ctx.font = '600 22px "Geist Mono", monospace';
+            const lvlWidth = ctx.measureText(lvlText).width + 30;
+            ctx.fillStyle = aura.dim;
+            ctx.strokeStyle = aura.primary;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.roundRect(1000 - lvlWidth, 145, lvlWidth, 42, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = aura.primary;
+            ctx.textAlign = 'center';
+            ctx.fillText(lvlText, 1000 - (lvlWidth / 2), 174);
+
+            // Subtitle: Rank Tier & Specialization
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#d4d4d8';
+            ctx.font = '600 22px "Geist", sans-serif';
+            ctx.fillText((data.rank || 'F-Rank Novice') + '  •  ' + (data.specialization || 'Obsidian Vanguard'), 80, 225);
+
+            // 7. Vitals Trackers (HP & EXP)
+            const hpVal = parseInt(data.hp || 100, 10);
+            const maxHpVal = parseInt(data.max_hp || 100, 10);
+            const hpPct = Math.min(1, Math.max(0, hpVal / maxHpVal));
+
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '500 18px "Geist", sans-serif';
+            ctx.fillText('POIN KESEHATAN (HP)', 80, 280);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = '#f43f5e';
+            ctx.font = '600 18px "Geist Mono", monospace';
+            ctx.fillText(`${hpVal} / ${maxHpVal}`, 1000, 280);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.beginPath(); ctx.roundRect(80, 292, 920, 12, 6); ctx.fill();
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath(); ctx.roundRect(80, 292, 920 * hpPct, 12, 6); ctx.fill();
+
+            const expVal = parseInt(data.exp || 0, 10);
+            const nextExpVal = (data.level || 1) * 100;
+            const baseExpVal = ((data.level || 1) - 1) * 100;
+            const expPct = Math.min(1, Math.max(0, (expVal - baseExpVal) / Math.max(1, nextExpVal - baseExpVal)));
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '500 18px "Geist", sans-serif';
+            ctx.fillText('PENGALAMAN (EXP)', 80, 340);
+            ctx.textAlign = 'right';
+            ctx.fillStyle = aura.primary;
+            ctx.font = '600 18px "Geist Mono", monospace';
+            ctx.fillText(`${expVal} / ${nextExpVal}`, 1000, 340);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.beginPath(); ctx.roundRect(80, 352, 920, 12, 6); ctx.fill();
+            ctx.fillStyle = aura.primary;
+            ctx.beginPath(); ctx.roundRect(80, 352, 920 * expPct, 12, 6); ctx.fill();
+
+            // 8. Metric Cards Grid (3 cards)
+            const cardY = 400;
+            const cardH = 110;
+            const cardW = 290;
+            const gap = 25;
+
+            // Card 1: Boss Trophies
+            ctx.fillStyle = '#111114';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(80, cardY, cardW, cardH, 10); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = '700 36px "Geist Mono", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(data.trophies_count || 0, 80 + cardW/2, cardY + 52);
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '500 15px "Geist", sans-serif';
+            ctx.fillText('TROFI BOSS DITAKLUKKAN', 80 + cardW/2, cardY + 86);
+
+            // Card 2: Streak Record
+            const c2X = 80 + cardW + gap;
+            ctx.fillStyle = '#111114';
+            ctx.beginPath(); ctx.roundRect(c2X, cardY, cardW, cardH, 10); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#f97316';
+            ctx.font = '700 36px "Geist Mono", monospace';
+            ctx.fillText((data.streak || 0) + ' HARI', c2X + cardW/2, cardY + 52);
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '500 15px "Geist", sans-serif';
+            ctx.fillText('REKOR STREAK BERUNTUN', c2X + cardW/2, cardY + 86);
+
+            // Card 3: Saldo Gold
+            const c3X = c2X + cardW + gap;
+            ctx.fillStyle = '#111114';
+            ctx.beginPath(); ctx.roundRect(c3X, cardY, cardW, cardH, 10); ctx.fill(); ctx.stroke();
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '700 36px "Geist Mono", monospace';
+            ctx.fillText(Number(data.gold || 0).toLocaleString('id-ID'), c3X + cardW/2, cardY + 52);
+            ctx.fillStyle = '#a1a1aa';
+            ctx.font = '500 15px "Geist", sans-serif';
+            ctx.fillText('TOTAL SALDO GOLD', c3X + cardW/2, cardY + 86);
+
+            // 9. Equipped Relics Section
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#d4d4d8';
+            ctx.font = '600 20px "Geist", sans-serif';
+            ctx.fillText('RELIK & ARTEFAK TERPASANG', 80, 560);
+
+            const relics = (data.relics && data.relics.length > 0) ? data.relics : ['Obsidian Chrono Blade'];
+            let relX = 80;
+            relics.forEach(rel => {
+                ctx.font = '500 16px "Geist Mono", monospace';
+                const rw = ctx.measureText(rel).width + 36;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+                ctx.strokeStyle = aura.primary;
+                ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.roundRect(relX, 580, rw, 38, 6); ctx.fill(); ctx.stroke();
+                ctx.fillStyle = '#fafafa';
+                ctx.fillText('⚔️ ' + rel, relX + 14, 604);
+                relX += rw + 14;
+            });
+
+            // 10. 5-Attribute Radar Polygon (Centered at X: 540, Y: 920, Radius: 210)
+            const centerX = 540;
+            const centerY = 920;
+            const radius = 210;
+            const attributes = [
+                { name: 'Intelligence', val: data.attributes ? (data.attributes.Intelligence || 0) : 10 },
+                { name: 'Physical', val: data.attributes ? (data.attributes.Physical || 0) : 8 },
+                { name: 'Health', val: data.attributes ? (data.attributes.Health || 0) : 12 },
+                { name: 'Wealth', val: data.attributes ? (data.attributes.Wealth || 0) : 6 },
+                { name: 'Social', val: data.attributes ? (data.attributes.Social || 0) : 5 }
+            ];
+
+            const maxAttr = Math.max(15, ...attributes.map(a => a.val));
+
+            // Concentric Web
+            for (let level = 1; level <= 5; level++) {
+                const r = (radius / 5) * level;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    const angle = (i * 2 * Math.PI / 5) - (Math.PI / 2);
+                    const x = centerX + r * Math.cos(angle);
+                    const y = centerY + r * Math.sin(angle);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.stroke();
+            }
+
+            // Axes
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 2 * Math.PI / 5) - (Math.PI / 2);
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+                ctx.beginPath(); ctx.moveTo(centerX, centerY); ctx.lineTo(x, y); ctx.stroke();
+            }
+
+            // Data Polygon
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 2 * Math.PI / 5) - (Math.PI / 2);
+                const scaledR = (attributes[i].val / maxAttr) * radius;
+                const x = centerX + scaledR * Math.cos(angle);
+                const y = centerY + scaledR * Math.sin(angle);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = aura.dim;
+            ctx.fill();
+            ctx.strokeStyle = aura.primary;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Data points & Labels
+            attributes.forEach((attr, i) => {
+                const angle = (i * 2 * Math.PI / 5) - (Math.PI / 2);
+                const scaledR = (attr.val / maxAttr) * radius;
+                const px = centerX + scaledR * Math.cos(angle);
+                const py = centerY + scaledR * Math.sin(angle);
+
+                // Point
+                ctx.fillStyle = '#fafafa';
+                ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();
+
+                // Label
+                const labelR = radius + 38;
+                const lx = centerX + labelR * Math.cos(angle);
+                const ly = centerY + labelR * Math.sin(angle);
+                ctx.textAlign = 'center';
+                ctx.font = '600 17px "Geist", sans-serif';
+                ctx.fillStyle = '#d4d4d8';
+                ctx.fillText(attr.name, lx, ly);
+                ctx.font = '600 15px "Geist Mono", monospace';
+                ctx.fillStyle = aura.primary;
+                ctx.fillText('+' + attr.val, lx, ly + 20);
+            });
+
+            // 11. Footer Watermark
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#71717a';
+            ctx.font = '500 17px "Geist Mono", monospace';
+            ctx.fillText('VERIFIED TACTICAL PROFILE • LIFEVUWW.42WEB.IO', 540, 1260);
+
+            // Trigger Download
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `lifevuww-status-${(data.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '_')}.png`;
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
 
         /* ============ Bridge diagnostic readout (profile) ============ */
         (function () {

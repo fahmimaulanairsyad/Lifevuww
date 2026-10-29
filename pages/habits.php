@@ -56,10 +56,12 @@ function completeHabit($pdo, $userId, $habitId) {
         $stmtStreak->execute([$habitId, $userId]);
         $newStreak = (int) $stmtStreak->fetchColumn();
 
-        // Hitung Multiplier berdasarkan Streak (sentral via game.php)
+        // Hitung Multiplier berdasarkan Streak (sentral via game.php) + Boss Mastery
         $multiplier = game_streak_multiplier($newStreak);
+        $masteryStats = getBossMasteryStats($pdo, $userId);
+        $masteryMul = $masteryStats['multiplier'] ?? 1.0;
 
-        $finalExp = floor($habit['exp_reward'] * $multiplier);
+        $finalExp = (int) floor($habit['exp_reward'] * $multiplier * $masteryMul);
         $earnedGold = $finalExp; // Gold yang didapat sama dengan EXP akhir
 
         // Ambil data user lama untuk deteksi Level Up & Rank Up
@@ -318,7 +320,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hStmt->execute([$habitId, $userId]);
                 $curStreak = (int)$hStmt->fetchColumn();
                 $multiplier = game_streak_multiplier($curStreak);
-                $finalExp = floor($habit['exp_reward'] * $multiplier);
+                $masteryMul = getBossMasteryStats($pdo, $userId)['multiplier'] ?? 1.0;
+                $finalExp = (int) floor($habit['exp_reward'] * $multiplier * $masteryMul);
 
                 if ($isAjax) {
                     header('Content-Type: application/json; charset=utf-8');

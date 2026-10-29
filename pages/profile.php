@@ -77,6 +77,32 @@ try {
         }
     }
 
+    // Handle change specialization & aura theme
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_specialization'])) {
+        validate_csrf();
+        $newSpec = trim($_POST['specialization'] ?? '');
+        $specs = game_specializations();
+        if (isset($specs[$newSpec])) {
+            $pdo->prepare("UPDATE users SET specialization = ? WHERE user_id = ?")
+                ->execute([$newSpec, $_SESSION['user_id']]);
+            $user['specialization'] = $newSpec;
+            $_SESSION['user_specialization'] = $newSpec;
+            $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+                || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'success' => true,
+                    'specialization' => $newSpec,
+                    'aura' => $specs[$newSpec]['aura'],
+                    'message' => "Spesialisasi diubah ke {$newSpec}!"
+                ]);
+                exit();
+            }
+            $specSaved = true;
+        }
+    }
+
     // Handle export data (JSON) - Hak Portabilitas Data (UU PDP)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['export_data'])) {
         validate_csrf();
@@ -346,6 +372,26 @@ try {
         $profilePicturePath = null; // To trigger the fallback for the default icon
     }
 
+    // RPG Expansion v2: Boss Mastery, Specializations, Relics, and Radar Stats
+    $bossMastery = getBossMasteryStats($pdo, $_SESSION['user_id']);
+    $specList = game_specializations();
+    $userSpec = $user['specialization'] ?? 'Obsidian Vanguard';
+    if (!isset($specList[$userSpec])) {
+        $userSpec = 'Obsidian Vanguard';
+    }
+    $userRelics = getUserRelics($pdo, $_SESSION['user_id']);
+    $relicsList = game_relics();
+
+    // Query 5 Atribut untuk Radar Chart Canvas
+    $stmtS = $pdo->prepare("SELECT skill_id, progress FROM skills WHERE user_id = ?");
+    $stmtS->execute([$_SESSION['user_id']]);
+    $userSkillsMap = $stmtS->fetchAll(PDO::FETCH_KEY_PAIR) ?: [];
+    $radarAttrData = [];
+    foreach (game_categories() as $catKey => $catMeta) {
+        $sId = $catMeta['id'];
+        $radarAttrData[$catKey] = (int)($userSkillsMap[$sId] ?? 0);
+    }
+
 } catch (PDOException $e) {
     error_log("Profile error: " . $e->getMessage());
     die("Error loading profile. Please try again later.");
@@ -356,10 +402,15 @@ $pageTitle = 'Profil';
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="page-header">
+<div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
         <h1 class="page-title">Profil Karakter</h1>
         <p class="page-subtitle">Kredensial pengguna, avatar identitas, dan statistik rekor seumur hidup.</p>
+    </div>
+    <div>
+        <button type="button" class="btn-core btn-outline font-mono" id="btnDownloadCard" title="Unduh Kartu Status PNG Resolusi Tinggi">
+            <i class="fas fa-camera text-accent me-1"></i> Unduh Kartu Karakter (PNG)
+        </button>
     </div>
 </div>
 
@@ -457,6 +508,163 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         </div>
     </div>
+</div>
+
+<!-- Seksi Spesialisasi Karakter & Aura Theme -->
+<div class="bento-panel mt-3 p-4">
+    <div class="panel-header mb-3">
+        <div>
+            <h3 class="panel-title"><i class="fas fa-wand-magic-sparkles text-accent"></i> Spesialisasi Karakter & Aura Theme</h3>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Pilih jalur spesialisasi untuk mengubah tema warna visual dan pancaran aura karaktermu.</p>
+        </div>
+        <span class="badge-status accent font-mono" id="currentSpecBadge">
+            <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i><?php echo htmlspecialchars($userSpec); ?>
+        </span>
+    </div>
+
+    <div class="row g-3" id="specializationGroup">
+        <?php foreach ($specList as $sId => $spec): 
+            $isActiveSpec = ($sId === $userSpec);
+        ?>
+            <div class="col-md-4">
+                <div class="spec-card <?php echo $isActiveSpec ? 'active' : ''; ?> h-100 d-flex flex-column justify-content-between" data-spec="<?php echo htmlspecialchars($sId); ?>" data-aura="<?php echo htmlspecialchars($spec['aura']); ?>">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: <?php echo $spec['color']; ?>22; border: 1px solid <?php echo $spec['color']; ?>66; color: <?php echo $spec['color']; ?>; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
+                                <i class="fas <?php echo htmlspecialchars($spec['icon']); ?>"></i>
+                            </div>
+                            <span class="badge-status font-mono" style="font-size: 0.65rem; border-color: <?php echo $spec['color']; ?>55; color: <?php echo $spec['color']; ?>;">
+                                <?php echo htmlspecialchars($spec['aura_name']); ?>
+                            </span>
+                        </div>
+                        <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; color: var(--text-primary);"><?php echo htmlspecialchars($spec['title']); ?></h4>
+                        <div style="font-size: 0.75rem; font-weight: 500; color: <?php echo $spec['color']; ?>; margin-bottom: 0.5rem;"><?php echo htmlspecialchars($spec['focus']); ?></div>
+                        <p class="text-muted mb-3" style="font-size: 0.74rem; line-height: 1.4;"><?php echo htmlspecialchars($spec['desc']); ?></p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn-core btn-outline w-100 btn-select-spec" style="font-size: 0.76rem;" <?php echo $isActiveSpec ? 'disabled' : ''; ?>>
+                            <?php if ($isActiveSpec): ?>
+                                <i class="fas fa-check text-accent me-1"></i> Aktif Digunakan
+                            <?php else: ?>
+                                Pilih Spesialisasi
+                            <?php endif; ?>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
+<!-- Seksi Etalase Trofi Boss (Boss Mastery) -->
+<div class="bento-panel mt-3 p-4">
+    <div class="panel-header mb-3">
+        <div>
+            <h3 class="panel-title"><i class="fas fa-trophy text-warning"></i> Etalase Trofi Boss (Boss Mastery)</h3>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Trofi penaklukan monster misi besar & bonus pasif EXP seumur hidup.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-status warning font-mono" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">
+                <i class="fas fa-bolt me-1"></i>+<?php echo (int)$bossMastery['bonus_pct']; ?>% EXP Mastery Boost
+            </span>
+            <span class="badge-status font-mono" style="font-size: 0.75rem;">
+                <?php echo (int)$bossMastery['count']; ?> Ditaklukkan
+            </span>
+        </div>
+    </div>
+
+    <?php if (!empty($bossMastery['trophies'])): ?>
+        <div class="trophy-grid">
+            <?php foreach ($bossMastery['trophies'] as $tr): ?>
+                <div class="trophy-card holo-card">
+                    <div style="width: 40px; height: 40px; border-radius: var(--radius); background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 0.88rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <?php echo htmlspecialchars($tr['quest_name']); ?>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge-status font-mono" style="font-size: 0.65rem;"><?php echo htmlspecialchars($tr['category']); ?></span>
+                            <span class="text-muted font-mono" style="font-size: 0.7rem;"><?php echo indo_short_date($tr['completed_at']); ?></span>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div class="text-center py-4" style="background: var(--bg-surface-hover); border-radius: var(--radius); border: 1px dashed var(--border-hairline);">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.04); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin: 0 auto 0.75rem auto;">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div style="font-size: 0.88rem; font-weight: 500; color: var(--text-secondary);">Belum Ada Boss Quest yang Ditaklukkan</div>
+            <p class="text-muted mt-1 mb-3" style="font-size: 0.76rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+                Selesaikan misi bertingkat Hard atau memiliki sub-langkah di menu Misi untuk membuka Trofi Boss dan passive boost +2% EXP permanen!
+            </p>
+            <a href="quests.php" class="btn-core btn-outline font-mono" style="font-size: 0.78rem;">
+                <i class="fas fa-map-signs me-1"></i> Buka Daftar Misi
+            </a>
+        </div>
+    <?php endif; ?>
+</div>
+
+<!-- Seksi Koleksi Relik & Artefak Terpasang -->
+<div class="bento-panel mt-3 p-4">
+    <div class="panel-header mb-3">
+        <div>
+            <h3 class="panel-title"><i class="fas fa-shield-halved text-accent"></i> Relik & Artefak Terpasang</h3>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Perlengkapan permanen yang aktif melindungi dan memperkuat atribut karaktermu.</p>
+        </div>
+        <a href="shop.php" class="btn-core btn-ghost font-mono" style="font-size: 0.75rem;">
+            <i class="fas fa-store me-1"></i> Toko Hadiah →
+        </a>
+    </div>
+
+    <?php if (!empty($userRelics)): ?>
+        <div class="row g-3">
+            <?php foreach ($userRelics as $rKey => $acqDate): 
+                $rInfo = $relicsList[$rKey] ?? null;
+                if (!$rInfo) continue;
+            ?>
+                <div class="col-md-4">
+                    <div class="bento-panel spotlight-card holo-card p-3 h-100" style="background: var(--bg-surface-hover); border-color: var(--accent-border);">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div style="width: 36px; height: 36px; border-radius: var(--radius); background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                <i class="fas <?php echo htmlspecialchars($rInfo['icon']); ?>"></i>
+                            </div>
+                            <span class="relic-badge-slot"><?php echo htmlspecialchars($rInfo['badge']); ?></span>
+                        </div>
+                        <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 2px;">
+                            <?php echo htmlspecialchars($rInfo['name']); ?>
+                        </div>
+                        <div class="text-accent mb-2" style="font-size: 0.74rem;">
+                            <i class="fas fa-sparkles me-1"></i><?php echo htmlspecialchars($rInfo['effect']); ?>
+                        </div>
+                        <div class="text-muted" style="font-size: 0.72rem; line-height: 1.35;">
+                            <?php echo htmlspecialchars($rInfo['desc']); ?>
+                        </div>
+                        <div class="mt-3 pt-2 d-flex justify-content-between align-items-center font-mono" style="border-top: 1px solid var(--border-hairline); font-size: 0.68rem; color: var(--text-muted);">
+                            <span><i class="fas fa-check text-accent me-1"></i>Terpasang</span>
+                            <span>Diperoleh <?php echo indo_short_date($acqDate); ?></span>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div class="text-center py-4" style="background: var(--bg-surface-hover); border-radius: var(--radius); border: 1px dashed var(--border-hairline);">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(255, 255, 255, 0.04); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin: 0 auto 0.75rem auto;">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div style="font-size: 0.88rem; font-weight: 500; color: var(--text-secondary);">Belum Ada Relik Permanen</div>
+            <p class="text-muted mt-1 mb-3" style="font-size: 0.76rem;">
+                Kunjungi Toko Hadiah untuk menempa Obsidian Chrono Blade, Signet of the Archon, atau Aegis Sovereign Mantle!
+            </p>
+            <a href="shop.php" class="btn-core btn-outline font-mono" style="font-size: 0.78rem;">
+                <i class="fas fa-coins text-warning me-1"></i> Kunjungi Toko Hadiah
+            </a>
+        </div>
+    <?php endif; ?>
 </div>
 
 <!-- Seksi Lencana & Pencapaian RPG -->
@@ -788,6 +996,89 @@ require_once __DIR__ . '/../includes/header.php';
     cancelBtn.addEventListener('click', () => {
         uploadForm.style.display = 'none';
         editBtn.style.display = 'flex';
+    });
+
+    // Specialization Selection & Real-Time Aura Switcher
+    document.querySelectorAll('.spec-card').forEach(card => {
+        card.addEventListener('click', async function(e) {
+            const spec = this.dataset.spec;
+            const aura = this.dataset.aura;
+            if (!spec || !aura) return;
+
+            // Apply aura theme immediately client-side (no reload)
+            document.documentElement.setAttribute('data-aura', aura);
+            localStorage.setItem('lv_aura_theme', aura);
+
+            // Update UI card state
+            document.querySelectorAll('.spec-card').forEach(c => {
+                c.classList.remove('active');
+                const btn = c.querySelector('.btn-select-spec');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Pilih Spesialisasi';
+                }
+            });
+            this.classList.add('active');
+            const activeBtn = this.querySelector('.btn-select-spec');
+            if (activeBtn) {
+                activeBtn.disabled = true;
+                activeBtn.innerHTML = '<i class="fas fa-check text-accent me-1"></i> Aktif Digunakan';
+            }
+
+            const badge = document.getElementById('currentSpecBadge');
+            if (badge) {
+                badge.innerHTML = `<i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>${spec}`;
+            }
+
+            if (typeof LVSound !== 'undefined') LVSound.tick();
+
+            // Persist to database via AJAX
+            const formData = new FormData();
+            formData.append('save_specialization', '1');
+            formData.append('specialization', spec);
+            formData.append('csrf_token', '<?php echo csrf_token(); ?>');
+
+            try {
+                const res = await fetch('profile.php', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.success && window.showToast) {
+                    window.showToast('Aura Theme Diperbarui', data.message, 'fa-wand-magic-sparkles', 'accent');
+                }
+            } catch (err) {
+                console.error('Spec save error:', err);
+            }
+        });
+    });
+
+    // Download Character Card (PNG 1080x1350)
+    document.getElementById('btnDownloadCard')?.addEventListener('click', function() {
+        if (typeof window.generateCharacterCard === 'function') {
+            window.generateCharacterCard({
+                username: <?php echo json_encode($user['username'] ?? 'Player'); ?>,
+                rank: <?php echo json_encode($rank); ?>,
+                specialization: <?php echo json_encode($userSpec); ?>,
+                level: <?php echo (int)$level; ?>,
+                hp: <?php echo (int)($user['hp'] ?? 100); ?>,
+                max_hp: <?php echo (int)($user['max_hp'] ?? 100); ?>,
+                exp: <?php echo (int)$totalExp; ?>,
+                streak: <?php echo (int)$userMaxStreak; ?>,
+                gold: <?php echo (int)($user['gold'] ?? 0); ?>,
+                trophies_count: <?php echo (int)($bossMastery['count'] ?? 0); ?>,
+                relics: <?php 
+                    $ownedNames = [];
+                    foreach ($userRelics as $rk => $dt) {
+                        if (isset($relicsList[$rk])) $ownedNames[] = $relicsList[$rk]['name'];
+                    }
+                    echo json_encode($ownedNames);
+                ?>,
+                attributes: <?php echo json_encode($radarAttrData); ?>
+            });
+            if (typeof LVSound !== 'undefined') LVSound.coin();
+        }
     });
 </script>
 

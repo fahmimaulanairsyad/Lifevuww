@@ -127,6 +127,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Beli Relik Permanen — atomic
+    if (isset($_POST['buy_relic'])) {
+        $relicKey = $_POST['relic_key'] ?? '';
+        $relics = game_relics();
+        if (!isset($relics[$relicKey])) {
+            $error = "Jenis relik tidak valid!";
+            if ($isAjax) shop_json_response(['success' => false, 'message' => $error], 400);
+        } else {
+            $relic = $relics[$relicKey];
+            $cost = (int)$relic['cost'];
+
+            // Cek apakah relik sudah dimiliki
+            $ownedCheck = $pdo->prepare("SELECT id FROM user_relics WHERE user_id = ? AND relic_key = ?");
+            $ownedCheck->execute([$userId, $relicKey]);
+            if ($ownedCheck->fetch()) {
+                $error = "Relik ini sudah kamu miliki dan terpasang!";
+                if ($isAjax) shop_json_response(['success' => false, 'message' => $error], 400);
+            } else {
+                $pdo->beginTransaction();
+                try {
+                    $stmt = $pdo->prepare("UPDATE users SET gold = gold - ? WHERE user_id = ? AND gold >= ?");
+                    $stmt->execute([$cost, $userId, $cost]);
+                    if ($stmt->rowCount() === 0) {
+                        $pdo->rollBack();
+                        $error = "Gold tidak cukup untuk menempa relik ini!";
+                        if ($isAjax) shop_json_response(['success' => false, 'message' => $error], 400);
+                    } else {
+                        $pdo->prepare("INSERT INTO user_relics (user_id, relic_key) VALUES (?, ?)")
+                            ->execute([$userId, $relicKey]);
+                        $pdo->commit();
+
+                        if ($isAjax) {
+                            $st = $pdo->prepare("SELECT hp, max_hp, gold, streak_freeze FROM users WHERE user_id = ?");
+                            $st->execute([$userId]);
+                            $updated = $st->fetch(PDO::FETCH_ASSOC);
+                            shop_json_response([
+                                'success' => true,
+                                'action' => 'buy_relic',
+                                'relic_key' => $relicKey,
+                                'relic_name' => $relic['name'],
+                                'cost' => $cost,
+                                'floating_text' => "<i class='fas {$relic['icon']} text-accent'></i> -{$cost} Gold • Relik Terpasang!",
+                                'message' => "Relik '{$relic['name']}' berhasil ditempa dan dipasang!",
+                                'gold' => (int)$updated['gold'],
+                                'hp' => (int)$updated['hp'],
+                                'max_hp' => (int)$updated['max_hp'],
+                                'streak_freeze' => (int)$updated['streak_freeze']
+                            ]);
+                        }
+                        header("Location: shop.php?success=relic_bought");
+                        exit();
+                    }
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    $error = "Transaksi gagal.";
+                    if ($isAjax) shop_json_response(['success' => false, 'message' => $error], 500);
+                }
+            }
+        }
+    }
+
     // Tambah Reward — harga minimal 1 Gold, maksimal 99.999 Gold
     if (isset($_POST['add_reward'])) {
         $name = trim($_POST['reward_name'] ?? '');
@@ -222,6 +283,10 @@ $stmt = $pdo->prepare("SELECT gold FROM users WHERE user_id = ?");
 $stmt->execute([$userId]);
 $userGold = $stmt->fetchColumn() ?: 0;
 
+// Ambil data relik permanen & relik yang sudah dimiliki
+$relicsList = game_relics();
+$userRelics = getUserRelics($pdo, $userId);
+
 // Ambil data rewards
 $stmt = $pdo->prepare("SELECT * FROM rewards WHERE user_id = ? ORDER BY cost ASC");
 $stmt->execute([$userId]);
@@ -277,6 +342,11 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
 <?php if (isset($_GET['success']) && $_GET['success'] == 'frozen'): ?>
     <div class="p-3 mb-4 d-flex align-items-center gap-2" style="background-color: var(--status-info-dim); border: 1px solid rgba(6, 182, 212, 0.3); color: var(--status-info); border-radius: var(--radius); font-size: 0.85rem;">
         <i class="fas fa-snowflake"></i> Perisai Streak Freeze didapat! Streak-mu aman 1 hari.
+    </div>
+<?php endif; ?>
+<?php if (isset($_GET['success']) && $_GET['success'] == 'relic_bought'): ?>
+    <div class="p-3 mb-4 d-flex align-items-center gap-2" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.85rem;">
+        <i class="fas fa-shield-halved"></i> Relik legendaris berhasil ditempa dan dipasang pada karaktermu!
     </div>
 <?php endif; ?>
 
@@ -366,6 +436,63 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 </form>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Section: Permanent Relics & Artifacts -->
+<div class="mb-5">
+    <div class="panel-header" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem; margin-bottom: 1rem;">
+        <div>
+            <h3 class="panel-title" style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
+                <i class="fas fa-shield-halved text-accent"></i> Relik & Artefak Permanen
+            </h3>
+            <p class="text-muted mb-0" style="font-size: 0.74rem;">Peralatan abadi penempa kedisiplinan dan penguat status karakter.</p>
+        </div>
+    </div>
+    
+    <div class="row g-3">
+        <?php foreach ($relicsList as $rKey => $relic): 
+            $isOwned = isset($userRelics[$rKey]);
+        ?>
+            <div class="col-md-4 relic-card-col" data-relic-key="<?php echo $rKey; ?>" data-cost="<?php echo (int)$relic['cost']; ?>">
+                <div class="bento-panel spotlight-card holo-card d-flex flex-column justify-content-between p-3 h-100 position-relative" style="<?php echo $isOwned ? 'border-color: var(--accent-border); background: rgba(16, 185, 129, 0.04);' : ($userGold < $relic['cost'] ? 'opacity: 0.75;' : ''); ?>">
+                    <div>
+                        <div class="d-flex align-items-start justify-content-between mb-2">
+                            <div style="width: 38px; height: 38px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                                <i class="fas <?php echo htmlspecialchars($relic['icon']); ?>"></i>
+                            </div>
+                            <span class="badge-status <?php echo $isOwned ? 'accent' : 'font-mono'; ?>" style="font-size: 0.68rem;">
+                                <?php echo htmlspecialchars($relic['badge']); ?>
+                            </span>
+                        </div>
+                        <div style="font-weight: 600; font-size: 0.92rem; color: var(--text-primary); margin-bottom: 3px;">
+                            <?php echo htmlspecialchars($relic['name']); ?>
+                        </div>
+                        <div class="text-accent mb-2" style="font-size: 0.75rem; font-weight: 500;">
+                            <i class="fas fa-sparkles me-1"></i><?php echo htmlspecialchars($relic['effect']); ?>
+                        </div>
+                        <div class="text-muted" style="font-size: 0.73rem; line-height: 1.4;">
+                            <?php echo htmlspecialchars($relic['desc']); ?>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <?php if ($isOwned): ?>
+                            <button type="button" class="btn-core btn-outline w-100 font-mono" style="border-color: var(--accent-border); color: var(--accent); background: var(--accent-dim); cursor: default;" disabled>
+                                <i class="fas fa-check-double text-accent me-1"></i> Terpasang (Equipped)
+                            </button>
+                        <?php else: ?>
+                            <form method="POST" action="shop.php" class="ajax-shop-form m-0">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="relic_key" value="<?php echo htmlspecialchars($rKey); ?>">
+                                <button type="submit" name="buy_relic" class="btn-core btn-outline w-100 font-mono shop-buy-btn relic-buy-btn" <?php echo $userGold < $relic['cost'] ? 'disabled' : ''; ?> data-confirm="Beli relik '<?php echo htmlspecialchars($relic['name']); ?>' seharga <?php echo $relic['cost']; ?> Gold?" data-confirm-title="Beli Relik Permanen" data-confirm-variant="gold">
+                                    <i class="fas fa-coins text-warning me-1"></i> <?php echo number_format($relic['cost']); ?> Gold
+                                </button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
     </div>
 </div>
 
@@ -548,6 +675,19 @@ document.addEventListener('DOMContentLoaded', function() {
             btnFreeze.disabled = (data.gold < 50);
         }
 
+        // 5.5 Update Relic Buttons state
+        document.querySelectorAll('.relic-card-col').forEach(col => {
+            const cost = parseInt(col.dataset.cost) || 0;
+            const btn = col.querySelector('.relic-buy-btn');
+            const panel = col.querySelector('.bento-panel');
+            if (btn) {
+                btn.disabled = (data.gold < cost);
+                if (panel && !panel.style.background.includes('16, 185, 129')) {
+                    panel.style.opacity = (data.gold < cost) ? '0.75' : '1';
+                }
+            }
+        });
+
         // 6. Update Custom Reward Cards
         document.querySelectorAll('.reward-card-col').forEach(col => {
             const cost = parseInt(col.dataset.cost) || 0;
@@ -612,7 +752,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (typeof LVSound !== 'undefined') {
-                if (data.action === 'buy_reward') {
+                if (data.action === 'buy_reward' || data.action === 'buy_relic') {
                     LVSound.fanfare();
                 } else {
                     LVSound.coin();
@@ -623,12 +763,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 'buy_potion': 'fa-heart',
                 'buy_freeze': 'fa-snowflake',
                 'buy_reward': 'fa-gift',
+                'buy_relic': 'fa-shield-halved',
                 'delete_reward': 'fa-trash'
             };
             const typeMap = {
                 'buy_potion': 'accent',
                 'buy_freeze': 'info',
                 'buy_reward': 'warning',
+                'buy_relic': 'accent',
                 'delete_reward': 'danger'
             };
 
@@ -639,6 +781,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // Update UI State
             if (typeof data.gold !== 'undefined') {
                 updateShopUI(data);
+            }
+
+            // Handle Relic Equipped UI Transformation
+            if (data.action === 'buy_relic' && data.relic_key) {
+                const col = document.querySelector(`.relic-card-col[data-relic-key="${data.relic_key}"]`);
+                if (col) {
+                    const panel = col.querySelector('.bento-panel');
+                    if (panel) {
+                        panel.style.borderColor = 'var(--accent-border)';
+                        panel.style.background = 'rgba(16, 185, 129, 0.04)';
+                        panel.style.opacity = '1';
+                    }
+                    const btnSlot = col.querySelector('.mt-3');
+                    if (btnSlot) {
+                        btnSlot.innerHTML = `<button type="button" class="btn-core btn-outline w-100 font-mono" style="border-color: var(--accent-border); color: var(--accent); background: var(--accent-dim); cursor: default;" disabled><i class="fas fa-check-double text-accent me-1"></i> Terpasang (Equipped)</button>`;
+                    }
+                }
             }
 
             // Handle card deletion

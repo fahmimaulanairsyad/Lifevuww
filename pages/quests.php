@@ -158,6 +158,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $isBoss = ($quest['difficulty'] === 'Hard' || (!empty($questSubs) && count($questSubs) > 0));
                 $multiplier = $isBoss ? 1.5 : 1.0;
 
+                // Hitung Passive EXP Mastery Bonus dari Boss yang sudah pernah ditaklukkan
+                $bossMastery = getBossMasteryStats($pdo, $_SESSION['user_id']);
+                $masteryMultiplier = $bossMastery['multiplier'] ?? 1.0;
+
                 // Ambil data user lama untuk deteksi Level Up & Rank Up
                 $stmtUserOld = $pdo->prepare("SELECT exp, level FROM users WHERE user_id = ? FOR UPDATE");
                 $stmtUserOld->execute([$_SESSION['user_id']]);
@@ -165,8 +169,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $oldExp = (int) ($oldUserData['exp'] ?? 0);
                 $oldLvl = calculateLevel($oldExp);
 
-                // Tambahkan EXP dan Gold ke pengguna (dengan bonus boss 1.5x jika applicable)
-                $expReward = (int) floor($quest['exp_reward'] * $multiplier);
+                // Tambahkan EXP dan Gold ke pengguna (dengan bonus boss 1.5x dan bonus passive mastery jika applicable)
+                $expReward = (int) floor($quest['exp_reward'] * $multiplier * $masteryMultiplier);
                 $goldReward = (int) ($expReward * 2); // Quest memberikan Gold lebih banyak (x2)
 
                 $newExpTotal = $oldExp + $expReward;
@@ -189,10 +193,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Set Session untuk Dopamine Toast & Confetti
                 $_SESSION['reward_toast'] = [
-                    'type' => 'quest',
-                    'name' => $quest['quest_name'],
+                    'type' => $isBoss ? 'boss' : 'quest',
+                    'name' => $isBoss ? "⚔️ BOSS CONQUERED: {$quest['quest_name']} [ ⚡ +1 Mastery Trophy ]" : $quest['quest_name'],
                     'exp' => $expReward,
-                    'gold' => $goldReward
+                    'gold' => $goldReward,
+                    'is_boss' => $isBoss
                 ];
 
                 // Tambah progres skill + ambil skill_id untuk log
@@ -513,7 +518,11 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
 
         <div class="data-list">
-            <?php foreach ($quests as $quest): 
+            <?php 
+            $bossMastery = getBossMasteryStats($pdo, $_SESSION['user_id']);
+            $masteryMultiplier = $bossMastery['multiplier'] ?? 1.0;
+
+            foreach ($quests as $quest): 
                 $startDate = $quest['start_date'] ?? date('Y-m-d');
                 $duration = (int) ($quest['duration_days'] ?? 7);
                 $deadline = date('Y-m-d', strtotime("$startDate + $duration days"));
@@ -526,9 +535,9 @@ require_once __DIR__ . '/../includes/header.php';
                 $totalSub = is_array($subtasks) ? count($subtasks) : 0;
                 $doneSub = $totalSub > 0 ? count(array_filter($subtasks, fn($s) => !empty($s['done']))) : 0;
                 $bossHpPct = $totalSub > 0 ? round((($totalSub - $doneSub) / $totalSub) * 100) : 100;
-                $finalExp = $isBoss ? (int) floor($quest['exp_reward'] * 1.5) : (int) $quest['exp_reward'];
+                $finalExp = $isBoss ? (int) floor($quest['exp_reward'] * 1.5 * $masteryMultiplier) : (int) floor($quest['exp_reward'] * $masteryMultiplier);
             ?>
-                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>" data-deadline="<?php echo $daysLeft; ?>" data-exp="<?php echo $finalExp; ?>" data-id="<?php echo (int) $quest['quest_id']; ?>">
+                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>" data-deadline="<?php echo $daysLeft; ?>" data-exp="<?php echo $finalExp; ?>" data-id="<?php echo (int) $quest['quest_id']; ?>" data-is-boss="<?php echo $isBoss ? '1' : '0'; ?>">
                     <div class="data-main">
                         <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isBoss ? 'var(--status-danger)' : ($quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'); ?>; font-size: 0.8rem;">
                             <i class="fas <?php echo $isBoss ? 'fa-dragon' : ($quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'); ?>"></i>
