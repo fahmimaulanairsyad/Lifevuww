@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="assets/images/logo.svg" alt="Lifevuww Logo" width="80" height="80" />
-  <h1>Lifevuww</h1>
-  <p><strong>A Gamified Habit Tracker & RPG Productivity Platform</strong></p>
+  <img src="assets/images/logo.svg" alt="Lifevuww Logo" width="84" height="84" />
+  <h1>Lifevuww v2.0</h1>
+  <p><strong>Gamified Habit Tracker & RPG Productivity Platform</strong></p>
 
   <p>
     <a href="https://github.com/fahmimaulanairsyad/Lifevuww/actions/workflows/ci.yml">
@@ -9,86 +9,138 @@
     </a>
     <img src="https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP Version" />
     <img src="https://img.shields.io/badge/MySQL-Database-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL" />
-    <img src="https://img.shields.io/badge/Design-Linear--Style-000000?style=flat-square" alt="Linear Design" />
+    <img src="https://img.shields.io/badge/Design-Obsidian%20Glass%20UI-000000?style=flat-square" alt="Obsidian Glass Design" />
+    <img src="https://img.shields.io/badge/Architecture-PWA%20%2F%20APK%20Ready-10b981?style=flat-square" alt="Mobile Ready" />
     <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License" />
   </p>
 </div>
 
 ---
 
-## 📖 Overview
+## 📖 Ringkasan Proyek
 
-**Lifevuww** adalah platform pelacak kebiasaan (habit tracker) berbasis web yang mentransformasikan kedisiplinan dan produktivitas dunia nyata menjadi sebuah **Game RPG (Role Playing Game)**.
+**Lifevuww v2.0** adalah platform pelacak rutinitas (habit tracker) modern berbasis web yang mengubah produktivitas dan disiplin harian menjadi sebuah petualangan **RPG (Role Playing Game)**. 
 
-Setiap rutinitas positif yang Anda selesaikan memberikan **Experience Points (EXP)** untuk menaikkan level karakter Anda serta mata uang **Gold** yang bisa dibelanjakan untuk menebus hadiah dunia nyata di Reward Shop. Sebaliknya, kemalasan dan inkonsistensi memiliki konsekuensi nyata berupa pengurangan **Health Points (HP)** hingga kematian karakter (*Game Over / EXP Penalty*).
+Setiap kebiasaan positif yang Anda selesaikan memberikan **Experience Points (EXP)** untuk menaikkan level dan rank karakter serta mata uang **Gold** untuk menebus reward di Toko Hadiah. Sebaliknya, kelalaian tugas memiliki konsekuensi nyata berupa pengurangan **Health Points (HP)** hingga kematian karakter (*Game Over / EXP Penalty*).
 
 ---
 
-## 🎮 Core Game Mechanics
+## ✨ Fitur Unggulan Lifevuww v2.0
 
-### 1. ⚔️ Character Progression & Ranks
-Karakter Anda bertumbuh seiring kedisiplinan Anda di dunia nyata:
-* **Level Formula:** `Level = floor(EXP / 100) + 1`
-* **Rank Tiers:**
+### 1. 🌌 Obsidian Glass UI Maxing & Spatial Shell
+* **Top Telemetry Cockpit HUD**: Panel status kompak di bagian atas layar (`HP`, `Level`, `EXP`, `Gold`) dengan indikator waktu nyata dan akses cepat Command Palette serta audio.
+* **Expanding Active Pill Floating Dock**: Bilah navigasi melayang 7 item di bagian bawah layar. Pada tampilan HP (< 768px), label teks pada item non-aktif disembunyikan otomatis dan hanya melebar pada item yang sedang aktif, sehingga sangat ergonomis untuk jempol.
+* **Top Vignette Shield**: Efek pelindung gradasi atas halus yang mencegah benturan visual saat konten digulir ke atas.
+
+### 2. ⚡ Multi-Count Habit Stepper `[ - ] 1/3 [ + ]`
+* Mendukung rutinitas yang perlu dilakukan berulang kali dalam satu siklus (contoh: *Minum 3 Botol Air*, *Sikat Gigi 2x Sehari*, atau *Workout 3x Seminggu*) tanpa perlu membuat kartu duplikat.
+* Menampilkan kontrol stepper elegan dengan tombol `[ - ]` dan `[ + ]`, display hitungan tabular, serta mini progress bar.
+* Progres disimpan instan via AJAX: klaim hadiah EXP & Gold hanya diberikan saat target terpenuhi penuh, dan dapat dibatalkan kembali secara aman.
+
+### 3. 🗓️ Flexible Recurrence Schedules (Jadwal Fleksibel)
+* Mendukung berbagai pola perulangan rutinitas:
+  * **Setiap Hari** (*Daily*)
+  * **Tiap N Hari Sekali** (*Interval Days*, misal tiap 2 atau 3 hari sekali)
+  * **Hari Tertentu dalam Seminggu** (*Weekly Days*, misal Senin, Rabu, Jumat)
+  * **Tiap N Minggu Sekali** (*Interval Weeks*)
+  * **Tiap N Bulan Sekali** (*Interval Months*)
+* Dilengkapi algoritma evaluasi otomatis (`isHabitDueToday`): penalti HP dan pemutusan streak saat daily reset hanya dikenakan pada rutinitas yang memang jatuh tempo pada hari tersebut.
+
+### 4. 🐉 Boss Quests dengan Sub-Checklist & Dynamic HP Bar
+* Misi bertingkat sulit (Hard) atau misi dengan sub-langkah otomatis berubah menjadi **Boss Quest** dengan hadiah 1.5x EXP & Gold.
+* Dilengkapi bar HP Boss dan checklist fase bertahap:
+  * Mencengang fase memicu serangan: teks melayang merah `⚔️ -[X]% HP Boss` dan getaran kartu.
+  * Melepas centang memicu pemulihan: teks melayang amber `↺ +[X]% HP Boss Pulih` tanpa getar layar.
+* Misi baru dapat diselesaikan setelah seluruh pertahanan Boss dihancurkan (HP Boss 0%).
+
+### 5. 🏆 8 Holographic Achievement Badges (3D Tilt Effect)
+* Koleksi 8 lencana pencapaian karakter dengan efek visual 3D Holographic Tilt:
+  * 👟 **Langkah Pertama** (Aktivitas perdana)
+  * 🔥 **Penjaga Api** (Streak 7 hari)
+  * 🛡️ **Disiplin Baja** (Streak 30 hari)
+  * 🪙 **Saudagar Emas** (Saldo 200 Gold)
+  * ⚡ **Kebangkitan Karakter** (Mencapai Level 5)
+  * ❄️ **Perisai Abadi** (100 HP + Perisai Freeze)
+  * 📜 **Penakluk Misi** (5 Quest tuntas)
+  * 👑 **Kedaulatan Disiplin** (50 Akumulasi tugas)
+* Pada layar HP (< 640px), etalase otomatis tertata dalam format 2 kolom padat (2x4) yang rapi.
+
+### 6. 🔍 Linear-Style Command Palette (`Ctrl+K` / `⌘K`)
+* Akses menu cepat dan navigasi instan hanya dengan menekan pintasan keyboard `Ctrl + K` (Windows/Linux) atau `⌘K` (Mac).
+* Prioritas z-index tertinggi (10090) dengan pencarian otomatis berfokus langsung pada input, mendukung navigasi seluruh modul dan aksi cepat pembuatan tugas.
+
+### 7. 📅 60-Day Interactive Consistency Heatmap
+* Matriks 60 hari visualisasi keteraturan disiplin bergaya GitHub.
+* **Tap-to-Filter**: Klik atau sentuh kotak tanggal tertentu pada heatmap untuk menyaring daftar log aktivitas di bawahnya secara langsung, lengkap dengan custom floating tooltip dan tombol reset filter.
+
+### 8. 💾 JSON & CSV Backup & Restore Engine
+* Ekspor seluruh data akun (profil, kebiasaan, misi, riwayat log, dan transaksi reward) dalam format **JSON** utuh atau **CSV** tabel.
+* Fitur restore data dari file JSON cadangan untuk kemudahan migrasi antar perangkat.
+
+### 9. 🎬 15s & 30s High-Octane Kinetic Motion Reel
+* Showcase animasi bertempo tinggi 120 BPM yang dibangun 100% dari kode native HTML5, CSS Keyframes, dan Web Audio Synthesizer prosedural tanpa beban file video berat.
+* Dilengkapi kontrol player di topbar (Switcher durasi 15s/30s, Instant Replay via `postMessage`, Mode Layar Penuh 1920x1080 dengan fallback CSS untuk APK/iOS), timeline progress bar, serta auto-pause saat di luar viewport layar.
+
+---
+
+## 🎮 Mekanisme Inti Game RPG
+
+### 1. ⚔️ Rumus Karakter & Hierarki Gelar (Rank)
+* **Rumus Level:** `Level = floor(EXP / 100) + 1`
+* **7 Tingkatan Gelar (Rank Tiers):**
   * Level 30+: **S-Rank Sovereign**
   * Level 22+: **A-Rank Master**
   * Level 15+: **B-Rank Elite**
   * Level 10+: **C-Rank Vanguard**
   * Level 6+: **D-Rank Explorer**
   * Level 3+: **E-Rank Rookie**
-  * Level 1–2: **F-Rank Novice**
+  * Level 1-2: **F-Rank Novice**
 
-### 2. ❤️ Health System & Death Penalty
+### 2. ❤️ Sistem Nyawa (HP) & Penalti Kegagalan
 * Pengguna memiliki **100 Max HP**.
-* Melewatkan tugas harian atau gagal menyelesaikan quest akan mengurangi HP sesuai tingkat kesulitan (*Easy: -5 HP, Medium: -10 HP, Hard: -15 HP*).
-* **Game Over (HP = 0):** Karakter kehilangan **50% total EXP**, seluruh *streak* di-reset, dan karakter dibangkitkan kembali dengan 100 HP.
+* Mengabaikan kebiasaan yang jatuh tempo atau membiarkan misi kedaluwarsa akan memotong HP sesuai tingkat kesulitan (*Easy: -5 HP, Medium: -10 HP, Hard: -15 HP*).
+* **Game Over (HP = 0):** Karakter kehilangan **50% total EXP**, seluruh streak diputus, dan nyawa dipulihkan kembali ke 100 HP.
 
-### 3. 🔥 Streaks & Multiplier Boost
-* Menyelesaikan rutinitas setiap hari secara berturut-turut akan membangun **Streak**.
-* **Streak 3–6 Hari:** Mendapat bonus **1.2x Multiplier** untuk EXP & Gold.
-* **Streak 7+ Hari:** Mendapat bonus **1.5x Multiplier**.
+### 3. 🔥 Multiplier Streak
+* Menjaga konsistensi berturut-turut membangun pengganda hadiah:
+  * **Streak 3-6 Hari:** Bonus **1.2x Multiplier** untuk EXP & Gold.
+  * **Streak 7+ Hari:** Bonus **1.5x Multiplier** untuk EXP & Gold.
 
-### 4. 🪙 Virtual Economy & Reward Shop
-* Dapatkan Gold dari setiap penyelesaian Habit dan Quest.
-* **System Consumables:**
+### 4. 🪙 Toko Hadiah & Ekonomi Virtual
+* Dapatkan saldo Gold dari setiap penyelesaian Habit dan Quest.
+* **Item Sistem:**
   * 🧪 **Minor Health Potion (25 Gold):** Memulihkan +25 HP.
   * ⚗️ **Full Elixir of Life (75 Gold):** Memulihkan 100 HP penuh.
-  * 🧊 **Streak Freeze Shield (50 Gold):** Melindungi streak dan HP dari 1 hari libur/absen.
-* **Custom Treats:** Tambahkan hadiah buatan Anda sendiri (misal: *Main Game 2 Jam*, *Beli Kopi*, dll).
-
-### 5. 📊 Skill Tree Attributes
-Setiap kebiasaan dikelompokkan ke dalam 5 pilar atribut kehidupan yang divisualisasikan dalam bentuk **Radar Chart dinamis**:
-* 🧠 **Intelligence** (Belajar, Membaca, Koding)
-* 💪 **Physical** (Olahraga, Gym, Lari)
-* 💰 **Wealth** (Menabung, Investasi, Bisnis)
-* ❤️ **Health** (Tidur teratur, Minum air, Pola makan)
-* 🤝 **Social** (Networking, Keluarga, Teman)
+  * 🧊 **Streak Freeze Shield (50 Gold):** Melindungi streak dan HP dari 1 hari absen.
+* **Hadiah Pribadi:** Tambahkan hadiah dunia nyata buatan Anda sendiri (misal: *Main Game 2 Jam*, *Beli Kopi*, dll).
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack & Arsitektur
 
-* **Backend:** PHP 8.x (Native, PDO with Prepared Statements)
-* **Database:** MySQL / MariaDB
-* **Frontend:** Vanilla CSS (Custom Design System / Linear-style Dark Theme), Bootstrap 5 Grid Utilities, FontAwesome 6, Chart.js, Canvas Confetti
-* **Security:** CSRF Protection Token pada setiap mutasi form, Password Hashing via `password_verify()`, XSS Sanitization, Environment Variables `.env`.
+* **Backend:** PHP 8.1+ (Native OOP/Procedural, PDO dengan Prepared Statements)
+* **Database:** MySQL / MariaDB (Skema relasional ternormalisasi dengan runner migrasi otomatis)
+* **Frontend:** Vanilla CSS Modern (Custom Design System Obsidian Glass), Bootstrap 5 Grid Utilities, FontAwesome 6, Chart.js, GSAP ScrollTrigger
+* **Audio:** Web Audio API Procedural Synthesizer (Zero-audio file footprint)
+* **Keamanan:** Proteksi Token CSRF pada seluruh mutasi POST, Password Hashing via `password_verify()`, Sanitasi XSS, Proteksi Brute-force Login Attempts, Header Content Security Policy (CSP).
 
 ---
 
-## 🚀 Quickstart & Installation
+## 🚀 Panduan Instalasi Cepat
 
 ### Prasyarat
-* Web server lokal (XAMPP, Laragon, atau Docker) dengan PHP 8.0+ dan MySQL.
+* Web server lokal (XAMPP, Laragon, atau Docker) dengan PHP 8.1+ dan MySQL.
 
-### Langkah Instalasi
-1. **Clone repository ini:**
+### Langkah Setup
+1. **Clone repositori:**
    ```bash
-   git clone https://github.com/USERNAME/Lifevuww.git
+   git clone https://github.com/fahmimaulanairsyad/Lifevuww.git
    ```
-2. **Pindahkan ke folder server web Anda:**
-   * Di XAMPP: Pindahkan ke `C:\xampp\htdocs\Lifevuww`
+2. **Pindahkan ke direktori web server:**
+   * XAMPP: `C:\xampp\htdocs\Lifevuww`
+   * Laragon: `C:\laragon\www\Lifevuww`
 3. **Konfigurasi Lingkungan (`.env`):**
-   * Salin file `.env.example` menjadi `.env`:
+   * Salin file `.env.example` menjadi `.env` lalu sesuaikan kredensial database:
      ```env
      DB_HOST=localhost
      DB_NAME=habit_tracker_rpg
@@ -96,24 +148,17 @@ Setiap kebiasaan dikelompokkan ke dalam 5 pilar atribut kehidupan yang divisuali
      DB_PASSWORD=
      ```
 4. **Setup Database:**
-   * **Instalasi Baru (Database Kosong):**
-     * Buka **phpMyAdmin** (`http://localhost/phpmyadmin/`).
-     * Buat database baru bernama `habit_tracker_rpg`.
-     * Import file `database.sql` yang berada di root folder proyek ini (aman karena menggunakan `CREATE TABLE IF NOT EXISTS`).
-    * **Memperbarui Database Lama (Existing Deployment):**
-      * Jalankan runner migrasi CLI otomatis:
-        ```bash
-        php migrate.php
-        ```
-      * Atau import skrip migrasi bertahap di dalam folder `migrations/` secara berurutan (`001_initial_schema.sql`, `002_rpg_expansion.sql`, `003_hardening_and_indexes.sql`).
-5. **Jalankan Aplikasi & Pengujian:**
-    * Buka browser dan akses: `http://localhost/Lifevuww/`
-    * Menjalankan unit test rumus RPG:
-      ```bash
-      php tests/run_tests.php
-      ```
+   * Import file `database.sql` ke database Anda melalui phpMyAdmin atau MySQL CLI.
+   * Jalankan runner migrasi otomatis:
+     ```bash
+     php migrate.php
+     ```
+5. **Menjalankan Pengujian Unit Test:**
+   ```bash
+   php tests/run_tests.php
+   ```
 
 ---
 
-## 📜 License
-Distributed under the MIT License. Created with passion by **Mivuww**.
+## 📜 Lisensi
+Didistribusikan di bawah lisensi MIT. Dibuat dengan dedikasi untuk produktivitas gamifikasi oleh **Fahmi Maulana Irsyad**.

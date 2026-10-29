@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261029_05" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261029_06" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -1138,42 +1138,104 @@ if (isset($_SESSION['user_id'])) {
         }
 
         function toggleReelFullscreen() {
+            const reelWindow = document.querySelector('.lp-reel-window');
             const container = document.getElementById('lpReelBody');
             const iframe = document.getElementById('lpReelIframe');
             const elem = container || iframe;
             if (!elem) return;
 
-            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
-                } else if (elem.mozRequestFullScreen) {
-                    elem.mozRequestFullScreen();
-                } else if (elem.msRequestFullscreen) {
-                    elem.msRequestFullscreen();
-                } else if (iframe && iframe.requestFullscreen) {
-                    iframe.requestFullscreen();
+            // Check if already in CSS fallback fullscreen
+            if (reelWindow && reelWindow.classList.contains('is-css-fullscreen')) {
+                reelWindow.classList.remove('is-css-fullscreen');
+                updateReelFullscreenState();
+                notifyReelResize();
+                return;
+            }
+
+            const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+
+            if (!isNativeFs) {
+                let reqPromise = null;
+                try {
+                    if (elem.requestFullscreen) {
+                        reqPromise = elem.requestFullscreen();
+                    } else if (elem.webkitRequestFullscreen) {
+                        reqPromise = elem.webkitRequestFullscreen();
+                    } else if (elem.mozRequestFullScreen) {
+                        reqPromise = elem.mozRequestFullScreen();
+                    } else if (elem.msRequestFullscreen) {
+                        reqPromise = elem.msRequestFullscreen();
+                    } else if (iframe && iframe.requestFullscreen) {
+                        reqPromise = iframe.requestFullscreen();
+                    } else {
+                        enableCssFullscreen(reelWindow);
+                        return;
+                    }
+
+                    if (reqPromise && typeof reqPromise.catch === 'function') {
+                        reqPromise.catch(() => {
+                            enableCssFullscreen(reelWindow);
+                        });
+                    }
+                } catch (e) {
+                    enableCssFullscreen(reelWindow);
                 }
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
+                try {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                } catch (e) {
+                    if (reelWindow) reelWindow.classList.remove('is-css-fullscreen');
+                    updateReelFullscreenState();
+                    notifyReelResize();
                 }
+            }
+        }
+
+        function enableCssFullscreen(reelWindow) {
+            if (!reelWindow) return;
+            reelWindow.classList.add('is-css-fullscreen');
+            updateReelFullscreenState();
+            notifyReelResize();
+        }
+
+        function notifyReelResize() {
+            const iframe = document.getElementById('lpReelIframe');
+            if (iframe && iframe.contentWindow) {
+                try {
+                    iframe.contentWindow.dispatchEvent(new Event('resize'));
+                    iframe.contentWindow.postMessage({ type: 'REEL_RESIZE' }, '*');
+                } catch (e) {}
             }
         }
 
         document.addEventListener('fullscreenchange', updateReelFullscreenState);
         document.addEventListener('webkitfullscreenchange', updateReelFullscreenState);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' || e.key === 'Esc') {
+                const reelWindow = document.querySelector('.lp-reel-window');
+                if (reelWindow && reelWindow.classList.contains('is-css-fullscreen')) {
+                    reelWindow.classList.remove('is-css-fullscreen');
+                    updateReelFullscreenState();
+                    notifyReelResize();
+                }
+            }
+        });
+
         function updateReelFullscreenState() {
             const btn = document.getElementById('btnReelFullscreen');
+            const reelWindow = document.querySelector('.lp-reel-window');
             if (!btn) return;
-            const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+            const isCssFs = !!(reelWindow && reelWindow.classList.contains('is-css-fullscreen'));
+            const isFs = isNativeFs || isCssFs;
             const icon = btn.querySelector('i');
             const span = btn.querySelector('span');
             if (icon) icon.className = isFs ? 'fas fa-compress' : 'fas fa-expand';

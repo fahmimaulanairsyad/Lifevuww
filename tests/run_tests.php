@@ -125,6 +125,11 @@ assert_test("Weekly days (2,6) tidak jatuh tempo di hari Rabu", isHabitDueToday(
 assert_test("Interval 2 hari jatuh tempo jika belum pernah selesai", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '2', 'last_completed_at' => null], $testDateWed) === true);
 assert_test("Interval 2 hari tidak jatuh tempo jika baru selesai kemarin", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '2', 'last_completed_at' => '2026-10-27 12:00:00'], $testDateWed) === false);
 assert_test("Interval 2 hari jatuh tempo jika selesai 2 hari lalu", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '2', 'last_completed_at' => '2026-10-26 12:00:00'], $testDateWed) === true);
+assert_test("Interval 2 minggu belum jatuh tempo jika selesai 5 hari lalu", isHabitDueToday(['schedule_type' => 'interval_weeks', 'schedule_value' => '2', 'last_completed_at' => '2026-10-23 10:00:00'], $testDateWed) === false);
+assert_test("Interval 2 minggu jatuh tempo jika selesai 14 hari lalu", isHabitDueToday(['schedule_type' => 'interval_weeks', 'schedule_value' => '2', 'last_completed_at' => '2026-10-14 10:00:00'], $testDateWed) === true);
+assert_test("Interval 1 bulan belum jatuh tempo jika selesai 10 hari lalu", isHabitDueToday(['schedule_type' => 'interval_months', 'schedule_value' => '1', 'last_completed_at' => '2026-10-18 10:00:00'], $testDateWed) === false);
+assert_test("Interval 1 bulan jatuh tempo jika selesai 30 hari lalu", isHabitDueToday(['schedule_type' => 'interval_months', 'schedule_value' => '1', 'last_completed_at' => '2026-09-28 10:00:00'], $testDateWed) === true);
+assert_test("Habit yang sudah selesai hari ini selalu due", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '5', 'completed_today' => 1, 'last_completed_at' => '2026-10-28 10:00:00'], $testDateWed) === true);
 
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";

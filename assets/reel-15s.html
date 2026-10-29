@@ -883,6 +883,8 @@ window.addEventListener('message', function(e) {
     reelPause();
   } else if (type === 'REEL_PLAY') {
     reelPlay();
+  } else if (type === 'REEL_RESIZE') {
+    fit();
   }
 });
 addEventListener('keydown', e => {
