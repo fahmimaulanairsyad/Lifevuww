@@ -349,7 +349,7 @@ if (!function_exists('revert_skill_progress')) {
 
 if (!function_exists('secure_session_start')) {
     // Session bootstrap with hardened cookie flags. Must run BEFORE
-    // session_start() — callers must require database.php first.
+    // session_start() - callers must require database.php first.
     function secure_session_start() {
         if (session_status() !== PHP_SESSION_NONE) return;
         $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');

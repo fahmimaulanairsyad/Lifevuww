@@ -955,22 +955,22 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
             <div class="modal-body" style="font-size: 0.85rem;">
                 <p class="text-muted">Kalau tombol pasang otomatis tidak muncul, ikuti langkah sesuai perangkatmu:</p>
-                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Android — Chrome</h6>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Android - Chrome</h6>
                 <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
                     <li>Ketuk ikon <strong>Install</strong> di address bar (kalau ada).</li>
                     <li>Atau ketuk menu <strong>⋮ → Add to Home screen / Install app</strong>.</li>
                 </ol>
-                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Android — Brave</h6>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">Android - Brave</h6>
                 <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
                     <li>Ketuk menu <strong>⋮ → Add to Home screen</strong>.</li>
                     <li>Konfirmasi nama <strong>Lifevuww → Add</strong>.</li>
                 </ol>
-                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">iPhone — Safari</h6>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">iPhone - Safari</h6>
                 <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0.5rem;">
                     <li>Ketuk tombol <strong>Share</strong> (kotak + panah ke atas).</li>
                     <li>Pilih <strong>Add to Home Screen → Add</strong>.</li>
                 </ol>
-                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">PC — Chrome / Brave / Edge</h6>
+                <h6 style="font-size: 0.85rem; font-weight: 600; margin-top: 1rem;">PC - Chrome / Brave / Edge</h6>
                 <ol class="text-muted" style="padding-left: 1.2rem; margin-bottom: 0;">
                     <li>Klik ikon <strong>Install</strong> di sisi kanan address bar.</li>
                     <li>Atau menu <strong>⋮ → Save and share / Cast, save and share → Install page as app</strong>.</li>

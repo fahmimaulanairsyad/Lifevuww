@@ -527,7 +527,7 @@
                 tag: tag || 'lv-nag'
             };
             // Android (Chrome/Brave) does NOT support `new Notification()` from a
-            // page at all — it must go through the service worker. Desktop
+            // page at all - it must go through the service worker. Desktop
             // supports both, so try SW first, fall back to constructor.
             try {
                 if ('serviceWorker' in navigator) {
@@ -1036,18 +1036,39 @@
 
         /* ============ Focus Rift Pomodoro Timer Engine ============ */
         (function() {
+            const origDocTitle = document.title;
+            const SKEY_END = 'lv_rift_end_time';
+            const SKEY_TOTAL = 'lv_rift_total_seconds';
+            const SKEY_KEY = 'lv_rift_key';
+            const SKEY_ATTR = 'lv_rift_attribute';
+            const SKEY_PAUSED = 'lv_rift_paused_seconds';
+
             let timerInterval = null;
             let totalSeconds = 1500;
             let remainingSeconds = 1500;
             let isRunning = false;
             let currentRiftKey = 'beta';
             let selectedAttribute = 'Intelligence';
+            let riftEndTime = null;
             const circleCircumference = 534; // 2 * PI * 85 ~ 534
 
             function formatTime(secs) {
                 const m = Math.floor(secs / 60);
                 const s = secs % 60;
                 return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+
+            function calcRemaining() {
+                if (!riftEndTime) return remainingSeconds;
+                return Math.max(0, Math.ceil((riftEndTime - Date.now()) / 1000));
+            }
+
+            function updateDocTitle(secs) {
+                if (isRunning && typeof secs === 'number') {
+                    document.title = `[${formatTime(secs)}] 🌀 Focus Rift - Lifevuww`;
+                } else {
+                    document.title = origDocTitle;
+                }
             }
 
             function updateDisplay() {
@@ -1061,13 +1082,40 @@
                 }
             }
 
+            function startTickLoop() {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(async () => {
+                    remainingSeconds = calcRemaining();
+                    updateDisplay();
+                    updateDocTitle(remainingSeconds);
+                    if (remainingSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isRunning = false;
+                        updateDocTitle();
+                        await completeFocusRift();
+                    }
+                }, 500);
+            }
+
             function setRift(key, secs, exp, gold) {
+                if (isRunning) return;
                 currentRiftKey = key;
                 totalSeconds = secs;
                 remainingSeconds = secs;
                 isRunning = false;
-                clearInterval(timerInterval);
-                timerInterval = null;
+                riftEndTime = null;
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+
+                sessionStorage.removeItem(SKEY_END);
+                sessionStorage.removeItem(SKEY_PAUSED);
+                sessionStorage.removeItem(SKEY_TOTAL);
+                sessionStorage.removeItem(SKEY_KEY);
+                sessionStorage.removeItem(SKEY_ATTR);
+                updateDocTitle();
 
                 const toggleBtn = document.getElementById('btnRiftToggle');
                 if (toggleBtn) {
@@ -1088,7 +1136,7 @@
                 if (modalEl.parentElement !== document.body) {
                     document.body.appendChild(modalEl);
                 }
-                if (key) {
+                if (key && !isRunning) {
                     const card = document.querySelector(`.rift-intensity-card[data-key="${key}"]`);
                     if (card) card.click();
                 }
@@ -1096,7 +1144,88 @@
                 bsModal.show();
             };
 
+            // Visibility Change Listener (Instant Anti-Throttling Sync)
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible' && isRunning && riftEndTime) {
+                    remainingSeconds = calcRemaining();
+                    updateDisplay();
+                    updateDocTitle(remainingSeconds);
+                    if (remainingSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        isRunning = false;
+                        updateDocTitle();
+                        completeFocusRift();
+                    }
+                }
+            });
+
             document.addEventListener('DOMContentLoaded', function() {
+                // Restore existing active Focus Rift session from sessionStorage
+                const storedEnd = sessionStorage.getItem(SKEY_END);
+                const storedPaused = sessionStorage.getItem(SKEY_PAUSED);
+                const storedKey = sessionStorage.getItem(SKEY_KEY);
+                const storedTotal = sessionStorage.getItem(SKEY_TOTAL);
+                const storedAttr = sessionStorage.getItem(SKEY_ATTR);
+
+                if (storedKey) {
+                    currentRiftKey = storedKey;
+                    document.querySelectorAll('.rift-intensity-card').forEach(c => {
+                        if (c.dataset.key === storedKey) {
+                            c.classList.add('active');
+                            const exp = c.dataset.exp;
+                            const gold = c.dataset.gold;
+                            const rewEl = document.getElementById('riftRewardText');
+                            if (rewEl) rewEl.textContent = `+${exp} EXP • +${gold} Gold`;
+                        } else {
+                            c.classList.remove('active');
+                        }
+                    });
+                }
+                if (storedTotal) {
+                    totalSeconds = parseInt(storedTotal, 10);
+                }
+                if (storedAttr) {
+                    selectedAttribute = storedAttr;
+                    document.querySelectorAll('.rift-attr-pill').forEach(p => {
+                        if (p.dataset.attr === storedAttr) p.classList.add('active');
+                        else p.classList.remove('active');
+                    });
+                }
+
+                if (storedEnd) {
+                    const endTs = parseInt(storedEnd, 10);
+                    const diff = Math.max(0, Math.ceil((endTs - Date.now()) / 1000));
+                    if (diff > 0) {
+                        riftEndTime = endTs;
+                        remainingSeconds = diff;
+                        isRunning = true;
+                        const toggleBtn = document.getElementById('btnRiftToggle');
+                        if (toggleBtn) {
+                            toggleBtn.innerHTML = '<i class="fas fa-pause me-1 text-warning"></i> Jeda Fokus';
+                            toggleBtn.className = 'btn-core btn-outline flex-grow-1 text-warning';
+                        }
+                        updateDisplay();
+                        updateDocTitle(remainingSeconds);
+                        startTickLoop();
+                    } else {
+                        // Already ended while navigating or away
+                        remainingSeconds = 0;
+                        updateDisplay();
+                        sessionStorage.removeItem(SKEY_END);
+                        completeFocusRift();
+                    }
+                } else if (storedPaused) {
+                    remainingSeconds = Math.max(0, parseInt(storedPaused, 10));
+                    isRunning = false;
+                    const toggleBtn = document.getElementById('btnRiftToggle');
+                    if (toggleBtn) {
+                        toggleBtn.innerHTML = '<i class="fas fa-play me-1 text-accent"></i> Lanjutkan';
+                        toggleBtn.className = 'btn-core btn-outline flex-grow-1';
+                    }
+                    updateDisplay();
+                }
+
                 // Intensity card click
                 document.querySelectorAll('.rift-intensity-card').forEach(card => {
                     card.addEventListener('click', function() {
@@ -1117,6 +1246,9 @@
                         document.querySelectorAll('.rift-attr-pill').forEach(p => p.classList.remove('active'));
                         this.classList.add('active');
                         selectedAttribute = this.dataset.attr || 'Intelligence';
+                        if (isRunning) {
+                            sessionStorage.setItem(SKEY_ATTR, selectedAttribute);
+                        }
                     });
                 });
 
@@ -1127,27 +1259,33 @@
                         if (isRunning) {
                             // Pause
                             isRunning = false;
-                            clearInterval(timerInterval);
-                            timerInterval = null;
+                            if (timerInterval) {
+                                clearInterval(timerInterval);
+                                timerInterval = null;
+                            }
+                            remainingSeconds = calcRemaining();
+                            riftEndTime = null;
+                            sessionStorage.setItem(SKEY_PAUSED, remainingSeconds);
+                            sessionStorage.removeItem(SKEY_END);
+                            updateDocTitle();
                             toggleBtn.innerHTML = '<i class="fas fa-play me-1 text-accent"></i> Lanjutkan';
                             toggleBtn.className = 'btn-core btn-outline flex-grow-1';
+                            updateDisplay();
                         } else {
                             // Start / Resume
                             isRunning = true;
+                            riftEndTime = Date.now() + (remainingSeconds * 1000);
+                            sessionStorage.setItem(SKEY_END, riftEndTime);
+                            sessionStorage.setItem(SKEY_TOTAL, totalSeconds);
+                            sessionStorage.setItem(SKEY_KEY, currentRiftKey);
+                            sessionStorage.setItem(SKEY_ATTR, selectedAttribute);
+                            sessionStorage.removeItem(SKEY_PAUSED);
                             toggleBtn.innerHTML = '<i class="fas fa-pause me-1 text-warning"></i> Jeda Fokus';
                             toggleBtn.className = 'btn-core btn-outline flex-grow-1 text-warning';
                             if (typeof LVSound !== 'undefined') LVSound.tick();
-
-                            timerInterval = setInterval(async () => {
-                                remainingSeconds--;
-                                updateDisplay();
-                                if (remainingSeconds <= 0) {
-                                    clearInterval(timerInterval);
-                                    timerInterval = null;
-                                    isRunning = false;
-                                    await completeFocusRift();
-                                }
-                            }, 1000);
+                            updateDisplay();
+                            updateDocTitle(remainingSeconds);
+                            startTickLoop();
                         }
                     });
                 }
@@ -1157,9 +1295,18 @@
                 if (resetBtn) {
                     resetBtn.addEventListener('click', function() {
                         isRunning = false;
-                        clearInterval(timerInterval);
-                        timerInterval = null;
+                        if (timerInterval) {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                        }
+                        riftEndTime = null;
                         remainingSeconds = totalSeconds;
+                        sessionStorage.removeItem(SKEY_END);
+                        sessionStorage.removeItem(SKEY_PAUSED);
+                        sessionStorage.removeItem(SKEY_TOTAL);
+                        sessionStorage.removeItem(SKEY_KEY);
+                        sessionStorage.removeItem(SKEY_ATTR);
+                        updateDocTitle();
                         const toggleBtn = document.getElementById('btnRiftToggle');
                         if (toggleBtn) {
                             toggleBtn.innerHTML = '<i class="fas fa-play me-1 text-accent"></i> Mulai Fokus';
@@ -1171,6 +1318,19 @@
 
                 // Complete Focus Rift AJAX Claim
                 async function completeFocusRift() {
+                    isRunning = false;
+                    if (timerInterval) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                    }
+                    riftEndTime = null;
+                    sessionStorage.removeItem(SKEY_END);
+                    sessionStorage.removeItem(SKEY_PAUSED);
+                    sessionStorage.removeItem(SKEY_TOTAL);
+                    sessionStorage.removeItem(SKEY_KEY);
+                    sessionStorage.removeItem(SKEY_ATTR);
+                    updateDocTitle();
+
                     const formData = new FormData();
                     formData.append('csrf_token', '<?php echo csrf_token(); ?>');
                     formData.append('rift_key', currentRiftKey);
@@ -1574,7 +1734,7 @@
             const enableBtn = document.getElementById('btn-enable-notif');
             const testBtn = document.getElementById('btn-test-notif');
             const label = document.getElementById('notif-label');
-            // NOTE: no early return when the web Notification API is missing —
+            // NOTE: no early return when the web Notification API is missing -
             // the APK WebView has no window.Notification by design, yet its
             // native path below is fully functional.
             const hasWebNotif = ('Notification' in window);

@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    // Beli Health Potion (Recovery) — atomic: guard gold di WHERE + cek rowCount
+    // Beli Health Potion (Recovery) - atomic: guard gold di WHERE + cek rowCount
     if (isset($_POST['buy_potion'])) {
         $potionType = $_POST['potion_type'] ?? '';
         $potList = game_potions();
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Beli Streak Freeze — atomic
+    // Beli Streak Freeze - atomic
     if (isset($_POST['buy_freeze'])) {
         $potList = game_potions();
         $cost = $potList['freeze']['cost'] ?? 50;
@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Beli Relik Permanen — atomic
+    // Beli Relik Permanen - atomic
     if (isset($_POST['buy_relic'])) {
         $relicKey = $_POST['relic_key'] ?? '';
         $relics = game_relics();
@@ -188,7 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Tambah Reward — harga minimal 1 Gold, maksimal 99.999 Gold
+    // Tambah Reward - harga minimal 1 Gold, maksimal 99.999 Gold
     if (isset($_POST['add_reward'])) {
         $name = trim($_POST['reward_name'] ?? '');
         $cost = min(99999, max(1, intval($_POST['cost'] ?? 0)));
@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Beli Reward — atomic
+    // Beli Reward - atomic
     if (isset($_POST['buy_reward'])) {
         $rewardId = intval($_POST['reward_id']);
 

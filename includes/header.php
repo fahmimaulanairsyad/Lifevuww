@@ -1,9 +1,35 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 secure_session_start();
+
+// Server-to-Client Aura Theme Synchronization
+$serverAura = null;
+if (isset($_SESSION['user_id'])) {
+    if (!empty($_SESSION['user_specialization'])) {
+        $specs = game_specializations();
+        $specName = $_SESSION['user_specialization'];
+        if (isset($specs[$specName])) {
+            $serverAura = $specs[$specName]['aura'];
+        }
+    } else {
+        try {
+            $stmtSpec = $pdo->prepare("SELECT specialization FROM users WHERE user_id = ?");
+            $stmtSpec->execute([$_SESSION['user_id']]);
+            $specDb = $stmtSpec->fetchColumn();
+            if ($specDb) {
+                $_SESSION['user_specialization'] = $specDb;
+                $specs = game_specializations();
+                if (isset($specs[$specDb])) {
+                    $serverAura = $specs[$specDb]['aura'];
+                }
+            }
+        } catch (Exception $e) {}
+    }
+}
+$activeHtmlAura = $serverAura ?: 'emerald';
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-aura="<?php echo htmlspecialchars($activeHtmlAura); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -22,7 +48,7 @@ secure_session_start();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261030_01" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261030_02" rel="stylesheet">
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
@@ -36,12 +62,17 @@ secure_session_start();
         .heatmap-track { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; align-items: center !important; max-width: 100% !important; }
         .heatmap-cell { display: inline-block !important; width: 16px !important; height: 16px !important; border-radius: 3px !important; flex-shrink: 0 !important; }
     </style>
-    <!-- Aura Theme Engine Initializer (Zero FOUT) -->
+    <!-- Aura Theme Engine Initializer (Server Sync + Client Storage) -->
     <script>
         (function() {
-            var saved = localStorage.getItem('lv_aura_theme');
-            var aura = saved || 'emerald';
-            document.documentElement.setAttribute('data-aura', aura);
+            var serverAura = <?php echo json_encode($serverAura); ?>;
+            if (serverAura) {
+                localStorage.setItem('lv_aura_theme', serverAura);
+                document.documentElement.setAttribute('data-aura', serverAura);
+            } else {
+                var saved = localStorage.getItem('lv_aura_theme') || 'emerald';
+                document.documentElement.setAttribute('data-aura', saved);
+            }
         })();
     </script>
     <!-- Platform Tagging (Desktop vs Mobile vs APK) -->
@@ -182,7 +213,7 @@ secure_session_start();
                     </div>
 
                     <!-- Focus Rift Timer Trigger -->
-                    <button type="button" class="hud-cmd-trigger" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="🌀 Focus Rift — Pomodoro Battle Timer">
+                    <button type="button" class="hud-cmd-trigger" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="🌀 Focus Rift - Pomodoro Battle Timer">
                         <i class="fas fa-hourglass-half text-accent"></i>
                         <span class="font-mono d-none d-lg-inline ms-1" style="font-size: 0.72rem;">Rift</span>
                     </button>

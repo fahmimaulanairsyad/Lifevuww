@@ -866,7 +866,7 @@ if (isset($_SESSION['user_id'])) {
             }
 
             if (pct === 0) {
-                hpLabel.innerHTML = '<span class="text-accent fw-bold"><i class="fas fa-trophy"></i> HP 0% — BOSS RUNTUH!</span>';
+                hpLabel.innerHTML = '<span class="text-accent fw-bold"><i class="fas fa-trophy"></i> HP 0% - BOSS RUNTUH!</span>';
                 hpBar.style.backgroundColor = 'var(--accent)';
                 claimBtn.disabled = false;
                 claimBtn.className = 'btn-core btn-accent font-mono';
