@@ -1,0 +1,9 @@
+-- Migration 007: Pin & Custom Drag-and-Drop Order for Habits and Quests
+
+ALTER TABLE `habits`
+  ADD COLUMN IF NOT EXISTS `is_pinned` TINYINT(1) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `sort_order` INT(11) NOT NULL DEFAULT 0;
+
+ALTER TABLE `quests`
+  ADD COLUMN IF NOT EXISTS `is_pinned` TINYINT(1) NOT NULL DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS `sort_order` INT(11) NOT NULL DEFAULT 0;

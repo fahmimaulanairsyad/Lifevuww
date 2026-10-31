@@ -267,6 +267,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
         || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
 
+    // Pin / Unpin Habit (AJAX & Form)
+    if (isset($_POST['toggle_pin']) && !empty($_POST['habit_id'])) {
+        $habitId = intval($_POST['habit_id']);
+        $stmtPin = $pdo->prepare("SELECT is_pinned FROM habits WHERE habit_id = ? AND user_id = ?");
+        $stmtPin->execute([$habitId, $userId]);
+        $curPin = $stmtPin->fetchColumn();
+
+        if ($curPin !== false) {
+            $newPin = ((int)$curPin === 1) ? 0 : 1;
+            $pdo->prepare("UPDATE habits SET is_pinned = ? WHERE habit_id = ? AND user_id = ?")
+                ->execute([$newPin, $habitId, $userId]);
+
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'success' => true,
+                    'id' => $habitId,
+                    'is_pinned' => $newPin,
+                    'floating_text' => $newPin ? '📌 Disematkan ke Atas!' : '📌 Sematan Dilepas'
+                ]);
+                exit();
+            }
+        }
+        header("Location: habits.php");
+        exit();
+    }
+
+    // Reorder Habits via Drag-and-Drop (AJAX)
+    if (isset($_POST['reorder_items']) && !empty($_POST['ordered_ids'])) {
+        $orderedIds = json_decode($_POST['ordered_ids'], true);
+        if (is_array($orderedIds)) {
+            $pdo->beginTransaction();
+            try {
+                $stmtOrd = $pdo->prepare("UPDATE habits SET sort_order = ? WHERE habit_id = ? AND user_id = ?");
+                foreach (array_values($orderedIds) as $idx => $hId) {
+                    $stmtOrd->execute([(int)$idx, (int)$hId, $userId]);
+                }
+                $pdo->commit();
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => true]);
+                    exit();
+                }
+            } catch (Exception $eOrd) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => false, 'message' => 'Gagal menyimpan urutan.']);
+                    exit();
+                }
+            }
+        }
+        exit();
+    }
+
     // Stepper: Increment Habit
     if (isset($_POST['increment_habit']) && !empty($_POST['habit_id'])) {
         $habitId = intval($_POST['habit_id']);
@@ -515,10 +570,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Ambil data habits
-$stmt = $pdo->prepare("SELECT * FROM habits WHERE user_id = ?");
-$stmt->execute([$userId]);
-$habits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Ambil data habits berdasarkan prioritas pin & sort_order kustom
+try {
+    $stmt = $pdo->prepare("SELECT * FROM habits WHERE user_id = ? ORDER BY is_pinned DESC, sort_order ASC, habit_id ASC");
+    $stmt->execute([$userId]);
+    $habits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $eSort) {
+    $stmt = $pdo->prepare("SELECT * FROM habits WHERE user_id = ?");
+    $stmt->execute([$userId]);
+    $habits = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
 $pageTitle = 'Kebiasaan';
 require_once '../includes/header.php';
@@ -687,7 +748,7 @@ require_once '../includes/header.php';
             <div class="filter-sort-wrap">
                 <label for="sortHabits" class="text-muted" style="font-size: 0.74rem; white-space: nowrap;"><i class="fas fa-sort me-1"></i>Urutkan:</label>
                 <select id="sortHabits" class="form-select form-select-sm font-mono" style="font-size: 0.76rem; width: auto; padding-right: 1.75rem; background-color: var(--bg-surface-hover); border-color: var(--border-hairline);">
-                    <option value="default">Bawaan</option>
+                    <option value="default">Prioritas Kustom (Pin &amp; Geser)</option>
                     <option value="streak-desc">Streak Tertinggi</option>
                     <option value="exp-desc">EXP Terbanyak</option>
                     <option value="newest">Terbaru</option>
@@ -695,22 +756,30 @@ require_once '../includes/header.php';
             </div>
         </div>
 
-        <div class="data-list">
-            <?php foreach ($habits as $habit): 
+        <div class="data-list" data-reorder-endpoint="habits.php">
+            <?php foreach ($habits as $hIdx => $habit): 
                 $hTarget = max(1, (int)($habit['target_count'] ?? 1));
                 $hCur = min($hTarget, max(0, (int)($habit['current_count'] ?? 0)));
                 $isHabitDone = (!empty($habit['completed_today']) || $hCur >= $hTarget);
                 $schedBadge = formatHabitScheduleLabel($habit);
                 $isDue = isHabitDueToday($habit);
+                $isPinned = !empty($habit['is_pinned']);
+                $sortOrder = isset($habit['sort_order']) ? (int)$habit['sort_order'] : (int)$hIdx;
             ?>
-                <div class="data-row" data-category="<?php echo htmlspecialchars($habit['category']); ?>" data-streak="<?php echo (int) ($habit['streak'] ?? 0); ?>" data-exp="<?php echo (int) $habit['exp_reward']; ?>" data-id="<?php echo (int) $habit['habit_id']; ?>">
+                <div class="data-row <?php echo $isPinned ? 'is-pinned-card' : ''; ?>" data-category="<?php echo htmlspecialchars($habit['category']); ?>" data-streak="<?php echo (int) ($habit['streak'] ?? 0); ?>" data-exp="<?php echo (int) $habit['exp_reward']; ?>" data-id="<?php echo (int) $habit['habit_id']; ?>" data-pinned="<?php echo $isPinned ? '1' : '0'; ?>" data-order="<?php echo $sortOrder; ?>">
                     <div class="data-main">
-                        <div class="habit-icon-status" style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isHabitDone ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem;">
+                        <button type="button" class="drag-handle" title="Tahan &amp; geser untuk mengatur urutan prioritas" aria-label="Geser urutan <?php echo htmlspecialchars($habit['habit_name']); ?>">
+                            <i class="fas fa-grip-vertical"></i>
+                        </button>
+                        <div class="habit-icon-status" style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isHabitDone ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem; flex-shrink: 0;">
                             <i class="fas <?php echo $isHabitDone ? 'fa-check' : 'fa-circle'; ?>"></i>
                         </div>
                         <div>
                             <div class="data-title d-flex align-items-center flex-wrap gap-2">
                                 <span><?php echo htmlspecialchars($habit['habit_name']); ?></span>
+                                <span class="badge-status pin-badge font-mono <?php echo $isPinned ? '' : 'd-none'; ?>">
+                                    <i class="fas fa-thumbtack"></i> Prioritas
+                                </span>
                                 <?php 
                                     $streak = $habit['streak'] ?? 0;
                                     if ($streak > 0): 
@@ -787,6 +856,11 @@ require_once '../includes/header.php';
                             <?php endif; ?>
                         <?php endif; ?>
                         
+                        <!-- Pin Button -->
+                        <button type="button" class="btn-core btn-ghost btn-action-secondary btn-pin-item <?php echo $isPinned ? 'active' : ''; ?>" data-endpoint="habits.php" data-id-field="habit_id" data-id="<?php echo (int)$habit['habit_id']; ?>" style="padding: 0.35rem 0.55rem;" title="<?php echo $isPinned ? 'Lepas sematan prioritas' : 'Sematkan ke urutan teratas'; ?>" aria-label="Pin kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>">
+                            <i class="fas fa-thumbtack"></i>
+                        </button>
+
                         <!-- Edit Button -->
                         <button type="button" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>

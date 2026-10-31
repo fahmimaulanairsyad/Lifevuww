@@ -76,6 +76,8 @@ CREATE TABLE IF NOT EXISTS `habits` (
   `schedule_type` varchar(30) NOT NULL DEFAULT 'daily',
   `schedule_value` varchar(100) NOT NULL DEFAULT '1',
   `last_completed_at` datetime DEFAULT NULL,
+  `is_pinned` tinyint(1) NOT NULL DEFAULT 0,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`habit_id`),
   KEY `user_id` (`user_id`),
   KEY `reset_period_id` (`reset_period_id`),
@@ -101,6 +103,8 @@ CREATE TABLE IF NOT EXISTS `quests` (
   `end_date` date DEFAULT NULL,
   `category` varchar(255) DEFAULT NULL,
   `subtasks` text DEFAULT NULL,
+  `is_pinned` tinyint(1) NOT NULL DEFAULT 0,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
   PRIMARY KEY (`quest_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `quests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE

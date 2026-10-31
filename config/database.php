@@ -199,6 +199,10 @@ if (!function_exists('ensure_demo_user')) {
                 try {
                     $pdo->prepare("INSERT IGNORE INTO user_relics (user_id, relic_key) VALUES (?, 'chrono_blade')")
                         ->execute([$demoId]);
+                    $pdo->prepare("UPDATE habits SET is_pinned = 1 WHERE user_id = ? AND habit_name LIKE 'Hidrasi%'")
+                        ->execute([$demoId]);
+                    $pdo->prepare("UPDATE quests SET is_pinned = 1 WHERE user_id = ? AND status = 'In Progress' AND difficulty = 'Hard'")
+                        ->execute([$demoId]);
                 } catch (Exception $e) {}
             }
 

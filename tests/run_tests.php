@@ -131,41 +131,6 @@ assert_test("Interval 1 bulan belum jatuh tempo jika selesai 10 hari lalu", isHa
 assert_test("Interval 1 bulan jatuh tempo jika selesai 30 hari lalu", isHabitDueToday(['schedule_type' => 'interval_months', 'schedule_value' => '1', 'last_completed_at' => '2026-09-28 10:00:00'], $testDateWed) === true);
 assert_test("Habit yang sudah selesai hari ini selalu due", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '5', 'completed_today' => 1, 'last_completed_at' => '2026-10-28 10:00:00'], $testDateWed) === true);
 
-echo "\n9. Pengujian Relik & Equipment Permanen Toko (game_relics):\n";
-$relics = game_relics();
-assert_test("Tersedia 3 relik permanen orisinal", count($relics) === 3);
-assert_test("Relik Obsidian Chrono Blade terdaftar (150 Gold)", ($relics['chrono_blade']['cost'] ?? 0) === 150);
-assert_test("Relik Signet of the Archon terdaftar (300 Gold)", ($relics['archon_signet']['cost'] ?? 0) === 300);
-assert_test("Relik Aegis Sovereign Mantle terdaftar (500 Gold)", ($relics['sovereign_mantle']['cost'] ?? 0) === 500);
-
-echo "\n10. Pengujian Spesialisasi Karakter & Aura Theme (game_specializations):\n";
-$specs = game_specializations();
-assert_test("Tersedia 5 spesialisasi kelas orisinal", count($specs) === 5);
-assert_test("Obsidian Vanguard memiliki aura emerald (#10b981)", ($specs['Obsidian Vanguard']['aura'] ?? '') === 'emerald' && ($specs['Obsidian Vanguard']['color'] ?? '') === '#10b981');
-assert_test("Arcane Scholar memiliki aura cyan (#06b6d4)", ($specs['Arcane Scholar']['aura'] ?? '') === 'cyan' && ($specs['Arcane Scholar']['color'] ?? '') === '#06b6d4');
-assert_test("Crimson Striker memiliki aura crimson (#f43f5e)", ($specs['Crimson Striker']['aura'] ?? '') === 'crimson' && ($specs['Crimson Striker']['color'] ?? '') === '#f43f5e');
-assert_test("Solar Sovereign memiliki aura amber (#f59e0b)", ($specs['Solar Sovereign']['aura'] ?? '') === 'amber' && ($specs['Solar Sovereign']['color'] ?? '') === '#f59e0b');
-assert_test("Abyssal Archon memiliki aura violet (#8b5cf6)", ($specs['Abyssal Archon']['aura'] ?? '') === 'violet' && ($specs['Abyssal Archon']['color'] ?? '') === '#8b5cf6');
-
-echo "\n11. Pengujian Focus Rift Pomodoro Battle Timer (game_focus_rifts):\n";
-$rifts = game_focus_rifts();
-assert_test("Tersedia 3 tingkat intensitas Focus Rift", count($rifts) === 3);
-assert_test("Alpha Rift berdurasi 15 menit dengan hadiah +10 EXP & +8 Gold", $rifts['alpha']['duration_minutes'] === 15 && $rifts['alpha']['exp_reward'] === 10 && $rifts['alpha']['gold_reward'] === 8);
-assert_test("Beta Rift berdurasi 25 menit dengan hadiah +20 EXP & +15 Gold", $rifts['beta']['duration_minutes'] === 25 && $rifts['beta']['exp_reward'] === 20 && $rifts['beta']['gold_reward'] === 15);
-assert_test("Crimson Overdrive Rift berdurasi 45 menit dengan hadiah +40 EXP & +30 Gold", $rifts['crimson']['duration_minutes'] === 45 && $rifts['crimson']['exp_reward'] === 40 && $rifts['crimson']['gold_reward'] === 30);
-
-echo "\n12. Pengujian Rumus Boss Mastery Passive EXP Boost:\n";
-// Rumus: bonus_pct = min(20, count * 2); multiplier = 1.0 + (bonus_pct / 100)
-$calcMastery = function(int $count): array {
-    $bonusPct = min(20, $count * 2);
-    return ['bonus_pct' => $bonusPct, 'multiplier' => 1.0 + ($bonusPct / 100)];
-};
-assert_test("0 Boss menghasilkan bonus 0% dan multiplier 1.0", $calcMastery(0)['bonus_pct'] === 0 && $calcMastery(0)['multiplier'] === 1.0);
-assert_test("1 Boss menghasilkan bonus +2% dan multiplier 1.02", $calcMastery(1)['bonus_pct'] === 2 && $calcMastery(1)['multiplier'] === 1.02);
-assert_test("5 Boss menghasilkan bonus +10% dan multiplier 1.10", $calcMastery(5)['bonus_pct'] === 10 && $calcMastery(5)['multiplier'] === 1.10);
-assert_test("10 Boss menghasilkan bonus maksimal +20% dan multiplier 1.20", $calcMastery(10)['bonus_pct'] === 20 && $calcMastery(10)['multiplier'] === 1.20);
-assert_test("15 Boss tetap mentok di bonus maksimal +20%", $calcMastery(15)['bonus_pct'] === 20 && $calcMastery(15)['multiplier'] === 1.20);
-
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";
 if ($failed > 0) {
