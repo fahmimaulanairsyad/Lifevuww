@@ -521,7 +521,7 @@ if (isset($_SESSION['user_id'])) {
             <!-- Player Body (16:9) -->
             <div class="lp-reel-body" id="lpReelBody">
                 <button type="button" class="reel-fs-exit-floating" onclick="exitReelFullscreenAll()" aria-label="Keluar dari layar penuh">← Kembali</button>
-                <iframe id="lpReelIframe" src="assets/reel-15s.html" allow="autoplay; fullscreen" allowfullscreen="true" title="Lifevuww 15s High-Octane Motion Reel"></iframe>
+                <iframe id="lpReelIframe" src="assets/reel-15s.html?v=20261031_02" allow="autoplay; fullscreen" allowfullscreen="true" title="Lifevuww 15s High-Octane Motion Reel"></iframe>
             </div>
         </div>
     </section>
@@ -1111,7 +1111,9 @@ if (isset($_SESSION['user_id'])) {
             document.querySelectorAll('.lp-reel-duration-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
 
-            const targetSrc = (duration === '30s') ? 'assets/reel-30s.html' : 'assets/reel-15s.html';
+            // Cache-buster: pastikan HP memuat versi reel terbaru, bukan salinan lama
+            const reelVer = '20261031_02';
+            const targetSrc = (duration === '30s') ? `assets/reel-30s.html?v=${reelVer}` : `assets/reel-15s.html?v=${reelVer}`;
             if (iframe.getAttribute('src') !== targetSrc) {
                 iframe.src = targetSrc;
             } else {
@@ -1221,7 +1223,10 @@ if (isset($_SESSION['user_id'])) {
         function clearReelFullscreenHistory() {
             if (!window.lvReelFsPushed) return;
             window.lvReelFsPushed = false;
-            try { history.back(); } catch (e) {}
+            // Hanya pop jika entri aktif masih milik kita (state belum terkonsumsi aliran lain)
+            if (history.state && history.state.lvReelFullscreen) {
+                try { history.back(); } catch (e) {}
+            }
         }
 
         function isReelFullscreenActive() {
@@ -1309,9 +1314,20 @@ if (isset($_SESSION['user_id'])) {
         function updateReelFullscreenState() {
             const btn = document.getElementById('btnReelFullscreen');
             const reelWindow = document.querySelector('.lp-reel-window');
-            if (!btn) return;
             const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
             const isCssFs = !!(reelWindow && reelWindow.classList.contains('is-css-fullscreen'));
+
+            // Tombol Back fisik Android saat native fullscreen keluar fullscreen TANPA
+            // memicu popstate, sehingga entri pushState palsu tertinggal dan Back
+            // berikutnya terasa "mati". Buang entri tersebut tepat di sini.
+            if (!isNativeFs && !isCssFs && window.lvReelFsPushed) {
+                window.lvReelFsPushed = false;
+                if (history.state && history.state.lvReelFullscreen) {
+                    try { history.back(); } catch (e) {}
+                }
+            }
+
+            if (!btn) return;
             const isFs = isNativeFs || isCssFs;
             const icon = btn.querySelector('i');
             const span = btn.querySelector('span');
