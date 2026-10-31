@@ -521,7 +521,7 @@ if (isset($_SESSION['user_id'])) {
             <!-- Player Body (16:9) -->
             <div class="lp-reel-body" id="lpReelBody">
                 <button type="button" class="reel-fs-exit-floating" onclick="exitReelFullscreenAll()" aria-label="Keluar dari layar penuh">← Kembali</button>
-                <iframe id="lpReelIframe" src="assets/reel-15s.html?v=20261031_02" allow="autoplay; fullscreen" allowfullscreen="true" title="Lifevuww 15s High-Octane Motion Reel"></iframe>
+                <iframe id="lpReelIframe" src="assets/reel-15s.html?v=20261031_03" allow="autoplay; fullscreen" allowfullscreen="true" title="Lifevuww 15s High-Octane Motion Reel"></iframe>
             </div>
         </div>
     </section>
@@ -1112,7 +1112,7 @@ if (isset($_SESSION['user_id'])) {
             if (btn) btn.classList.add('active');
 
             // Cache-buster: pastikan HP memuat versi reel terbaru, bukan salinan lama
-            const reelVer = '20261031_02';
+            const reelVer = '20261031_03';
             const targetSrc = (duration === '30s') ? `assets/reel-30s.html?v=${reelVer}` : `assets/reel-15s.html?v=${reelVer}`;
             if (iframe.getAttribute('src') !== targetSrc) {
                 iframe.src = targetSrc;

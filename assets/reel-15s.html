@@ -175,6 +175,21 @@ body{ background:#000; overflow:hidden; font-family:var(--sans); color:var(--fg)
   border-radius:9px; padding:7px 13px; cursor:pointer; }
 #bar button:hover{ border-color:var(--em); color:var(--em); }
 html.in-iframe #bar{ display:none !important; }
+
+/* Mini controls pengganti #bar di mode iframe/HP: kompak, pojok kanan atas,
+   tidak menutupi video. Memiliki akses suara karena di dalam dokumen reel. */
+#mini-controls{ position:fixed; top:12px; right:12px; display:none; gap:8px; z-index:99; }
+html.in-iframe #mini-controls{ display:flex; }
+#mini-controls button{ width:40px; height:40px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.16); background:rgba(12,12,15,.72);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  color:#fafafa; font-size:15px; line-height:1; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .12s ease, border-color .15s ease, background .15s ease; }
+#mini-controls button:hover{ border-color:var(--em); }
+#mini-controls button:active{ transform:scale(.92); }
+#mini-controls button.is-on{ border-color:var(--em); color:var(--em); background:rgba(16,185,129,.14); }
 #tcode{ font-size:12px; color:var(--z6); letter-spacing:.12em; white-space:nowrap;
   font-variant-numeric:tabular-nums; }
 #prog{ flex:1; height:4px; background:var(--z2); border-radius:99px; position:relative; }
@@ -354,6 +369,12 @@ html.in-iframe #bar{ display:none !important; }
   <button id="b-sound">SOUND OFF</button>
   <span id="tcode">00:00.00 / 00:15.00</span>
   <div id="prog"><div id="prog-fill"></div></div>
+</div>
+
+<div id="mini-controls" role="group" aria-label="Kontrol reel">
+  <button id="mc-sound" title="Nyalakan suara" aria-label="Nyalakan suara">🔇</button>
+  <button id="mc-replay" title="Putar ulang" aria-label="Putar ulang">↺</button>
+  <button id="mc-pause" title="Jeda / lanjut" aria-label="Jeda atau lanjutkan">⏸</button>
 </div>
 
 <div id="reel-progress-strip" style="position:fixed; left:0; bottom:0; width:0%; height:4px; background:linear-gradient(90deg, #10b981, #6366f1); z-index:9999; pointer-events:none; transition:width 0.05s linear;"></div>
@@ -1292,6 +1313,31 @@ $('b-sound').onclick = () => {
   if (soundOn){ ensureAC(); audioResync(); }
   else { scheduledStep = 0; }
 };
+
+/* ============ Mini controls (mode iframe/HP, pengganti #bar) ============ */
+const mcSoundBtn = $('mc-sound'), mcReplayBtn = $('mc-replay'), mcPauseBtn = $('mc-pause');
+if (mcSoundBtn){
+  mcSoundBtn.addEventListener('click', () => {
+    // Teruskan ke handler #b-sound agar audio resync identik dengan bar utama
+    $('b-sound').click();
+    mcSoundBtn.textContent = soundOn ? '🔊' : '🔇';
+    mcSoundBtn.classList.toggle('is-on', soundOn);
+    mcSoundBtn.title = soundOn ? 'Matikan suara' : 'Nyalakan suara';
+    mcSoundBtn.setAttribute('aria-label', mcSoundBtn.title);
+  });
+}
+if (mcReplayBtn){
+  mcReplayBtn.addEventListener('click', () => {
+    $('b-replay').click();
+    if (mcPauseBtn) mcPauseBtn.textContent = '⏸';
+  });
+}
+if (mcPauseBtn){
+  mcPauseBtn.addEventListener('click', () => {
+    pause();
+    mcPauseBtn.textContent = (pauseAt === null) ? '⏸' : '▶';
+  });
+}
 
 /* =====================================================================
    start
