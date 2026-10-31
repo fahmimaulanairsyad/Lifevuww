@@ -220,11 +220,22 @@ html,body{ height:100%; width:100%; background:#000; overflow:hidden; font-famil
 }
 #bar button:hover{ border-color:var(--em); color:var(--em); }
 #b-sound.on{ border-color:var(--em); color:var(--em); background:rgba(16,185,129,0.14); }
+html.in-iframe #bar{ display:none !important; }
 #tcode{ font-size:13px; color:var(--z6); letter-spacing:0.12em; white-space:nowrap; font-variant-numeric:tabular-nums; }
 #prog{ flex:1; height:6px; background:var(--z2); border-radius:99px; position:relative; cursor:pointer; }
 #prog-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; background:var(--em); border-radius:99px; }
 .tick{ position:absolute; top:-3px; width:2px; height:12px; background:#3f3f46; pointer-events:none; }
 </style>
+<script>
+/* Mode iframe / layar HP: sembunyikan bar kontrol internal agar tidak menutupi video */
+(function () {
+  var inIframe = false;
+  try { inIframe = (window.self !== window.top); } catch (e) { inIframe = true; }
+  if (inIframe || window.innerWidth <= 768) {
+    document.documentElement.classList.add('in-iframe');
+  }
+})();
+</script>
 </head>
 <body>
 

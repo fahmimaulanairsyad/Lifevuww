@@ -14,6 +14,35 @@
         </button>
     </div>
 
+    <!-- Modal Pratinjau & Penjelasan Unduh Kartu Karakter -->
+    <div class="modal fade" id="charCardPreviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content char-card-preview-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" style="font-size: 1rem; font-weight: 600;"><i class="fas fa-id-badge me-2 text-accent"></i> Kartu Status Karakter</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3" style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.55;">
+                        Kartu ini adalah ringkasan visual progres RPG-mu di Lifevuww — level, rank, HP, EXP, streak, saldo Gold, relik terpasang, dan radar 5 atribut kehidupan.
+                        Gunakan sebagai wallpaper, status, atau bukti perjalanan disiplinmu, lalu bagikan ke sosmed / WhatsApp untuk memamerkan progresmu.
+                    </p>
+                    <div class="char-card-preview-frame">
+                        <img id="charCardPreviewImg" src="" alt="Pratinjau render kartu karakter Lifevuww">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-core btn-outline" onclick="shareCharCard()">
+                        <i class="fas fa-share-alt"></i> Bagikan ke Sosmed / WA
+                    </button>
+                    <button type="button" class="btn-core btn-accent" onclick="downloadCharCardPng()">
+                        <i class="fas fa-download me-1"></i> Simpan PNG (HD)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         /* ============ Lifevuww Sound Engine (Web Audio, zero assets) ============ */
         /* Defined early: toast/death/shop blocks below depend on it. */
@@ -744,48 +773,249 @@
             }
         });
 
-        /* ============ Fast Client-Side Sorting (Habits & Quests) with LocalStorage ============ */
+        /* ============ Fast Client-Side Sorting (Habits & Quests) with Pinned Priority & LocalStorage ============ */
+        function sortDataList(list, mode, isQuest) {
+            if (!list) return;
+            const rows = Array.from(list.querySelectorAll(':scope > .data-row'));
+            rows.sort((a, b) => {
+                // Always prioritize pinned items at the very top
+                const pinDiff = (parseInt(b.dataset.pinned) || 0) - (parseInt(a.dataset.pinned) || 0);
+                if (pinDiff !== 0) return pinDiff;
+
+                if (isQuest) {
+                    if (mode === 'deadline') {
+                        return (parseInt(a.dataset.deadline) || 9999) - (parseInt(b.dataset.deadline) || 9999);
+                    } else if (mode === 'exp-desc') {
+                        return (parseInt(b.dataset.exp) || 0) - (parseInt(a.dataset.exp) || 0);
+                    } else if (mode === 'newest') {
+                        return (parseInt(b.dataset.id) || 0) - (parseInt(a.dataset.id) || 0);
+                    }
+                    // 'default' / 'custom' -> sort by custom sort_order, then id DESC
+                    const ordDiff = (parseInt(a.dataset.order) || 0) - (parseInt(b.dataset.order) || 0);
+                    if (ordDiff !== 0) return ordDiff;
+                    return (parseInt(b.dataset.id) || 0) - (parseInt(a.dataset.id) || 0);
+                } else {
+                    if (mode === 'streak-desc') {
+                        return (parseInt(b.dataset.streak) || 0) - (parseInt(a.dataset.streak) || 0);
+                    } else if (mode === 'exp-desc') {
+                        return (parseInt(b.dataset.exp) || 0) - (parseInt(a.dataset.exp) || 0);
+                    } else if (mode === 'newest') {
+                        return (parseInt(b.dataset.id) || 0) - (parseInt(a.dataset.id) || 0);
+                    }
+                    // 'default' / 'custom' -> sort by custom sort_order, then id ASC
+                    const ordDiff = (parseInt(a.dataset.order) || 0) - (parseInt(b.dataset.order) || 0);
+                    if (ordDiff !== 0) return ordDiff;
+                    return (parseInt(a.dataset.id) || 0) - (parseInt(b.dataset.id) || 0);
+                }
+            });
+            rows.forEach(r => list.appendChild(r));
+        }
+
         document.addEventListener('change', function(e) {
             if (e.target.id === 'sortQuests') {
                 const val = e.target.value;
                 localStorage.setItem('lv_quests_sort', val);
                 const panel = e.target.closest('.bento-panel') || document;
-                const list = panel.querySelector('.data-list');
-                if (!list) return;
-                const rows = Array.from(list.querySelectorAll('.data-row'));
-                rows.sort((a, b) => {
-                    if (val === 'deadline') {
-                        return (parseInt(a.dataset.deadline) || 9999) - (parseInt(b.dataset.deadline) || 9999);
-                    } else if (val === 'exp-desc') {
-                        return (parseInt(b.dataset.exp) || 0) - (parseInt(a.dataset.exp) || 0);
-                    } else if (val === 'newest') {
-                        return (parseInt(b.dataset.id) || 0) - (parseInt(a.dataset.id) || 0);
-                    }
-                    return 0;
-                });
-                rows.forEach(r => list.appendChild(r));
+                const list = panel.querySelector('.data-list[data-reorder-endpoint]') || panel.querySelector('.data-list');
+                sortDataList(list, val, true);
             }
 
             if (e.target.id === 'sortHabits') {
                 const val = e.target.value;
                 localStorage.setItem('lv_habits_sort', val);
                 const panel = e.target.closest('.bento-panel') || document;
-                const list = panel.querySelector('.data-list');
-                if (!list) return;
-                const rows = Array.from(list.querySelectorAll('.data-row'));
-                rows.sort((a, b) => {
-                    if (val === 'streak-desc') {
-                        return (parseInt(b.dataset.streak) || 0) - (parseInt(a.dataset.streak) || 0);
-                    } else if (val === 'exp-desc') {
-                        return (parseInt(b.dataset.exp) || 0) - (parseInt(a.dataset.exp) || 0);
-                    } else if (val === 'newest') {
-                        return (parseInt(b.dataset.id) || 0) - (parseInt(a.dataset.id) || 0);
-                    }
-                    return (parseInt(a.dataset.id) || 0) - (parseInt(b.dataset.id) || 0);
-                });
-                rows.forEach(r => list.appendChild(r));
+                const list = panel.querySelector('.data-list[data-reorder-endpoint]') || panel.querySelector('.data-list');
+                sortDataList(list, val, false);
             }
         });
+
+        /* ============ Pin to Top (📌) & Pointer Drag-and-Drop Reordering (⋮⋮) ============ */
+        (function initPinAndDragOrder() {
+            function getCsrfToken() {
+                const input = document.querySelector('input[name="csrf_token"]');
+                return input ? input.value : '';
+            }
+
+            async function persistListOrder(list) {
+                if (!list) return;
+                const endpoint = list.getAttribute('data-reorder-endpoint');
+                if (!endpoint) return;
+                const rows = Array.from(list.querySelectorAll(':scope > .data-row'));
+                const orderedIds = rows.map((r, idx) => {
+                    r.dataset.order = String(idx);
+                    return parseInt(r.dataset.id, 10) || 0;
+                }).filter(Boolean);
+
+                const fd = new FormData();
+                fd.append('csrf_token', getCsrfToken());
+                fd.append('reorder_items', '1');
+                fd.append('ordered_ids', JSON.stringify(orderedIds));
+
+                try {
+                    await fetch(endpoint, {
+                        method: 'POST',
+                        body: fd,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                } catch (err) {
+                    console.warn('Reorder save failed:', err);
+                }
+            }
+
+            // 1. Pin / Unpin Button Click Handler
+            document.addEventListener('click', async function(e) {
+                const btn = e.target.closest('.btn-pin-item');
+                if (!btn || btn.disabled) return;
+                e.preventDefault();
+                e.stopPropagation();
+
+                const row = btn.closest('.data-row');
+                const list = btn.closest('.data-list');
+                const endpoint = btn.getAttribute('data-endpoint') || (list && list.getAttribute('data-reorder-endpoint'));
+                const idField = btn.getAttribute('data-id-field') || 'habit_id';
+                const itemId = btn.getAttribute('data-id');
+                if (!row || !endpoint || !itemId) return;
+
+                btn.disabled = true;
+                const fd = new FormData();
+                fd.append('csrf_token', getCsrfToken());
+                fd.append('toggle_pin', '1');
+                fd.append(idField, itemId);
+
+                try {
+                    const res = await fetch(endpoint, {
+                        method: 'POST',
+                        body: fd,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    const data = await res.json();
+                    if (res.ok && data && data.success) {
+                        const isPinned = Number(data.is_pinned) === 1;
+                        row.dataset.pinned = isPinned ? '1' : '0';
+                        row.classList.toggle('is-pinned-card', isPinned);
+                        btn.classList.toggle('active', isPinned);
+                        btn.title = isPinned ? 'Lepas sematan prioritas' : 'Sematkan ke urutan teratas';
+
+                        const pinBadge = row.querySelector('.pin-badge');
+                        if (pinBadge) {
+                            pinBadge.classList.toggle('d-none', !isPinned);
+                        }
+
+                        const rect = btn.getBoundingClientRect();
+                        if (window.spawnFloatingReward) {
+                            window.spawnFloatingReward(
+                                rect.left + rect.width / 2,
+                                rect.top,
+                                `<span class="${isPinned ? 'text-accent' : 'text-muted'} fw-bold">${data.floating_text || (isPinned ? '📌 Disematkan!' : '📌 Sematan Dilepas')}</span>`
+                            );
+                        }
+                        if (typeof LVSound !== 'undefined') LVSound.tick();
+
+                        const isQuest = endpoint.indexOf('quests.php') !== -1;
+                        const sortSel = document.getElementById(isQuest ? 'sortQuests' : 'sortHabits');
+                        const mode = sortSel ? sortSel.value : 'default';
+                        sortDataList(list, mode, isQuest);
+                    }
+                } catch (err) {
+                    console.error('Pin toggle error:', err);
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+
+            // 2. Pointer-Event Drag-and-Drop via .drag-handle (Mobile & Desktop Safe)
+            let dragRow = null;
+            let dragList = null;
+            let activePointerId = null;
+
+            document.addEventListener('pointerdown', function(e) {
+                const handle = e.target.closest('.drag-handle');
+                if (!handle) return;
+                const row = handle.closest('.data-row');
+                const list = handle.closest('.data-list[data-reorder-endpoint]');
+                if (!row || !list) return;
+
+                e.preventDefault();
+                dragRow = row;
+                dragList = list;
+                activePointerId = e.pointerId;
+
+                try {
+                    handle.setPointerCapture(e.pointerId);
+                } catch (_) {}
+
+                dragRow.classList.add('is-dragging');
+                document.body.classList.add('is-reordering-active');
+                if (typeof LVSound !== 'undefined') LVSound.tick();
+            });
+
+            document.addEventListener('pointermove', function(e) {
+                if (!dragRow || !dragList || e.pointerId !== activePointerId) return;
+                e.preventDefault();
+
+                const clientY = e.clientY;
+                // Auto-scroll viewport smoothly when dragging near top or bottom edge
+                const edgeThreshold = 70;
+                if (clientY < edgeThreshold) {
+                    window.scrollBy(0, -10);
+                } else if (window.innerHeight - clientY < edgeThreshold) {
+                    window.scrollBy(0, 10);
+                }
+
+                const siblings = Array.from(dragList.querySelectorAll(':scope > .data-row:not(.is-dragging)')).filter(el => el.style.display !== 'none');
+                let nextSibling = null;
+                for (const sib of siblings) {
+                    const box = sib.getBoundingClientRect();
+                    const midY = box.top + box.height / 2;
+                    if (clientY < midY) {
+                        nextSibling = sib;
+                        break;
+                    }
+                }
+
+                if (nextSibling) {
+                    if (nextSibling !== dragRow.nextElementSibling) {
+                        dragList.insertBefore(dragRow, nextSibling);
+                    }
+                } else {
+                    dragList.appendChild(dragRow);
+                }
+            }, { passive: false });
+
+            async function finishDrag(e) {
+                if (!dragRow || !dragList) return;
+                if (e && activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
+
+                const row = dragRow;
+                const list = dragList;
+                dragRow = null;
+                dragList = null;
+                activePointerId = null;
+
+                row.classList.remove('is-dragging');
+                document.body.classList.remove('is-reordering-active');
+
+                // Switch dropdown to Custom Priority mode so user sees their custom order retained
+                const isQuest = (list.getAttribute('data-reorder-endpoint') || '').indexOf('quests.php') !== -1;
+                const sortSel = document.getElementById(isQuest ? 'sortQuests' : 'sortHabits');
+                if (sortSel && sortSel.value !== 'default') {
+                    sortSel.value = 'default';
+                    localStorage.setItem(isQuest ? 'lv_quests_sort' : 'lv_habits_sort', 'default');
+                }
+
+                if (typeof LVSound !== 'undefined') LVSound.tick();
+                await persistListOrder(list);
+            }
+
+            document.addEventListener('pointerup', finishDrag);
+            document.addEventListener('pointercancel', finishDrag);
+        })();
 
         /* ============ Quick Attribute Filter Pills with LocalStorage ============ */
         document.addEventListener('click', function(e) {
@@ -1510,11 +1740,11 @@
             const hpPct = Math.min(1, Math.max(0, hpVal / maxHpVal));
 
             ctx.fillStyle = '#a1a1aa';
-            ctx.font = '500 18px "Geist", sans-serif';
+            ctx.font = '600 23px "Geist", sans-serif';
             ctx.fillText('POIN KESEHATAN (HP)', 80, 280);
             ctx.textAlign = 'right';
             ctx.fillStyle = '#f43f5e';
-            ctx.font = '600 18px "Geist Mono", monospace';
+            ctx.font = '600 20px "Geist Mono", monospace';
             ctx.fillText(`${hpVal} / ${maxHpVal}`, 1000, 280);
 
             ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
@@ -1529,11 +1759,11 @@
 
             ctx.textAlign = 'left';
             ctx.fillStyle = '#a1a1aa';
-            ctx.font = '500 18px "Geist", sans-serif';
+            ctx.font = '600 23px "Geist", sans-serif';
             ctx.fillText('PENGALAMAN (EXP)', 80, 340);
             ctx.textAlign = 'right';
             ctx.fillStyle = aura.primary;
-            ctx.font = '600 18px "Geist Mono", monospace';
+            ctx.font = '600 20px "Geist Mono", monospace';
             ctx.fillText(`${expVal} / ${nextExpVal}`, 1000, 340);
 
             ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
@@ -1557,7 +1787,7 @@
             ctx.textAlign = 'center';
             ctx.fillText(data.trophies_count || 0, 80 + cardW/2, cardY + 52);
             ctx.fillStyle = '#a1a1aa';
-            ctx.font = '500 15px "Geist", sans-serif';
+            ctx.font = '600 19px "Geist", sans-serif';
             ctx.fillText('TROFI BOSS DITAKLUKKAN', 80 + cardW/2, cardY + 86);
 
             // Card 2: Streak Record
@@ -1568,7 +1798,7 @@
             ctx.font = '700 36px "Geist Mono", monospace';
             ctx.fillText((data.streak || 0) + ' HARI', c2X + cardW/2, cardY + 52);
             ctx.fillStyle = '#a1a1aa';
-            ctx.font = '500 15px "Geist", sans-serif';
+            ctx.font = '600 19px "Geist", sans-serif';
             ctx.fillText('REKOR STREAK BERUNTUN', c2X + cardW/2, cardY + 86);
 
             // Card 3: Saldo Gold
@@ -1579,13 +1809,13 @@
             ctx.font = '700 36px "Geist Mono", monospace';
             ctx.fillText(Number(data.gold || 0).toLocaleString('id-ID'), c3X + cardW/2, cardY + 52);
             ctx.fillStyle = '#a1a1aa';
-            ctx.font = '500 15px "Geist", sans-serif';
+            ctx.font = '600 19px "Geist", sans-serif';
             ctx.fillText('TOTAL SALDO GOLD', c3X + cardW/2, cardY + 86);
 
             // 9. Equipped Relics Section
             ctx.textAlign = 'left';
             ctx.fillStyle = '#d4d4d8';
-            ctx.font = '600 20px "Geist", sans-serif';
+            ctx.font = '700 26px "Geist", sans-serif';
             ctx.fillText('RELIK & ARTEFAK TERPASANG', 80, 560);
 
             const relics = (data.relics && data.relics.length > 0) ? data.relics : ['Obsidian Chrono Blade'];
@@ -1689,14 +1919,123 @@
             ctx.font = '500 17px "Geist Mono", monospace';
             ctx.fillText('VERIFIED TACTICAL PROFILE • LIFEVUWW.42WEB.IO', 540, 1260);
 
-            // Trigger Download
-            const dataUrl = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.download = `lifevuww-status-${(data.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '_')}.png`;
-            link.href = dataUrl;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Jangan unduh langsung: simpan canvas & tampilkan modal pratinjau dulu
+            window.__lvCharCardCanvas = canvas;
+            window.__lvCharCardFileName = `lifevuww-status-${(data.username || 'player').toLowerCase().replace(/[^a-z0-9]/g, '_')}.png`;
+            if (typeof window.openCharCardPreviewModal === 'function') {
+                window.openCharCardPreviewModal();
+            } else {
+                // Fallback: perilaku lama jika modal tidak tersedia
+                const dataUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = window.__lvCharCardFileName;
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+
+        /* ============ Modal Pratinjau & Unduh Kartu Karakter ============ */
+        window.openCharCardPreviewModal = function() {
+            const canvas = window.__lvCharCardCanvas;
+            if (!canvas) return;
+            const img = document.getElementById('charCardPreviewImg');
+            if (img) {
+                img.src = canvas.toDataURL('image/png');
+            }
+            const modalEl = document.getElementById('charCardPreviewModal');
+            if (!modalEl) return;
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            } else {
+                modalEl.classList.add('show');
+                modalEl.style.display = 'block';
+                modalEl.style.backgroundColor = 'rgba(0,0,0,0.75)';
+                document.body.classList.add('modal-open');
+            }
+        };
+
+        window.closeCharCardPreviewModal = function() {
+            const modalEl = document.getElementById('charCardPreviewModal');
+            if (!modalEl) return;
+            if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            } else {
+                modalEl.classList.remove('show');
+                modalEl.style.display = 'none';
+                modalEl.style.backgroundColor = '';
+                document.body.classList.remove('modal-open');
+            }
+        };
+
+        // Simpan PNG (HD) via canvas.toBlob
+        window.downloadCharCardPng = function() {
+            const canvas = window.__lvCharCardCanvas;
+            if (!canvas) return;
+            const fileName = window.__lvCharCardFileName || 'lifevuww-status.png';
+            const save = function(blob) {
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = fileName;
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(url), 4000);
+            };
+            if (canvas.toBlob) {
+                canvas.toBlob(function(blob) {
+                    if (blob) save(blob);
+                    else save(canvas.toDataURL('image/png'));
+                }, 'image/png');
+            } else {
+                save(canvas.toDataURL('image/png'));
+            }
+            if (typeof LVSound !== 'undefined') LVSound.coin();
+        };
+
+        // Bagikan ke Sosmed / WhatsApp via Web Share API (fallback: unduh manual)
+        window.shareCharCard = async function() {
+            const canvas = window.__lvCharCardCanvas;
+            if (!canvas) return;
+            const fileName = window.__lvCharCardFileName || 'lifevuww-status.png';
+            const shareText = 'Progres RPG hidupku di Lifevuww — level-up setiap hari!';
+
+            const canvasToBlob = () => new Promise((resolve) => {
+                if (canvas.toBlob) {
+                    canvas.toBlob((b) => resolve(b), 'image/png');
+                } else {
+                    resolve(null);
+                }
+            });
+
+            try {
+                if (navigator.share) {
+                    const blob = await canvasToBlob();
+                    const file = blob ? new File([blob], fileName, { type: 'image/png' }) : null;
+                    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({ files: [file], title: 'Kartu Karakter Lifevuww', text: shareText });
+                        return;
+                    }
+                    // Perangkat mendukung share tapi bukan file: bagikan tautan
+                    if (navigator.canShare ? navigator.canShare({ title: 'Kartu Karakter Lifevuww', text: shareText, url: window.location.origin }) : true) {
+                        await navigator.share({ title: 'Kartu Karakter Lifevuww', text: shareText, url: window.location.origin });
+                        return;
+                    }
+                }
+            } catch (e) {
+                // Pengguna membatalkan share sheet: jangan tampilkan error
+                if (e && e.name === 'AbortError') return;
+            }
+
+            // Fallback: unduh PNG agar bisa dikirim manual ke sosmed / WA
+            window.downloadCharCardPng();
+            if (window.showToast) {
+                window.showToast('Perangkat Tidak Mendukung Share', 'PNG tersimpan — kirim secara manual ke sosmed / WhatsApp.', 'fa-circle-info', 'accent');
+            } else {
+                alert('Perangkat tidak mendukung berbagi langsung. PNG telah diunduh — kirim secara manual ke sosmed / WhatsApp.');
+            }
         };
 
         /* ============ Bridge diagnostic readout (profile) ============ */
@@ -1934,6 +2273,44 @@
                         ring.classList.remove('magnetic');
                     }
                 }, true);
+            })();
+
+            // 5. Perpindahan tab instan di HP: class .active dipindahkan saat pointerdown (0ms latency)
+            //    + prefetch halaman tujuan begitu disentuh agar navigasi antar tab terasa instan
+            (function initInstantTabSwitch() {
+                const prefetched = new Set();
+
+                const prefetchUrl = function(url) {
+                    if (!url || prefetched.has(url)) return;
+                    prefetched.add(url);
+                    try {
+                        const link = document.createElement('link');
+                        link.rel = 'prefetch';
+                        link.href = url;
+                        document.head.appendChild(link);
+                    } catch (e) { /* browser tidak mendukung prefetch */ }
+                };
+
+                const activateDockItem = function(item) {
+                    if (!item || item.classList.contains('active')) return;
+                    document.querySelectorAll('.dock-item.active').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+                    if (typeof LVSound !== 'undefined') LVSound.tick();
+                };
+
+                // pointerenter (hover / awal sentuh) → prefetch lebih awal
+                document.addEventListener('pointerenter', (e) => {
+                    const item = e.target.closest && e.target.closest('.dock-item[href]');
+                    if (item) prefetchUrl(item.getAttribute('href'));
+                }, true);
+
+                // pointerdown → pindahkan pill aktif secara instan + prefetch
+                document.addEventListener('pointerdown', (e) => {
+                    const item = e.target.closest && e.target.closest('.dock-item');
+                    if (!item) return;
+                    activateDockItem(item);
+                    prefetchUrl(item.getAttribute('href'));
+                }, { passive: true });
             })();
 
             // Native Browser Scroll & Modal Body Overflow Cleanup (Safe for APK & Mobile)

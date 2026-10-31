@@ -174,6 +174,7 @@ body{ background:#000; overflow:hidden; font-family:var(--sans); color:var(--fg)
   background:transparent; color:var(--fg); border:1px solid var(--z2);
   border-radius:9px; padding:7px 13px; cursor:pointer; }
 #bar button:hover{ border-color:var(--em); color:var(--em); }
+html.in-iframe #bar{ display:none !important; }
 #tcode{ font-size:12px; color:var(--z6); letter-spacing:.12em; white-space:nowrap;
   font-variant-numeric:tabular-nums; }
 #prog{ flex:1; height:4px; background:var(--z2); border-radius:99px; position:relative; }
@@ -188,6 +189,16 @@ body{ background:#000; overflow:hidden; font-family:var(--sans); color:var(--fg)
     justify-content:center; flex-direction:column; gap:22px; }
 }
 </style>
+<script>
+/* Mode iframe / layar HP: sembunyikan bar kontrol internal agar tidak menutupi video */
+(function () {
+  var inIframe = false;
+  try { inIframe = (window.self !== window.top); } catch (e) { inIframe = true; }
+  if (inIframe || window.innerWidth <= 768) {
+    document.documentElement.classList.add('in-iframe');
+  }
+})();
+</script>
 </head>
 <body>
 

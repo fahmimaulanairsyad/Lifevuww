@@ -9,6 +9,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $validDiffs = array_keys(game_difficulties());
     $validCats = array_keys(game_categories());
+    $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
+    // Pin / Unpin Quest (AJAX & Form)
+    if (isset($_POST['toggle_pin']) && !empty($_POST['quest_id'])) {
+        $questId = intval($_POST['quest_id']);
+        $stmtPin = $pdo->prepare("SELECT is_pinned FROM quests WHERE quest_id = ? AND user_id = ?");
+        $stmtPin->execute([$questId, $_SESSION['user_id']]);
+        $curPin = $stmtPin->fetchColumn();
+
+        if ($curPin !== false) {
+            $newPin = ((int)$curPin === 1) ? 0 : 1;
+            $pdo->prepare("UPDATE quests SET is_pinned = ? WHERE quest_id = ? AND user_id = ?")
+                ->execute([$newPin, $questId, $_SESSION['user_id']]);
+
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'success' => true,
+                    'id' => $questId,
+                    'is_pinned' => $newPin,
+                    'floating_text' => $newPin ? '📌 Misi Disematkan ke Atas!' : '📌 Sematan Misi Dilepas'
+                ]);
+                exit();
+            }
+        }
+        header("Location: quests.php");
+        exit();
+    }
+
+    // Reorder Quests via Drag-and-Drop (AJAX)
+    if (isset($_POST['reorder_items']) && !empty($_POST['ordered_ids'])) {
+        $orderedIds = json_decode($_POST['ordered_ids'], true);
+        if (is_array($orderedIds)) {
+            $pdo->beginTransaction();
+            try {
+                $stmtOrd = $pdo->prepare("UPDATE quests SET sort_order = ? WHERE quest_id = ? AND user_id = ?");
+                foreach (array_values($orderedIds) as $idx => $qId) {
+                    $stmtOrd->execute([(int)$idx, (int)$qId, $_SESSION['user_id']]);
+                }
+                $pdo->commit();
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => true]);
+                    exit();
+                }
+            } catch (Exception $eOrd) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => false, 'message' => 'Gagal menyimpan urutan misi.']);
+                    exit();
+                }
+            }
+        }
+        exit();
+    }
 
     // Edit Quest
     if (isset($_POST['edit_quest'])) {
@@ -26,6 +83,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date)) {
             $start_date = date('Y-m-d');
         }
+
+        // Tanggal selesai (tenggat) dipilih user sendiri
+        $end_date = trim($_POST['end_date'] ?? '');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date) || strtotime($end_date) < strtotime($start_date)) {
+            $end_date = date('Y-m-d', strtotime($start_date . ' +7 days'));
+        }
+
+        // Durasi murni dari rentang tanggal pilihan user; difficulty hanya menentukan exp_reward
+        $durationDays = max(1, (int) round((strtotime($end_date) - strtotime($start_date)) / 86400));
 
         $rawSubtasks = trim($_POST['subtasks'] ?? '');
         $subtasksJson = null;
@@ -46,16 +112,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $expReward = exp_for_difficulty($difficulty);
-        $diffs = game_difficulties();
-        $durationDays = $diffs[$difficulty]['duration_days'] ?? 7;
 
         try {
             $stmt = $pdo->prepare("
-                UPDATE quests 
-                SET quest_name = ?, difficulty = ?, start_date = ?, exp_reward = ?, duration_days = ?, category = ?, subtasks = ? 
+                UPDATE quests
+                SET quest_name = ?, difficulty = ?, start_date = ?, end_date = ?, exp_reward = ?, duration_days = ?, category = ?, subtasks = ?
                 WHERE quest_id = ? AND user_id = ?
             ");
-            $stmt->execute([$quest_name, $difficulty, $start_date, $expReward, $durationDays, $category, $subtasksJson, $questId, $_SESSION['user_id']]);
+            $stmt->execute([$quest_name, $difficulty, $start_date, $end_date, $expReward, $durationDays, $category, $subtasksJson, $questId, $_SESSION['user_id']]);
             header("Location: quests.php");
             exit();
         } catch (PDOException $e) {
@@ -331,23 +395,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $today = date('Y-m-d');
-        $rawDate = trim($_POST['due_date'] ?? ($_POST['start_date'] ?? ''));
-        $diffs = game_difficulties();
-        $defaultDuration = $diffs[$difficulty]['duration_days'] ?? 7;
 
-        if (!empty($rawDate) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $rawDate)) {
-            // Jika due_date >= today, hitung durasi hari selisihnya
-            if (strtotime($rawDate) >= strtotime($today)) {
-                $start_date = $today;
-                $durationDays = max(1, (int) round((strtotime($rawDate) - strtotime($today)) / 86400));
-            } else {
-                $start_date = $rawDate;
-                $durationDays = $defaultDuration;
-            }
-        } else {
+        // Tanggal mulai & selesai dipilih user sendiri; difficulty hanya menentukan exp_reward
+        $start_date = trim($_POST['start_date'] ?? ($_POST['due_date'] ?? ''));
+        $end_date = trim($_POST['end_date'] ?? '');
+
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_date)) {
             $start_date = $today;
-            $durationDays = $defaultDuration;
         }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_date) || strtotime($end_date) < strtotime($start_date)) {
+            $end_date = date('Y-m-d', strtotime($start_date . ' +3 days'));
+        }
+
+        // Durasi murni dari rentang tanggal pilihan user
+        $durationDays = max(1, (int) round((strtotime($end_date) - strtotime($start_date)) / 86400));
 
         $rawSubtasks = trim($_POST['subtasks'] ?? '');
         $subtasksJson = null;
@@ -360,16 +421,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $expReward = exp_for_difficulty($difficulty, 0);
-        $diffs = game_difficulties();
-        $durationDays = $diffs[$difficulty]['duration_days'] ?? 7;
 
         try {
             if ($expReward === 0) {
                 throw new Exception("Invalid difficulty level, EXP reward cannot be zero.");
             }
 
-            $stmt = $pdo->prepare("INSERT INTO quests (user_id, quest_name, difficulty, start_date, exp_reward, duration_days, status, category, subtasks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $quest_name, $difficulty, $start_date, $expReward, $durationDays, 'In Progress', $category, $subtasksJson]);
+            $stmt = $pdo->prepare("INSERT INTO quests (user_id, quest_name, difficulty, start_date, end_date, exp_reward, duration_days, status, category, subtasks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$_SESSION['user_id'], $quest_name, $difficulty, $start_date, $end_date, $expReward, $durationDays, 'In Progress', $category, $subtasksJson]);
 
             header("Location: quests.php");
             exit();
@@ -381,9 +440,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 // Ambil misi 'In Progress' dan misi selesai hari ini (setelah semua handler POST, sebelum ada output)
 try {
-    $stmt = $pdo->prepare("SELECT * FROM quests WHERE user_id = ? AND status = 'In Progress'");
-    $stmt->execute([$_SESSION['user_id']]);
-    $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM quests WHERE user_id = ? AND status = 'In Progress' ORDER BY is_pinned DESC, sort_order ASC, quest_id DESC");
+        $stmt->execute([$_SESSION['user_id']]);
+        $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $eSortQ) {
+        $stmt = $pdo->prepare("SELECT * FROM quests WHERE user_id = ? AND status = 'In Progress'");
+        $stmt->execute([$_SESSION['user_id']]);
+        $quests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     // Ambil misi yang baru diselesaikan hari ini untuk opsi Undo
     $stmtDone = $pdo->prepare("
@@ -437,8 +502,18 @@ require_once __DIR__ . '/../includes/header.php';
                             </select>
                         </div>
                         <div class="col-6">
-                            <label for="dueDate" class="form-label">Tenggat Waktu</label>
-                            <input type="date" class="form-control font-mono" id="dueDate" name="due_date" value="<?= date('Y-m-d', strtotime('+3 days')) ?>" min="<?= date('Y-m-d') ?>" required>
+                            <label for="startDate" class="form-label">Tanggal Mulai</label>
+                            <input type="date" class="form-control font-mono" id="startDate" name="start_date" value="<?= date('Y-m-d') ?>" required>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                            <label for="endDate" class="form-label">Tanggal Selesai (Tenggat)</label>
+                            <input type="date" class="form-control font-mono" id="endDate" name="end_date" value="<?= date('Y-m-d', strtotime('+3 days')) ?>" min="<?= date('Y-m-d') ?>" required>
+                        </div>
+                        <div class="col-6 d-flex align-items-end">
+                            <div class="text-muted" style="font-size: 0.72rem; line-height: 1.4;">Durasi misi dihitung otomatis dari selisih tanggal mulai &amp; selesai yang kamu pilih.</div>
                         </div>
                     </div>
 
@@ -510,6 +585,7 @@ require_once __DIR__ . '/../includes/header.php';
             <div class="filter-sort-wrap">
                 <label for="sortQuests" class="text-muted" style="font-size: 0.74rem; white-space: nowrap;"><i class="fas fa-sort me-1"></i>Urutkan:</label>
                 <select id="sortQuests" class="form-select form-select-sm font-mono" style="font-size: 0.76rem; width: auto; padding-right: 1.75rem; background-color: var(--bg-surface-hover); border-color: var(--border-hairline);">
+                    <option value="default">Prioritas Kustom (Pin &amp; Geser)</option>
                     <option value="deadline">Deadline Terdekat</option>
                     <option value="exp-desc">EXP Terbanyak</option>
                     <option value="newest">Terbaru</option>
@@ -517,15 +593,16 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         </div>
 
-        <div class="data-list">
+        <div class="data-list" data-reorder-endpoint="quests.php">
             <?php 
             $bossMastery = getBossMasteryStats($pdo, $_SESSION['user_id']);
             $masteryMultiplier = $bossMastery['multiplier'] ?? 1.0;
 
-            foreach ($quests as $quest): 
+            foreach ($quests as $qIdx => $quest): 
                 $startDate = $quest['start_date'] ?? date('Y-m-d');
                 $duration = (int) ($quest['duration_days'] ?? 7);
-                $deadline = date('Y-m-d', strtotime("$startDate + $duration days"));
+                // Tenggat memakai end_date pilihan user; fallback ke start + durasi untuk data lama
+                $deadline = !empty($quest['end_date']) ? date('Y-m-d', strtotime($quest['end_date'])) : date('Y-m-d', strtotime("$startDate + $duration days"));
                 $today = date('Y-m-d');
                 $daysLeft = (int) ceil((strtotime($deadline) - strtotime($today)) / 86400);
                 $hpPenalty = hp_penalty_for_quest($quest['difficulty']);
@@ -536,15 +613,23 @@ require_once __DIR__ . '/../includes/header.php';
                 $doneSub = $totalSub > 0 ? count(array_filter($subtasks, fn($s) => !empty($s['done']))) : 0;
                 $bossHpPct = $totalSub > 0 ? round((($totalSub - $doneSub) / $totalSub) * 100) : 100;
                 $finalExp = $isBoss ? (int) floor($quest['exp_reward'] * 1.5 * $masteryMultiplier) : (int) floor($quest['exp_reward'] * $masteryMultiplier);
+                $isPinned = !empty($quest['is_pinned']);
+                $sortOrder = isset($quest['sort_order']) ? (int)$quest['sort_order'] : (int)$qIdx;
             ?>
-                <div class="data-row" data-category="<?php echo htmlspecialchars($quest['category']); ?>" data-deadline="<?php echo $daysLeft; ?>" data-exp="<?php echo $finalExp; ?>" data-id="<?php echo (int) $quest['quest_id']; ?>" data-is-boss="<?php echo $isBoss ? '1' : '0'; ?>">
+                <div class="data-row <?php echo $isPinned ? 'is-pinned-card' : ''; ?>" data-category="<?php echo htmlspecialchars($quest['category']); ?>" data-deadline="<?php echo $daysLeft; ?>" data-exp="<?php echo $finalExp; ?>" data-id="<?php echo (int) $quest['quest_id']; ?>" data-is-boss="<?php echo $isBoss ? '1' : '0'; ?>" data-pinned="<?php echo $isPinned ? '1' : '0'; ?>" data-order="<?php echo $sortOrder; ?>">
                     <div class="data-main">
-                        <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isBoss ? 'var(--status-danger)' : ($quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'); ?>; font-size: 0.8rem;">
+                        <button type="button" class="drag-handle" title="Tahan &amp; geser untuk mengatur urutan prioritas" aria-label="Geser urutan <?php echo htmlspecialchars($quest['quest_name']); ?>">
+                            <i class="fas fa-grip-vertical"></i>
+                        </button>
+                        <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isBoss ? 'var(--status-danger)' : ($quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'); ?>; font-size: 0.8rem; flex-shrink: 0;">
                             <i class="fas <?php echo $isBoss ? 'fa-dragon' : ($quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'); ?>"></i>
                         </div>
                         <div style="flex: 1;">
                             <div class="data-title d-flex align-items-center flex-wrap gap-2">
                                 <span><?php echo htmlspecialchars($quest['quest_name']); ?></span>
+                                <span class="badge-status pin-badge font-mono <?php echo $isPinned ? '' : 'd-none'; ?>">
+                                    <i class="fas fa-thumbtack"></i> Prioritas
+                                </span>
                                 <?php if ($isBoss): ?>
                                     <span class="badge-status danger font-mono" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">
                                         <i class="fas fa-skull me-1"></i> BOSS QUEST
@@ -611,6 +696,11 @@ require_once __DIR__ . '/../includes/header.php';
                             </form>
                         <?php endif; ?>
                         
+                        <!-- Pin Button -->
+                        <button type="button" class="btn-core btn-ghost btn-action-secondary btn-pin-item <?php echo $isPinned ? 'active' : ''; ?>" data-endpoint="quests.php" data-id-field="quest_id" data-id="<?php echo (int)$quest['quest_id']; ?>" style="padding: 0.35rem 0.55rem;" title="<?php echo $isPinned ? 'Lepas sematan prioritas' : 'Sematkan ke urutan teratas'; ?>" aria-label="Pin misi <?php echo htmlspecialchars($quest['quest_name']); ?>">
+                            <i class="fas fa-thumbtack"></i>
+                        </button>
+
                         <!-- Edit Button -->
                         <button type="button" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
                             <i class="fas fa-pencil-alt"></i>
@@ -657,8 +747,22 @@ require_once __DIR__ . '/../includes/header.php';
                                             </select>
                                         </div>
                                         <div class="col-6">
-                                            <label for="edit_qdate_<?php echo $quest['quest_id']; ?>" class="form-label">Tanggal mulai</label>
+                                            <label for="edit_qdate_<?php echo $quest['quest_id']; ?>" class="form-label">Tanggal Mulai</label>
                                             <input type="date" class="form-control" id="edit_qdate_<?php echo $quest['quest_id']; ?>" name="start_date" value="<?php echo htmlspecialchars($quest['start_date']); ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="row g-2 mt-2">
+                                        <div class="col-6">
+                                            <?php
+                                            $editEndDate = !empty($quest['end_date'])
+                                                ? $quest['end_date']
+                                                : date('Y-m-d', strtotime($quest['start_date'] . ' +' . max(1, (int)($quest['duration_days'] ?? 7)) . ' days'));
+                                            ?>
+                                            <label for="edit_qend_<?php echo $quest['quest_id']; ?>" class="form-label">Tanggal Selesai (Tenggat)</label>
+                                            <input type="date" class="form-control" id="edit_qend_<?php echo $quest['quest_id']; ?>" name="end_date" value="<?php echo htmlspecialchars($editEndDate); ?>" min="<?php echo htmlspecialchars($quest['start_date']); ?>" required>
+                                        </div>
+                                        <div class="col-6 d-flex align-items-end">
+                                            <div class="text-muted" style="font-size: 0.72rem; line-height: 1.4;">Durasi misi dihitung ulang otomatis dari rentang tanggal ini.</div>
                                         </div>
                                     </div>
                                     <?php

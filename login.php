@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261029_06" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261031_01" rel="stylesheet">
     <style>
         .password-field-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
         .password-field-wrapper .form-control { padding-right: 2.5rem !important; }
@@ -143,13 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <div class="cursor-dot" id="cursorDot"></div>
     <div class="cursor-ring" id="cursorRing"></div>
 
-    <div style="width: 100%; max-width: 380px; position: relative; z-index: 10;">
-        <div class="mb-3">
-            <a href="index.php" class="d-inline-flex align-items-center gap-2" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none; transition: color 0.15s ease;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-muted)'">
-                <i class="fas fa-arrow-left"></i> Kembali ke Beranda
-            </a>
-        </div>
+    <!-- Kembali ke Beranda: fixed di pojok kiri atas, di luar kartu form tengah -->
+    <a href="index.php" class="auth-back-top-left">
+        <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+    </a>
 
+    <div style="width: 100%; max-width: 380px; position: relative; z-index: 10;">
         <div class="text-center mb-4">
             <a href="index.php" title="Kembali ke Beranda">
                 <img src="assets/images/logo.svg" alt="Lifevuww Logo" style="width: 44px; height: 44px; margin-bottom: 1rem;">

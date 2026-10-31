@@ -177,6 +177,10 @@ function status_badge($status) {
             <?php endforeach; ?>
         </div>
     </div>
+
+    <!-- Info permanen hasil sentuhan heatmap (mobile friendly, tidak terpotong overflow panel) -->
+    <div id="heatmapInlineReadout" class="heatmap-inline-readout" aria-live="polite"></div>
+
     <script>
         (function() {
             // Horizontal auto-scroll
@@ -187,6 +191,13 @@ function status_badge($status) {
 
             // Interactive Custom Floating Tooltip & Click-to-filter
             const tooltip = document.getElementById('heatmapFloatingTooltip');
+            // Pindahkan tooltip floating ke document.body agar lepas dari
+            // .bento-panel.holo-card (overflow: hidden + transform) yang memotongnya di HP
+            if (tooltip && tooltip.parentElement !== document.body) {
+                document.body.appendChild(tooltip);
+            }
+            // Readout inline permanen tepat di bawah grid heatmap
+            const readout = document.getElementById('heatmapInlineReadout');
             const banner = document.getElementById('historyDateFilterBanner');
             const filterLabel = document.getElementById('filterDateLabel');
             const clearBtn = document.getElementById('btnClearDateFilter');
@@ -197,18 +208,32 @@ function status_badge($status) {
             let selectedDate = null;
 
             function positionTooltip(cell) {
-                if (!tooltip) return;
-                tooltip.textContent = cell.getAttribute('data-tooltip');
-                tooltip.classList.add('show');
-                const rect = cell.getBoundingClientRect();
-                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-                tooltip.style.top = rect.top + 'px';
+                const text = cell.getAttribute('data-tooltip') || '';
+                if (tooltip) {
+                    tooltip.textContent = text;
+                    tooltip.classList.add('show');
+                    const rect = cell.getBoundingClientRect();
+                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                    tooltip.style.top = rect.top + 'px';
+                }
+                if (readout) {
+                    readout.textContent = text;
+                    readout.classList.add('is-visible');
+                }
+            }
+
+            function hideReadout() {
+                if (readout) {
+                    readout.textContent = '';
+                    readout.classList.remove('is-visible');
+                }
             }
 
             function clearDateFilter() {
                 selectedDate = null;
                 cells.forEach(c => c.classList.remove('is-selected'));
                 if (tooltip) tooltip.classList.remove('show');
+                hideReadout();
                 if (banner) {
                     banner.classList.remove('d-flex');
                     banner.classList.add('d-none');
@@ -231,7 +256,10 @@ function status_badge($status) {
                     if (!selectedDate) positionTooltip(cell);
                 });
                 cell.addEventListener('mouseleave', () => {
-                    if (!selectedDate && tooltip) tooltip.classList.remove('show');
+                    if (!selectedDate) {
+                        if (tooltip) tooltip.classList.remove('show');
+                        hideReadout();
+                    }
                 });
 
                 // Click / Tap Handler

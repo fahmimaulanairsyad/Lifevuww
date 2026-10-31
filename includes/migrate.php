@@ -29,7 +29,9 @@ function run_lifevuww_migrations(PDO $pdo): array {
         'current_count' => "ALTER TABLE `habits` ADD COLUMN `current_count` INT NOT NULL DEFAULT 0",
         'schedule_type' => "ALTER TABLE `habits` ADD COLUMN `schedule_type` VARCHAR(30) NOT NULL DEFAULT 'daily'",
         'schedule_value' => "ALTER TABLE `habits` ADD COLUMN `schedule_value` VARCHAR(100) NOT NULL DEFAULT '1'",
-        'last_completed_at' => "ALTER TABLE `habits` ADD COLUMN `last_completed_at` DATETIME DEFAULT NULL"
+        'last_completed_at' => "ALTER TABLE `habits` ADD COLUMN `last_completed_at` DATETIME DEFAULT NULL",
+        'is_pinned' => "ALTER TABLE `habits` ADD COLUMN `is_pinned` TINYINT(1) NOT NULL DEFAULT 0",
+        'sort_order' => "ALTER TABLE `habits` ADD COLUMN `sort_order` INT(11) NOT NULL DEFAULT 0"
     ];
 
     foreach ($newCols as $col => $sql) {
@@ -40,6 +42,23 @@ function run_lifevuww_migrations(PDO $pdo): array {
             } catch (Exception $e) {
                 // Ignore if duplicate or already added
             }
+        }
+    }
+
+    
+    // Explicit check & migration for quests pin & custom sort_order
+    $questCols = $pdo->query("DESCRIBE quests")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    $newQuestCols = [
+        'is_pinned' => "ALTER TABLE `quests` ADD COLUMN `is_pinned` TINYINT(1) NOT NULL DEFAULT 0",
+        'sort_order' => "ALTER TABLE `quests` ADD COLUMN `sort_order` INT(11) NOT NULL DEFAULT 0",
+        'end_date' => "ALTER TABLE `quests` ADD COLUMN `end_date` DATE DEFAULT NULL"
+    ];
+    foreach ($newQuestCols as $col => $sql) {
+        if (!in_array($col, $questCols, true)) {
+            try {
+                $pdo->exec($sql);
+                $results[] = "Added column $col to quests";
+            } catch (Exception $e) {}
         }
     }
 
@@ -106,7 +125,8 @@ function ensure_lifevuww_migrated(PDO $pdo): void {
     $alreadyChecked = true;
 
     try {
-        $pdo->query("SELECT target_count FROM habits LIMIT 1");
+        $pdo->query("SELECT target_count, is_pinned, sort_order FROM habits LIMIT 1");
+        $pdo->query("SELECT is_pinned, sort_order, end_date FROM quests LIMIT 1");
         $pdo->query("SELECT specialization FROM users LIMIT 1");
         $pdo->query("SELECT id FROM user_relics LIMIT 1");
     } catch (Exception $e) {

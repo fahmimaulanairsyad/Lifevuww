@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261029_06" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261031_01" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -115,12 +115,12 @@ if (isset($_SESSION['user_id'])) {
             </span>
 
             <h1 class="lp-hero-title" style="line-height: 1.18; overflow: visible !important;">
-                <span class="char-reveal" style="--char-i: 1; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Disiplin</span>
-                <span class="char-reveal" style="--char-i: 2; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Nyata</span>
-                <span class="char-reveal" style="--char-i: 3; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">dalam</span>
-                <span class="char-reveal" style="--char-i: 4; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Format</span>
-                <span class="char-reveal" style="--char-i: 5; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">Petualangan</span>
-                <span class="char-reveal text-accent" style="--char-i: 6; line-height: 1.18; padding-bottom: 0.16em; margin-bottom: -0.1em; overflow: visible;">RPG</span>
+                <span class="char-reveal" style="--char-i: 1; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Disiplin</span>
+                <span class="char-reveal" style="--char-i: 2; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Nyata</span>
+                <span class="char-reveal" style="--char-i: 3; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">dalam</span>
+                <span class="char-reveal" style="--char-i: 4; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Format</span>
+                <span class="char-reveal" style="--char-i: 5; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Petualangan</span>
+                <span class="char-reveal text-accent" style="--char-i: 6; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">RPG</span>
             </h1>
 
             <p class="lp-hero-subtitle">
@@ -520,6 +520,7 @@ if (isset($_SESSION['user_id'])) {
 
             <!-- Player Body (16:9) -->
             <div class="lp-reel-body" id="lpReelBody">
+                <button type="button" class="reel-fs-exit-floating" onclick="exitReelFullscreenAll()" aria-label="Keluar dari layar penuh">← Kembali</button>
                 <iframe id="lpReelIframe" src="assets/reel-15s.html" allow="autoplay; fullscreen" allowfullscreen="true" title="Lifevuww 15s High-Octane Motion Reel"></iframe>
             </div>
         </div>
@@ -1147,6 +1148,7 @@ if (isset($_SESSION['user_id'])) {
             // Check if already in CSS fallback fullscreen
             if (reelWindow && reelWindow.classList.contains('is-css-fullscreen')) {
                 reelWindow.classList.remove('is-css-fullscreen');
+                clearReelFullscreenHistory();
                 updateReelFullscreenState();
                 notifyReelResize();
                 return;
@@ -1172,10 +1174,14 @@ if (isset($_SESSION['user_id'])) {
                         return;
                     }
 
-                    if (reqPromise && typeof reqPromise.catch === 'function') {
-                        reqPromise.catch(() => {
+                    if (reqPromise && typeof reqPromise.then === 'function') {
+                        reqPromise.then(() => {
+                            pushReelFullscreenHistory();
+                        }).catch(() => {
                             enableCssFullscreen(reelWindow);
                         });
+                    } else {
+                        pushReelFullscreenHistory();
                     }
                 } catch (e) {
                     enableCssFullscreen(reelWindow);
@@ -1191,17 +1197,87 @@ if (isset($_SESSION['user_id'])) {
                     } else if (document.msExitFullscreen) {
                         document.msExitFullscreen();
                     }
+                    clearReelFullscreenHistory();
                 } catch (e) {
                     if (reelWindow) reelWindow.classList.remove('is-css-fullscreen');
+                    clearReelFullscreenHistory();
                     updateReelFullscreenState();
                     notifyReelResize();
                 }
             }
         }
 
+        /* ===== Riwayat fullscreen: tombol Back bawaan HP keluar dari fullscreen ===== */
+        function pushReelFullscreenHistory() {
+            if (window.lvReelFsPushed) return;
+            try {
+                history.pushState({ lvReelFullscreen: true }, '');
+                window.lvReelFsPushed = true;
+            } catch (e) {
+                window.lvReelFsPushed = false;
+            }
+        }
+
+        function clearReelFullscreenHistory() {
+            if (!window.lvReelFsPushed) return;
+            window.lvReelFsPushed = false;
+            try { history.back(); } catch (e) {}
+        }
+
+        function isReelFullscreenActive() {
+            const reelWindow = document.querySelector('.lp-reel-window');
+            const isNativeFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+            const isCssFs = !!(reelWindow && reelWindow.classList.contains('is-css-fullscreen'));
+            return isNativeFs || isCssFs;
+        }
+
+        // Dipakai tombol melayang "← Kembali" di dalam player reel
+        function exitReelFullscreenAll() {
+            const reelWindow = document.querySelector('.lp-reel-window');
+            try {
+                if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                }
+            } catch (e) {}
+            if (reelWindow && reelWindow.classList.contains('is-css-fullscreen')) {
+                reelWindow.classList.remove('is-css-fullscreen');
+                updateReelFullscreenState();
+                notifyReelResize();
+            }
+            clearReelFullscreenHistory();
+        }
+
+        window.addEventListener('popstate', function(e) {
+            if (isReelFullscreenActive()) {
+                // State history sudah dikonsumsi oleh tombol Back: cukup keluar fullscreen
+                window.lvReelFsPushed = false;
+                const reelWindow = document.querySelector('.lp-reel-window');
+                try {
+                    if (document.fullscreenElement || document.webkitFullscreenElement) {
+                        if (document.exitFullscreen) document.exitFullscreen();
+                        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                    }
+                } catch (err) {}
+                if (reelWindow && reelWindow.classList.contains('is-css-fullscreen')) {
+                    reelWindow.classList.remove('is-css-fullscreen');
+                    updateReelFullscreenState();
+                    notifyReelResize();
+                }
+            }
+        });
+
         function enableCssFullscreen(reelWindow) {
             if (!reelWindow) return;
             reelWindow.classList.add('is-css-fullscreen');
+            pushReelFullscreenHistory();
             updateReelFullscreenState();
             notifyReelResize();
         }
@@ -1223,6 +1299,7 @@ if (isset($_SESSION['user_id'])) {
                 const reelWindow = document.querySelector('.lp-reel-window');
                 if (reelWindow && reelWindow.classList.contains('is-css-fullscreen')) {
                     reelWindow.classList.remove('is-css-fullscreen');
+                    clearReelFullscreenHistory();
                     updateReelFullscreenState();
                     notifyReelResize();
                 }
