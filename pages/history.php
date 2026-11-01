@@ -209,14 +209,20 @@ function status_badge($status) {
 
             function positionTooltip(cell) {
                 const text = cell.getAttribute('data-tooltip') || '';
-                if (tooltip) {
+                // HP / perangkat sentuh: cukup readout inline — tooltip floating
+                // menumpuk dengan readout (tap memicu event mouse) dan terpotong
+                // tepi layar. Desktop: hanya tooltip floating (hover).
+                const isTouchLike = (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || window.innerWidth <= 768;
+                if (!isTouchLike && tooltip) {
                     tooltip.textContent = text;
                     tooltip.classList.add('show');
                     const rect = cell.getBoundingClientRect();
-                    tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                    const vw = document.documentElement.clientWidth;
+                    const cx = Math.min(Math.max(rect.left + rect.width / 2, 140), Math.max(140, vw - 140));
+                    tooltip.style.left = cx + 'px';
                     tooltip.style.top = rect.top + 'px';
                 }
-                if (readout) {
+                if (isTouchLike && readout) {
                     readout.textContent = text;
                     readout.classList.add('is-visible');
                 }

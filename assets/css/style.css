@@ -797,6 +797,15 @@ a:hover {
     transform: translate(-50%, -100%) translateY(-12px);
 }
 
+/* Di HP/perangkat sentuh, tooltip floating dimatikan total: tap juga memicu
+   event mouse sehingga info tampil ganda (tooltip + readout inline) dan
+   tooltip melayang terpotong tepi layar. Info di HP lewat readout inline. */
+@media (pointer: coarse), (max-width: 768px) {
+    .heatmap-floating-tooltip {
+        display: none !important;
+    }
+}
+
 /* Info permanen hasil sentuhan heatmap: selalu berada di dalam alur dokumen,
    tidak bisa terpotong overflow:hidden panel seperti tooltip floating */
 .heatmap-inline-readout {
