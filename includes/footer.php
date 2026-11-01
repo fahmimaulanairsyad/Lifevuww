@@ -930,76 +930,173 @@
             });
 
             // 2. Pointer-Event Drag-and-Drop via .drag-handle (Mobile & Desktop Safe)
-            let dragRow = null;
-            let dragList = null;
-            let activePointerId = null;
+            //    Halus: baris terangkat mengikuti pointer via transform GPU (0ms latency),
+            //    baris lain bergeser dengan animasi FLIP 180ms, auto-scroll kontinu
+            //    di tepi viewport, dan haptic feedback halus di HP.
+            let drag = null; // { row, list, placeholder, pointerId, startClientY, lastClientY, rafId, scrollSpeed }
+            let dragFinishing = false;
+
+            const dragReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const FLIP_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+            function dragVisibleRows(list) {
+                return Array.from(list.querySelectorAll(':scope > .data-row')).filter(el => el.style.display !== 'none');
+            }
+
+            // Pindahkan placeholder ke index baru dengan animasi FLIP pada baris terdampak
+            function movePlaceholderTo(index) {
+                const rows = dragVisibleRows(drag.list);
+                const ph = drag.placeholder;
+                const curIdx = rows.indexOf(ph);
+                if (curIdx === index) return;
+
+                if (!dragReduced) {
+                    rows.forEach(r => {
+                        if (r === ph) return;
+                        const first = r.getBoundingClientRect().top;
+                        r.dataset.flipFirst = String(first);
+                    });
+                }
+
+                if (index >= rows.length) drag.list.appendChild(ph);
+                else drag.list.insertBefore(ph, rows[index]);
+
+                if (!dragReduced) {
+                    rows.forEach(r => {
+                        if (r === ph) return;
+                        const first = parseFloat(r.dataset.flipFirst || '0');
+                        delete r.dataset.flipFirst;
+                        const delta = first - r.getBoundingClientRect().top;
+                        if (!delta) return;
+                        r.style.transition = 'none';
+                        r.style.transform = 'translateY(' + delta + 'px)';
+                        requestAnimationFrame(() => {
+                            r.style.transition = 'transform 180ms ' + FLIP_EASE;
+                            r.style.transform = '';
+                        });
+                        r.addEventListener('transitionend', function te(ev) {
+                            if (ev.propertyName !== 'transform') return;
+                            r.style.transition = '';
+                            r.removeEventListener('transitionend', te);
+                        });
+                    });
+                }
+                if (navigator.vibrate) { try { navigator.vibrate(4); } catch (_) {} }
+            }
+
+            // Hitung index target placeholder dari posisi pointer (viewport Y)
+            function targetIndexFor(clientY) {
+                const rows = dragVisibleRows(drag.list);
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i] === drag.placeholder) continue;
+                    const box = rows[i].getBoundingClientRect();
+                    if (clientY < box.top + box.height / 2) return i;
+                }
+                return rows.length;
+            }
+
+            // Loop rAF: baris mengikuti pointer + auto-scroll kontinu di tepi layar
+            function dragFrame() {
+                if (!drag) return;
+                const dy = drag.lastClientY - drag.startClientY;
+                drag.row.style.transform = 'translate3d(0, ' + dy + 'px, 0) scale(1.02)';
+
+                const edge = 84;
+                let speed = 0;
+                if (drag.lastClientY < edge) {
+                    speed = -Math.ceil((1 - drag.lastClientY / edge) * 16);
+                } else if (window.innerHeight - drag.lastClientY < edge) {
+                    speed = Math.ceil((1 - (window.innerHeight - drag.lastClientY) / edge) * 16);
+                }
+                if (speed) window.scrollBy(0, speed);
+
+                const idx = targetIndexFor(drag.lastClientY);
+                movePlaceholderTo(idx);
+
+                drag.rafId = requestAnimationFrame(dragFrame);
+            }
 
             document.addEventListener('pointerdown', function(e) {
+                if (drag || dragFinishing) return;
                 const handle = e.target.closest('.drag-handle');
                 if (!handle) return;
                 const row = handle.closest('.data-row');
                 const list = handle.closest('.data-list[data-reorder-endpoint]');
-                if (!row || !list) return;
+                if (!row || !list || dragVisibleRows(list).length < 2) return;
 
                 e.preventDefault();
-                dragRow = row;
-                dragList = list;
-                activePointerId = e.pointerId;
 
-                try {
-                    handle.setPointerCapture(e.pointerId);
-                } catch (_) {}
+                const rect = row.getBoundingClientRect();
+                const placeholder = document.createElement('div');
+                placeholder.className = 'reorder-placeholder';
+                placeholder.style.height = rect.height + 'px';
 
-                dragRow.classList.add('is-dragging');
+                drag = {
+                    row, list, placeholder,
+                    pointerId: e.pointerId,
+                    startClientY: e.clientY,
+                    lastClientY: e.clientY,
+                    rafId: null
+                };
+
+                try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+
+                // Angkat baris: keluar dari list, melayang fixed mengikuti pointer;
+                // placeholder mengambil slot asalnya agar layout tidak melompat
+                list.insertBefore(placeholder, row.nextSibling);
+                document.body.appendChild(row);
+                row.classList.add('is-dragging');
+                row.style.position = 'fixed';
+                row.style.top = rect.top + 'px';
+                row.style.left = rect.left + 'px';
+                row.style.width = rect.width + 'px';
+                row.style.zIndex = '1099';
+                row.style.pointerEvents = 'none';
+                row.style.transform = 'translate3d(0, 0, 0) scale(1.02)';
                 document.body.classList.add('is-reordering-active');
                 if (typeof LVSound !== 'undefined') LVSound.tick();
+                if (navigator.vibrate) { try { navigator.vibrate(8); } catch (_) {} }
+
+                drag.rafId = requestAnimationFrame(dragFrame);
             });
 
             document.addEventListener('pointermove', function(e) {
-                if (!dragRow || !dragList || e.pointerId !== activePointerId) return;
+                if (!drag || e.pointerId !== drag.pointerId) return;
                 e.preventDefault();
-
-                const clientY = e.clientY;
-                // Auto-scroll viewport smoothly when dragging near top or bottom edge
-                const edgeThreshold = 70;
-                if (clientY < edgeThreshold) {
-                    window.scrollBy(0, -10);
-                } else if (window.innerHeight - clientY < edgeThreshold) {
-                    window.scrollBy(0, 10);
-                }
-
-                const siblings = Array.from(dragList.querySelectorAll(':scope > .data-row:not(.is-dragging)')).filter(el => el.style.display !== 'none');
-                let nextSibling = null;
-                for (const sib of siblings) {
-                    const box = sib.getBoundingClientRect();
-                    const midY = box.top + box.height / 2;
-                    if (clientY < midY) {
-                        nextSibling = sib;
-                        break;
-                    }
-                }
-
-                if (nextSibling) {
-                    if (nextSibling !== dragRow.nextElementSibling) {
-                        dragList.insertBefore(dragRow, nextSibling);
-                    }
-                } else {
-                    dragList.appendChild(dragRow);
-                }
+                drag.lastClientY = e.clientY;
             }, { passive: false });
 
             async function finishDrag(e) {
-                if (!dragRow || !dragList) return;
-                if (e && activePointerId !== null && e.pointerId !== undefined && e.pointerId !== activePointerId) return;
+                if (!drag || (e && drag.pointerId !== null && e.pointerId !== undefined && e.pointerId !== drag.pointerId)) return;
 
-                const row = dragRow;
-                const list = dragList;
-                dragRow = null;
-                dragList = null;
-                activePointerId = null;
+                const state = drag;
+                drag = null;
+                dragFinishing = true;
+                if (state.rafId) cancelAnimationFrame(state.rafId);
 
+                const row = state.row;
+                const list = state.list;
+                const placeholder = state.placeholder;
+
+                // Animasi mendarat halus ke posisi placeholder
+                const rowTop = row.getBoundingClientRect().top;
+                const targetTop = placeholder.getBoundingClientRect().top;
+                const dy = targetTop - rowTop;
+
+                if (!dragReduced && Math.abs(dy) > 1) {
+                    row.style.transition = 'transform 200ms ' + FLIP_EASE;
+                    row.style.transform = 'translate3d(0, ' + dy + 'px, 0) scale(1)';
+                    await new Promise(r => setTimeout(r, 200));
+                }
+
+                // Kembalikan baris ke list pada slot placeholder, rapikan style
+                list.insertBefore(row, placeholder);
+                placeholder.remove();
+                ['position', 'top', 'left', 'width', 'zIndex', 'pointerEvents', 'transform', 'transition']
+                    .forEach(prop => { row.style[prop] = ''; });
                 row.classList.remove('is-dragging');
                 document.body.classList.remove('is-reordering-active');
+                dragFinishing = false;
 
                 // Switch dropdown to Custom Priority mode so user sees their custom order retained
                 const isQuest = (list.getAttribute('data-reorder-endpoint') || '').indexOf('quests.php') !== -1;
@@ -1010,6 +1107,7 @@
                 }
 
                 if (typeof LVSound !== 'undefined') LVSound.tick();
+                if (navigator.vibrate) { try { navigator.vibrate(6); } catch (_) {} }
                 await persistListOrder(list);
             }
 
