@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['username'] = $demoUser['username'];
                 $_SESSION['level'] = $demoUser['level'];
                 $_SESSION['last_activity'] = time();
+                lv_issue_remember_token($pdo, (int) $demoUser['user_id']);
                 header("Location: pages/dashboard.php");
                 exit();
             }
@@ -69,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['level'] = $user['level'];
                 $_SESSION['last_activity'] = time();
+                lv_issue_remember_token($pdo, (int) $user['user_id']);
                 header("Location: pages/dashboard.php");
                 exit();
             } else {

@@ -351,14 +351,29 @@ if (!function_exists('revert_skill_progress')) {
     }
 }
 
+if (!function_exists('lv_session_lifetime')) {
+    // Masa berlaku login tersimpan (cookie sesi & token remember-me).
+    // Dikonfigurasi lewat .env: SESSION_LIFETIME_DAYS (default 30 hari).
+    function lv_session_lifetime(): int {
+        $days = (int) ($_ENV['SESSION_LIFETIME_DAYS'] ?? getenv('SESSION_LIFETIME_DAYS') ?: 30);
+        return max(1, $days) * 86400;
+    }
+}
+
 if (!function_exists('secure_session_start')) {
     // Session bootstrap with hardened cookie flags. Must run BEFORE
     // session_start() - callers must require database.php first.
+    // Cookie persisten (bukan session-cookie) agar login di APK WebView
+    // dan browser tidak hilang setiap kali aplikasi ditutup.
     function secure_session_start() {
         if (session_status() !== PHP_SESSION_NONE) return;
         $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+        $lifetime = lv_session_lifetime();
+        // Naikkan masa hidup file sesi di server agar GC PHP tidak
+        // menghapus sesi yang masih dipakai cookie jangka panjang.
+        @ini_set('session.gc_maxlifetime', (string) $lifetime);
         session_set_cookie_params([
-            'lifetime' => 0,
+            'lifetime' => $lifetime,
             'path' => '/',
             'httponly' => true,
             'samesite' => 'Lax',
@@ -368,20 +383,157 @@ if (!function_exists('secure_session_start')) {
     }
 }
 
+if (!function_exists('lv_remember_cookie_clear')) {
+    function lv_remember_cookie_clear(): void {
+        if (!headers_sent()) {
+            $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            setcookie('lv_remember', '', [
+                'expires' => time() - 42000,
+                'path' => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+                'secure' => $secure,
+            ]);
+        }
+        unset($_COOKIE['lv_remember']);
+    }
+}
+
+if (!function_exists('lv_issue_remember_token')) {
+    // Terbitkan token remember-me saat login sukses (login manual & demo).
+    // Format cookie: selector:validator — validator disimpan sebagai SHA-256,
+    // sehingga bocornya database tidak langsung membocorkan cookie.
+    function lv_issue_remember_token(PDO $pdo, int $userId): void {
+        try {
+            $selector = bin2hex(random_bytes(9));
+            $validator = bin2hex(random_bytes(32));
+            $lifetime = lv_session_lifetime();
+            $stmt = $pdo->prepare("
+                INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at)
+                VALUES (?, ?, ?, ?)
+            ");
+            $stmt->execute([$userId, $selector, hash('sha256', $validator), date('Y-m-d H:i:s', time() + $lifetime)]);
+            // Buang token user ini yang sudah kedaluwarsa (hemat baris tabel)
+            $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ? AND expires_at < NOW()")
+                ->execute([$userId]);
+            $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            setcookie('lv_remember', $selector . ':' . $validator, [
+                'expires' => time() + $lifetime,
+                'path' => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+                'secure' => $secure,
+            ]);
+        } catch (Exception $e) {
+            error_log("Remember token issue failed: " . $e->getMessage());
+        }
+    }
+}
+
+if (!function_exists('lv_consume_remember_token')) {
+    // Auto-login dari cookie lv_remember saat sesi PHP sudah hilang.
+    // Validator dirotasi pada tiap pemakaian (mencegah replay cookie lama)
+    // dan ketidakcocokan validator mencabut seluruh token user terkait.
+    function lv_consume_remember_token(PDO $pdo): bool {
+        $raw = $_COOKIE['lv_remember'] ?? '';
+        if (!preg_match('/^([a-f0-9]{16,64}):([a-f0-9]{32,128})$/', $raw, $m)) {
+            return false;
+        }
+        try {
+            $stmt = $pdo->prepare("
+                SELECT rt.id, rt.user_id, rt.validator_hash, rt.expires_at, u.username, u.level
+                FROM remember_tokens rt
+                JOIN users u ON u.user_id = rt.user_id
+                WHERE rt.selector = ?
+                LIMIT 1
+            ");
+            $stmt->execute([$m[1]]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) {
+                lv_remember_cookie_clear();
+                return false;
+            }
+            if (!hash_equals((string) $row['validator_hash'], hash('sha256', $m[2]))) {
+                // Cookie dengan selector valid tapi validator salah: indikasi
+                // cookie dicuri/direplay — cabut semua token user ini.
+                $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?")
+                    ->execute([(int) $row['user_id']]);
+                lv_remember_cookie_clear();
+                return false;
+            }
+            if (strtotime((string) $row['expires_at']) < time()) {
+                $pdo->prepare("DELETE FROM remember_tokens WHERE id = ?")->execute([(int) $row['id']]);
+                lv_remember_cookie_clear();
+                return false;
+            }
+
+            $lifetime = lv_session_lifetime();
+            // Slide masa berlaku token + rotasi validator
+            $newValidator = bin2hex(random_bytes(32));
+            $stmtUp = $pdo->prepare("UPDATE remember_tokens SET validator_hash = ?, expires_at = ? WHERE id = ?");
+            $stmtUp->execute([hash('sha256', $newValidator), date('Y-m-d H:i:s', time() + $lifetime), (int) $row['id']]);
+            $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ? AND expires_at < NOW()")
+                ->execute([(int) $row['user_id']]);
+            $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+            setcookie('lv_remember', $m[1] . ':' . $newValidator, [
+                'expires' => time() + $lifetime,
+                'path' => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+                'secure' => $secure,
+            ]);
+
+            // Bangun ulang sesi seperti hasil login (id sesi baru anti-fixation)
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = (int) $row['user_id'];
+            $_SESSION['username'] = (string) $row['username'];
+            $_SESSION['level'] = (int) $row['level'];
+            $_SESSION['last_activity'] = time();
+            return true;
+        } catch (Exception $e) {
+            error_log("Remember token consume failed: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+
+if (!function_exists('lv_revoke_remember_token')) {
+    // Cabut token remember-me milik cookie ini (dipakai logout).
+    function lv_revoke_remember_token(PDO $pdo): void {
+        $raw = $_COOKIE['lv_remember'] ?? '';
+        if (preg_match('/^([a-f0-9]{16,64}):/', $raw, $m)) {
+            try {
+                $pdo->prepare("DELETE FROM remember_tokens WHERE selector = ?")->execute([$m[1]]);
+            } catch (Exception $e) {
+                error_log("Remember token revoke failed: " . $e->getMessage());
+            }
+        }
+        lv_remember_cookie_clear();
+    }
+}
+
 if (!function_exists('enforce_login')) {
-    // Starts a hardened session, redirects guests, enforces idle timeout, and
-    // runs the daily rollover BEFORE any page handler (so no handler ever sees
-    // yesterday's flags on a new day).
-    function enforce_login($loginPath = '../login.php', $timeoutSeconds = 1800) {
+    // Starts a hardened session, redirects guests, enforces optional idle
+    // timeout, and runs the daily rollover BEFORE any page handler (so no
+    // handler ever sees yesterday's flags on a new day).
+    // Login dipertahankan antar buka-aplikasi lewat remember token; idle
+    // timeout lama (30 menit) memaksa re-login terus di APK sehingga
+    // diganti SESSION_IDLE_TIMEOUT (.env, 0 = nonaktif).
+    function enforce_login($loginPath = '../login.php', $timeoutSeconds = null) {
         global $pdo;
         secure_session_start();
         if (!isset($_SESSION['user_id'])) {
-            header("Location: " . $loginPath);
-            exit();
+            // Sesi PHP hilang (server restart / GC hosting): pulihkan dari cookie remember-me
+            if (!(isset($pdo) && lv_consume_remember_token($pdo))) {
+                header("Location: " . $loginPath);
+                exit();
+            }
         }
-        if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeoutSeconds)) {
+        $idleLimit = $timeoutSeconds ?? (int) ($_ENV['SESSION_IDLE_TIMEOUT'] ?? getenv('SESSION_IDLE_TIMEOUT') ?: 0);
+        if ($idleLimit > 0 && isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $idleLimit)) {
             session_unset();
             session_destroy();
+            lv_remember_cookie_clear();
             header("Location: " . $loginPath . "?timeout=1");
             exit();
         }

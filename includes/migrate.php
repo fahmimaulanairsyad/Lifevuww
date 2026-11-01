@@ -72,6 +72,22 @@ function run_lifevuww_migrations(PDO $pdo): array {
     }
 
     $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `remember_tokens` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `user_id` int(11) NOT NULL,
+            `selector` varchar(64) NOT NULL,
+            `validator_hash` char(64) NOT NULL,
+            `expires_at` datetime NOT NULL,
+            `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `uniq_selector` (`selector`),
+            KEY `idx_rt_user` (`user_id`),
+            KEY `idx_rt_expires` (`expires_at`),
+            CONSTRAINT `fk_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    ");
+
+    $pdo->exec("
         CREATE TABLE IF NOT EXISTS `user_relics` (
             `id` int(11) NOT NULL AUTO_INCREMENT,
             `user_id` int(11) NOT NULL,
@@ -128,6 +144,7 @@ function ensure_lifevuww_migrated(PDO $pdo): void {
         $pdo->query("SELECT target_count, is_pinned, sort_order FROM habits LIMIT 1");
         $pdo->query("SELECT is_pinned, sort_order, end_date FROM quests LIMIT 1");
         $pdo->query("SELECT specialization FROM users LIMIT 1");
+        $pdo->query("SELECT id, selector, validator_hash FROM remember_tokens LIMIT 1");
         $pdo->query("SELECT id FROM user_relics LIMIT 1");
     } catch (Exception $e) {
         run_lifevuww_migrations($pdo);
