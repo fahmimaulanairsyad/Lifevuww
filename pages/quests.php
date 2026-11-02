@@ -242,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $oldRank = calculateRank($oldLvl);
                 $newRank = calculateRank($newLvl);
 
-                $stmt = $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ?, rank = ? WHERE user_id = ?");
+                $stmt = $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ?, `rank` = ? WHERE user_id = ?");
                 $stmt->execute([$expReward, $goldReward, $newLvl, $newRank, $_SESSION['user_id']]);
 
                 if ($newLvl > $oldLvl) {
@@ -344,7 +344,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ->execute([$questId, $_SESSION['user_id']]);
 
                 // Kurangi EXP, Gold, dan perbarui level serta rank
-                $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ?, rank = ? WHERE user_id = ?")
+                $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ?, `rank` = ? WHERE user_id = ?")
                     ->execute([$newExp, $newGold, $newLevel, $newRank, $_SESSION['user_id']]);
 
                 // Revert progress skill

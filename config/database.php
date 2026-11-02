@@ -227,7 +227,7 @@ if (!function_exists('ensure_demo_user')) {
         // Buat akun demo baru dengan saldo awal & level 5
         $demoPass = password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT);
         $stmt = $pdo->prepare("
-            INSERT INTO users (user_id, username, password, email, rank, level, exp, hp, max_hp, gold, streak_freeze, last_daily_check, specialization)
+            INSERT INTO users (user_id, username, password, email, `rank`, level, exp, hp, max_hp, gold, streak_freeze, last_daily_check, specialization)
             VALUES (?, ?, ?, ?, 'D-Rank Explorer', 5, 450, 90, 100, 125, 1, CURDATE(), 'Obsidian Vanguard')
         ");
         $stmt->execute([$targetId, $demoUsername, $demoPass, $demoEmail]);

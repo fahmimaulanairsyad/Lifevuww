@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $pdo->beginTransaction();
     try {
-        $stmtUser = $pdo->prepare("SELECT exp, level, gold, hp, max_hp, rank FROM users WHERE user_id = ? FOR UPDATE");
+        $stmtUser = $pdo->prepare("SELECT exp, level, gold, hp, max_hp, `rank` FROM users WHERE user_id = ? FOR UPDATE");
         $stmtUser->execute([$userId]);
         $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
 
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $newLvl = calculateLevel($newExp);
         $newRank = calculateRank($newLvl);
 
-        $stmtUp = $pdo->prepare("UPDATE users SET exp = ?, level = ?, rank = ?, gold = gold + ? WHERE user_id = ?");
+        $stmtUp = $pdo->prepare("UPDATE users SET exp = ?, level = ?, `rank` = ?, gold = gold + ? WHERE user_id = ?");
         $stmtUp->execute([$newExp, $newLvl, $newRank, $goldGain, $userId]);
 
         // Bump skill attribute progress
