@@ -73,6 +73,10 @@ try {
         } else {
             $pdo->prepare("UPDATE users SET password = ? WHERE user_id = ?")
                 ->execute([password_hash($new, PASSWORD_DEFAULT), $_SESSION['user_id']]);
+            // Cabut semua remember token lain agar sesi di perangkat lain ter-logout, lalu terbitkan token baru untuk sesi ini
+            $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?")->execute([$_SESSION['user_id']]);
+            session_regenerate_id(true);
+            lv_issue_remember_token($pdo, (int) $_SESSION['user_id']);
             $passSaved = true;
         }
     }

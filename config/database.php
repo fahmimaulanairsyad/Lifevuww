@@ -401,7 +401,7 @@ if (!function_exists('lv_remember_cookie_clear')) {
 
 if (!function_exists('lv_issue_remember_token')) {
     // Terbitkan token remember-me saat login sukses (login manual & demo).
-    // Format cookie: selector:validator — validator disimpan sebagai SHA-256,
+    // Format cookie: selector:validator - validator disimpan sebagai SHA-256,
     // sehingga bocornya database tidak langsung membocorkan cookie.
     function lv_issue_remember_token(PDO $pdo, int $userId): void {
         try {
@@ -413,6 +413,16 @@ if (!function_exists('lv_issue_remember_token')) {
                 VALUES (?, ?, ?, ?)
             ");
             $stmt->execute([$userId, $selector, hash('sha256', $validator), date('Y-m-d H:i:s', time() + $lifetime)]);
+
+            // Simpan hanya 10 token terbaru per user (portabel, tanpa subquery ber-LIMIT)
+            $stmtOld = $pdo->prepare("SELECT id FROM remember_tokens WHERE user_id = ? ORDER BY id DESC LIMIT 100 OFFSET 10");
+            $stmtOld->execute([$userId]);
+            $oldIds = $stmtOld->fetchAll(PDO::FETCH_COLUMN);
+            if (!empty($oldIds)) {
+                $in = implode(',', array_fill(0, count($oldIds), '?'));
+                $pdo->prepare("DELETE FROM remember_tokens WHERE id IN ($in)")->execute($oldIds);
+            }
+
             // Buang token user ini yang sudah kedaluwarsa (hemat baris tabel)
             $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ? AND expires_at < NOW()")
                 ->execute([$userId]);
@@ -432,8 +442,7 @@ if (!function_exists('lv_issue_remember_token')) {
 
 if (!function_exists('lv_consume_remember_token')) {
     // Auto-login dari cookie lv_remember saat sesi PHP sudah hilang.
-    // Validator dirotasi pada tiap pemakaian (mencegah replay cookie lama)
-    // dan ketidakcocokan validator mencabut seluruh token user terkait.
+    // Validator dirotasi pada tiap pemakaian dengan grace period 60 detik untuk request paralel.
     function lv_consume_remember_token(PDO $pdo): bool {
         $raw = $_COOKIE['lv_remember'] ?? '';
         if (!preg_match('/^([a-f0-9]{16,64}):([a-f0-9]{32,128})$/', $raw, $m)) {
@@ -441,7 +450,7 @@ if (!function_exists('lv_consume_remember_token')) {
         }
         try {
             $stmt = $pdo->prepare("
-                SELECT rt.id, rt.user_id, rt.validator_hash, rt.expires_at, u.username, u.level
+                SELECT rt.id, rt.user_id, rt.validator_hash, rt.prev_validator_hash, rt.rotated_at, rt.expires_at, u.username, u.level
                 FROM remember_tokens rt
                 JOIN users u ON u.user_id = rt.user_id
                 WHERE rt.selector = ?
@@ -453,43 +462,64 @@ if (!function_exists('lv_consume_remember_token')) {
                 lv_remember_cookie_clear();
                 return false;
             }
-            if (!hash_equals((string) $row['validator_hash'], hash('sha256', $m[2]))) {
-                // Cookie dengan selector valid tapi validator salah: indikasi
-                // cookie dicuri/direplay — cabut semua token user ini.
-                $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?")
-                    ->execute([(int) $row['user_id']]);
-                lv_remember_cookie_clear();
-                return false;
-            }
+
             if (strtotime((string) $row['expires_at']) < time()) {
                 $pdo->prepare("DELETE FROM remember_tokens WHERE id = ?")->execute([(int) $row['id']]);
                 lv_remember_cookie_clear();
                 return false;
             }
 
-            $lifetime = lv_session_lifetime();
-            // Slide masa berlaku token + rotasi validator
-            $newValidator = bin2hex(random_bytes(32));
-            $stmtUp = $pdo->prepare("UPDATE remember_tokens SET validator_hash = ?, expires_at = ? WHERE id = ?");
-            $stmtUp->execute([hash('sha256', $newValidator), date('Y-m-d H:i:s', time() + $lifetime), (int) $row['id']]);
-            $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ? AND expires_at < NOW()")
-                ->execute([(int) $row['user_id']]);
-            $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-            setcookie('lv_remember', $m[1] . ':' . $newValidator, [
-                'expires' => time() + $lifetime,
-                'path' => '/',
-                'httponly' => true,
-                'samesite' => 'Lax',
-                'secure' => $secure,
-            ]);
+            $inputHash = hash('sha256', $m[2]);
 
-            // Bangun ulang sesi seperti hasil login (id sesi baru anti-fixation)
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = (int) $row['user_id'];
-            $_SESSION['username'] = (string) $row['username'];
-            $_SESSION['level'] = (int) $row['level'];
-            $_SESSION['last_activity'] = time();
-            return true;
+            // 1. Validator cocok dengan validator_hash saat ini -> rotasi token dan login normal
+            if (hash_equals((string) $row['validator_hash'], $inputHash)) {
+                $lifetime = lv_session_lifetime();
+                $newValidator = bin2hex(random_bytes(32));
+                $newValidatorHash = hash('sha256', $newValidator);
+                $oldValidatorHash = (string) $row['validator_hash'];
+
+                $stmtUp = $pdo->prepare("
+                    UPDATE remember_tokens 
+                    SET validator_hash = ?, prev_validator_hash = ?, rotated_at = NOW(), expires_at = ? 
+                    WHERE id = ?
+                ");
+                $stmtUp->execute([$newValidatorHash, $oldValidatorHash, date('Y-m-d H:i:s', time() + $lifetime), (int) $row['id']]);
+
+                $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ? AND expires_at < NOW()")
+                    ->execute([(int) $row['user_id']]);
+
+                $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+                setcookie('lv_remember', $m[1] . ':' . $newValidator, [
+                    'expires' => time() + $lifetime,
+                    'path' => '/',
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                    'secure' => $secure,
+                ]);
+
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = (int) $row['user_id'];
+                $_SESSION['username'] = (string) $row['username'];
+                $_SESSION['level'] = (int) $row['level'];
+                $_SESSION['last_activity'] = time();
+                return true;
+            }
+
+            // 2. Grace period untuk request paralel: validator cocok dengan prev_validator_hash (maks 60 detik lalu)
+            if (!empty($row['prev_validator_hash']) && hash_equals((string) $row['prev_validator_hash'], $inputHash) && !empty($row['rotated_at']) && (time() - strtotime((string) $row['rotated_at']) <= 60)) {
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = (int) $row['user_id'];
+                $_SESSION['username'] = (string) $row['username'];
+                $_SESSION['level'] = (int) $row['level'];
+                $_SESSION['last_activity'] = time();
+                return true;
+            }
+
+            // 3. Selain itu (validator salah dan di luar grace period) -> cabut semua token user dan clear cookie
+            $pdo->prepare("DELETE FROM remember_tokens WHERE user_id = ?")
+                ->execute([(int) $row['user_id']]);
+            lv_remember_cookie_clear();
+            return false;
         } catch (Exception $e) {
             error_log("Remember token consume failed: " . $e->getMessage());
             return false;
