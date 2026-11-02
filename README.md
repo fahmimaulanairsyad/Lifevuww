@@ -148,8 +148,10 @@ Setiap kebiasaan positif yang Anda selesaikan memberikan **Experience Points (EX
      DB_PASSWORD=
      ```
 4. **Setup Database:**
-   * Import file `database.sql` ke database Anda melalui phpMyAdmin atau MySQL CLI.
-   * Jalankan runner migrasi otomatis:
+   * Import file `database.sql` ke database Anda melalui phpMyAdmin atau MySQL CLI. Berkas `database.sql` adalah baseline lengkap yang sudah mencatat seluruh migrasi.
+   * Pada instalasi baru di MySQL 8, wajib menggunakan `database.sql` karena berkas migrasi lama 002-007 memakai sintaks `IF NOT EXISTS` khusus MariaDB.
+   * Berkas migrasi baru di folder `migrations/` akan terpasang otomatis saat web dibuka setelah konstanta `LV_SCHEMA_VERSION` dinaikkan.
+   * Perintah `php migrate.php` bersifat opsional khusus untuk hosting atau server yang memiliki akses CLI:
      ```bash
      php migrate.php
      ```
