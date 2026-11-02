@@ -131,6 +131,33 @@ assert_test("Interval 1 bulan belum jatuh tempo jika selesai 10 hari lalu", isHa
 assert_test("Interval 1 bulan jatuh tempo jika selesai 30 hari lalu", isHabitDueToday(['schedule_type' => 'interval_months', 'schedule_value' => '1', 'last_completed_at' => '2026-09-28 10:00:00'], $testDateWed) === true);
 assert_test("Habit yang sudah selesai hari ini selalu due", isHabitDueToday(['schedule_type' => 'interval_days', 'schedule_value' => '5', 'completed_today' => 1, 'last_completed_at' => '2026-10-28 10:00:00'], $testDateWed) === true);
 
+echo "\n9. Rollover multi-hari & payload jadwal:\n";
+$H1 = ['habit_id'=>1,'reset_period'=>'daily','schedule_type'=>'daily','schedule_value'=>'1','last_completed_at'=>null];
+$H2 = ['habit_id'=>2,'reset_period'=>'daily','schedule_type'=>'weekly_days','schedule_value'=>'1,3,5','last_completed_at'=>null];
+$H3 = ['habit_id'=>3,'reset_period'=>'weekly','schedule_type'=>'daily','schedule_value'=>'1','last_completed_at'=>null];
+$H4 = ['habit_id'=>4,'reset_period'=>'monthly','schedule_type'=>'interval_months','schedule_value'=>'1','last_completed_at'=>null];
+$H5 = ['habit_id'=>5,'reset_period'=>'daily','schedule_type'=>'interval_days','schedule_value'=>'3','last_completed_at'=>'2026-10-28 09:00:00'];
+
+assert_test("T1 [H1] 10-29 s/d 10-31, tanpa log", game_missed_habits_by_day([$H1], '2026-10-29', '2026-10-31', []) === ['2026-10-29'=>[1], '2026-10-30'=>[1], '2026-10-31'=>[1]]);
+assert_test("T2 [H1] 10-29 s/d 10-31, log 1@10-29", game_missed_habits_by_day([$H1], '2026-10-29', '2026-10-31', [['habit_id'=>1, 'date'=>'2026-10-29']]) === ['2026-10-30'=>[1], '2026-10-31'=>[1]]);
+assert_test("T3 [H2] 10-26 s/d 11-01, log 2@10-26", game_missed_habits_by_day([$H2], '2026-10-26', '2026-11-01', [['habit_id'=>2, 'date'=>'2026-10-26']]) === ['2026-10-28'=>[2], '2026-10-30'=>[2]]);
+assert_test("T3b [H2] 10-26 s/d 11-01, log 2@10-26, 2@10-28, 2@10-30", game_missed_habits_by_day([$H2], '2026-10-26', '2026-11-01', [['habit_id'=>2, 'date'=>'2026-10-26'], ['habit_id'=>2, 'date'=>'2026-10-28'], ['habit_id'=>2, 'date'=>'2026-10-30']]) === []);
+assert_test("T4 [H3] 10-26 s/d 11-01, tanpa log", game_missed_habits_by_day([$H3], '2026-10-26', '2026-11-01', []) === ['2026-11-01'=>[3]]);
+assert_test("T4b [H3] 10-26 s/d 11-01, log 3@10-28", game_missed_habits_by_day([$H3], '2026-10-26', '2026-11-01', [['habit_id'=>3, 'date'=>'2026-10-28']]) === []);
+assert_test("T4c [H3] 10-28 s/d 11-02, log 3@10-27", game_missed_habits_by_day([$H3], '2026-10-28', '2026-11-02', [['habit_id'=>3, 'date'=>'2026-10-27']]) === []);
+assert_test("T4d [H3] 10-26 s/d 10-31, tanpa log", game_missed_habits_by_day([$H3], '2026-10-26', '2026-10-31', []) === []);
+assert_test("T5 [H4] 10-29 s/d 11-01, tanpa log", game_missed_habits_by_day([$H4], '2026-10-29', '2026-11-01', []) === ['2026-10-31'=>[4]]);
+assert_test("T5b [H4] 10-29 s/d 11-01, log 4@10-05", game_missed_habits_by_day([$H4], '2026-10-29', '2026-11-01', [['habit_id'=>4, 'date'=>'2026-10-05']]) === []);
+assert_test("T6 [H5] 10-29 s/d 11-01, tanpa log", game_missed_habits_by_day([$H5], '2026-10-29', '2026-11-01', []) === ['2026-10-31'=>[5], '2026-11-01'=>[5]]);
+assert_test("T7 [H1] from 11-02, to 11-01 (from > to)", game_missed_habits_by_day([$H1], '2026-11-02', '2026-11-01', []) === []);
+assert_test("T8 [H1,H2] 10-26 s/d 10-28, tanpa log", game_missed_habits_by_day([$H1, $H2], '2026-10-26', '2026-10-28', []) === ['2026-10-26'=>[1,2], '2026-10-27'=>[1], '2026-10-28'=>[1,2]]);
+
+assert_test("Payload daily default", parse_habit_schedule_payload(['schedule_type'=>'daily']) === [1,'daily','1','daily']);
+assert_test("Payload weekly_days 1,3,5", parse_habit_schedule_payload(['schedule_type'=>'weekly_days','weekly_days_val'=>['1','3','5']]) === [1,'weekly_days','1,3,5','daily']);
+assert_test("Payload interval_days 3", parse_habit_schedule_payload(['schedule_type'=>'interval_days','interval_days_val'=>'3']) === [1,'interval_days','3','daily']);
+assert_test("Payload interval_weeks 2", parse_habit_schedule_payload(['schedule_type'=>'interval_weeks','interval_weeks_val'=>'2']) === [1,'interval_weeks','2','weekly']);
+assert_test("Payload interval_months 1", parse_habit_schedule_payload(['schedule_type'=>'interval_months','interval_months_val'=>'1']) === [1,'interval_months','1','monthly']);
+
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";
 if ($failed > 0) {

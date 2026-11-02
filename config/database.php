@@ -599,57 +599,84 @@ if (!function_exists('run_daily_rollover')) {
                 $periodSql = implode(',', $periods);
                 $periodCond = "COALESCE(LOWER(reset_period), 'daily') IN ($periodSql)";
 
-                // 1. Missed habits (only those whose period just ended and were actually due)
-                try {
-                    $stmtMissed = $pdo->prepare("
-                        SELECT habit_id, difficulty, schedule_type, schedule_value, last_completed_at, completed_today, reset_period FROM habits
-                        WHERE user_id = ? AND completed_today = 0 AND $periodCond
-                    ");
-                    $stmtMissed->execute([$userId]);
-                    $allMissed = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
-                } catch (Exception $eCols) {
-                    $stmtMissed = $pdo->prepare("
-                        SELECT habit_id, difficulty, completed_today, reset_period FROM habits
-                        WHERE user_id = ? AND completed_today = 0 AND $periodCond
-                    ");
-                    $stmtMissed->execute([$userId]);
-                    $allMissed = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
+                // 1. Missed habits (Evaluasi multi-hari dengan game_missed_habits_by_day)
+                $thirtyDaysAgo = date('Y-m-d', strtotime('-30 days'));
+                $from = ($lastDate < $thirtyDaysAgo) ? $thirtyDaysAgo : $lastDate;
+                $to = $yesterday;
+
+                $stmtHabits = $pdo->prepare("
+                    SELECT habit_id, difficulty, reset_period, schedule_type, schedule_value, last_completed_at
+                    FROM habits
+                    WHERE user_id = ?
+                ");
+                $stmtHabits->execute([$userId]);
+                $allHabits = $stmtHabits->fetchAll(PDO::FETCH_ASSOC);
+
+                $logsFrom = date('Y-m-d', strtotime($from . ' -31 days'));
+                $stmtLogs = $pdo->prepare("
+                    SELECT habit_id, completion_date AS date
+                    FROM habit_logs
+                    WHERE user_id = ? AND status = 'Completed' AND completion_date >= ?
+                ");
+                $stmtLogs->execute([$userId, $logsFrom]);
+                $completedLogs = $stmtLogs->fetchAll(PDO::FETCH_ASSOC);
+
+                $missedByDay = game_missed_habits_by_day($allHabits, $from, $to, $completedLogs);
+                ksort($missedByDay);
+
+                $freezeLeft = (int) ($user['streak_freeze'] ?? 0);
+                $freezeUsed = 0;
+                $habitDamage = 0;
+                $missedStreakIds = [];
+                $diffRules = game_difficulties();
+
+                $stmtLogFail = $pdo->prepare("
+                    INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward)
+                    VALUES (?, ?, ?, 'Failed', 0)
+                ");
+
+                $habitMap = [];
+                foreach ($allHabits as $h) {
+                    $habitMap[(int) $h['habit_id']] = $h;
                 }
 
-                // Filter agar penalti hanya dikenakan pada habit yang memang jatuh tempo kemarin
-                $missed = array_values(array_filter($allMissed, fn($h) => isHabitDueToday($h, $yesterday)));
+                foreach ($missedByDay as $date => $hIds) {
+                    if (empty($hIds)) continue;
 
-                if (!empty($missed)) {
-                    if (($user['streak_freeze'] ?? 0) > 0) {
-                        $pdo->prepare("UPDATE users SET streak_freeze = streak_freeze - 1 WHERE user_id = ?")
-                            ->execute([$userId]);
-                        $result['frozen'] = true;
+                    if ($freezeLeft > 0) {
+                        $freezeLeft--;
+                        $freezeUsed++;
+                        // Dilindungi streak freeze: tanpa damage, reset streak, atau log Failed
                     } else {
-                        $damage = 0;
-                        $missedIds = [];
-                        $diffRules = game_difficulties();
-                        foreach ($missed as $h) {
-                            $damage += $diffRules[$h['difficulty']]['hp_penalty_habit'] ?? 5;
-                            $missedIds[] = (int) $h['habit_id'];
-                        }
-                        $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")
-                            ->execute([$damage, $userId]);
-
-                        // Reset the streak of the MISSED habits only
-                        $in = implode(',', array_fill(0, count($missedIds), '?'));
-                        $pdo->prepare("UPDATE habits SET streak = 0 WHERE user_id = ? AND habit_id IN ($in)")
-                            ->execute(array_merge([$userId], $missedIds));
-                        $result['damage'] = $damage;
-
-                        $logFail = $pdo->prepare("
-                            INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward)
-                            VALUES (?, ?, ?, 'Failed', 0)
-                        ");
-                        foreach ($missedIds as $hid) {
-                            $logFail->execute([$hid, $userId, $yesterday]);
+                        foreach ($hIds as $hid) {
+                            $h = $habitMap[$hid] ?? null;
+                            $diff = $h['difficulty'] ?? 'Easy';
+                            $habitDamage += $diffRules[$diff]['hp_penalty_habit'] ?? 5;
+                            $missedStreakIds[$hid] = true;
+                            $stmtLogFail->execute([$hid, $userId, $date]);
                         }
                     }
                 }
+
+                if ($habitDamage > 0) {
+                    $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")
+                        ->execute([$habitDamage, $userId]);
+                }
+
+                if ($freezeUsed > 0) {
+                    $pdo->prepare("UPDATE users SET streak_freeze = streak_freeze - ? WHERE user_id = ?")
+                        ->execute([$freezeUsed, $userId]);
+                }
+
+                if (!empty($missedStreakIds)) {
+                    $resetIds = array_keys($missedStreakIds);
+                    $in = implode(',', array_fill(0, count($resetIds), '?'));
+                    $pdo->prepare("UPDATE habits SET streak = 0 WHERE user_id = ? AND habit_id IN ($in)")
+                        ->execute(array_merge([$userId], $resetIds));
+                }
+
+                $result['damage'] = $habitDamage;
+                $result['frozen'] = ($freezeUsed > 0);
 
                 // 2. Expired quests
                 $stmtExp = $pdo->prepare("

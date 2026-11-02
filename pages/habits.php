@@ -221,41 +221,6 @@ function updateHabit($pdo, $userId, $habitId, $habitName, $difficulty, $resetPer
     $stmt->execute([$habitName, $difficulty, $resetPeriod, $category, $expReward, $targetCount, $scheduleType, $scheduleValue, $habitId, $userId]);
 }
 
-function parse_habit_schedule_payload($data): array {
-    $targetCount = max(1, min(50, intval($data['target_count'] ?? 1)));
-    $scheduleType = $data['schedule_type'] ?? 'daily';
-    $validScheduleTypes = ['daily', 'interval_days', 'weekly_days', 'interval_weeks', 'interval_months'];
-    if (!in_array($scheduleType, $validScheduleTypes, true)) {
-        $scheduleType = 'daily';
-    }
-
-    $scheduleValue = '1';
-    $resetPeriod = 'daily';
-
-    if ($scheduleType === 'daily') {
-        $scheduleValue = '1';
-        $resetPeriod = 'daily';
-    } elseif ($scheduleType === 'interval_days') {
-        $scheduleValue = (string) max(2, min(365, intval($data['interval_days_val'] ?? 2)));
-        $resetPeriod = 'daily';
-        } elseif ($scheduleType === 'weekly_days') {
-            $days = $data['weekly_days_val'] ?? ($data['weekly_days_val[]'] ?? []);
-            if (!is_array($days)) $days = explode(',', (string)$days);
-            $cleanDays = array_values(array_unique(array_filter(array_map('intval', $days), fn($d) => $d >= 1 && $d <= 7)));
-            sort($cleanDays);
-            $scheduleValue = !empty($cleanDays) ? implode(',', $cleanDays) : '1,2,3,4,5,6,7';
-            $resetPeriod = 'weekly';
-    } elseif ($scheduleType === 'interval_weeks') {
-        $scheduleValue = (string) max(1, min(52, intval($data['interval_weeks_val'] ?? 1)));
-        $resetPeriod = 'weekly';
-    } elseif ($scheduleType === 'interval_months') {
-        $scheduleValue = (string) max(1, min(24, intval($data['interval_months_val'] ?? 1)));
-        $resetPeriod = 'monthly';
-    }
-
-    return [$targetCount, $scheduleType, $scheduleValue, $resetPeriod];
-}
-
 // (Reset harian/mingguan/bulanan ditangani run_daily_rollover() di enforce_login())
 
 // Proses permintaan POST (dengan validasi CSRF)

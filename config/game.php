@@ -562,3 +562,89 @@ function game_focus_rifts(): array {
         ],
     ];
 }
+
+// --- 13. Evaluasi Absen Rutinitas Multi-Hari (Multi-Day Rollover Engine) ---
+function game_missed_habits_by_day(array $habits, string $fromDate, string $toDate, array $completedLogs): array {
+    $fromTs = strtotime($fromDate);
+    $toTs = strtotime($toDate);
+    if ($fromTs === false || $toTs === false || $fromTs > $toTs) return [];
+
+    $logIdx = [];
+    foreach ($completedLogs as $l) {
+        $logIdx[(int) $l['habit_id']][] = (string) $l['date'];
+    }
+
+    $out = [];
+    for ($ts = $fromTs; $ts <= $toTs; $ts = strtotime('+1 day', $ts)) {
+        $d = date('Y-m-d', $ts);
+        $isoDay = (int) date('N', $ts);
+        foreach ($habits as $h) {
+            $period = strtolower((string) ($h['reset_period'] ?? 'daily'));
+            if (!in_array($period, ['daily', 'weekly', 'monthly'], true)) $period = 'daily';
+
+            // Periode "berakhir" pada: tiap hari / hari Minggu / hari terakhir bulan.
+            $isBoundary = match ($period) {
+                'daily'   => true,
+                'weekly'  => $isoDay === 7,
+                'monthly' => date('j', $ts) === date('t', $ts),
+            };
+            if (!$isBoundary) continue;
+
+            $periodStart = match ($period) {
+                'daily'   => $d,
+                'weekly'  => date('Y-m-d', strtotime('-' . ($isoDay - 1) . ' days', $ts)),
+                'monthly' => date('Y-m-01', $ts),
+            };
+
+            $done = false;
+            foreach ($logIdx[(int) $h['habit_id']] ?? [] as $ld) {
+                if ($ld >= $periodStart && $ld <= $d) { $done = true; break; }
+            }
+            if ($done) continue;
+
+            $probe = $h;
+            $probe['completed_today'] = 0; // WAJIB: isHabitDueToday() langsung true bila completed_today=1
+            if (!isHabitDueToday($probe, $d)) continue;
+
+            $out[$d][] = (int) $h['habit_id'];
+        }
+    }
+    return $out;
+}
+
+// --- 14. Parser Payload Jadwal Rutinitas ---
+function parse_habit_schedule_payload($data): array {
+    $targetCount = max(1, min(50, intval($data['target_count'] ?? 1)));
+    $scheduleType = $data['schedule_type'] ?? 'daily';
+    $validScheduleTypes = ['daily', 'interval_days', 'weekly_days', 'interval_weeks', 'interval_months'];
+    if (!in_array($scheduleType, $validScheduleTypes, true)) {
+        $scheduleType = 'daily';
+    }
+
+    $scheduleValue = '1';
+    $resetPeriod = 'daily';
+
+    if ($scheduleType === 'daily') {
+        $scheduleValue = '1';
+        $resetPeriod = 'daily';
+    } elseif ($scheduleType === 'interval_days') {
+        $scheduleValue = (string) max(2, min(365, intval($data['interval_days_val'] ?? 2)));
+        $resetPeriod = 'daily';
+    } elseif ($scheduleType === 'weekly_days') {
+        $days = $data['weekly_days_val'] ?? ($data['weekly_days_val[]'] ?? []);
+        if (!is_array($days)) $days = explode(',', (string)$days);
+        $cleanDays = array_values(array_unique(array_filter(array_map('intval', $days), fn($d) => $d >= 1 && $d <= 7)));
+        sort($cleanDays);
+        $scheduleValue = !empty($cleanDays) ? implode(',', $cleanDays) : '1,2,3,4,5,6,7';
+        $resetPeriod = 'daily';
+    } elseif ($scheduleType === 'interval_weeks') {
+        $scheduleValue = (string) max(1, min(52, intval($data['interval_weeks_val'] ?? 1)));
+        $resetPeriod = 'weekly';
+    } elseif ($scheduleType === 'interval_months') {
+        $scheduleValue = (string) max(1, min(24, intval($data['interval_months_val'] ?? 1)));
+        $resetPeriod = 'monthly';
+    }
+
+    return [$targetCount, $scheduleType, $scheduleValue, $resetPeriod];
+}
+
