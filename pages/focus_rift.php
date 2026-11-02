@@ -4,9 +4,12 @@
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
+const RIFT_TOLERANCE_SECONDS = 5;
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validate_csrf();
     $userId = $_SESSION['user_id'];
+    $action = trim($_POST['action'] ?? '');
     $riftKey = trim($_POST['rift_key'] ?? 'beta');
     $attribute = trim($_POST['attribute'] ?? 'Intelligence');
 
@@ -17,6 +20,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo json_encode(['success' => false, 'message' => 'Tingkat Focus Rift tidak valid!']);
         exit();
     }
+
+    // Aksi baru: start_rift
+    if ($action === 'start_rift') {
+        $_SESSION['active_rift'] = [
+            'key' => $riftKey,
+            'started_at' => time()
+        ];
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => true]);
+        exit();
+    }
+
+    // Klaim hadiah Focus Rift: verifikasi session active_rift dan durasi waktu
+    $activeRift = $_SESSION['active_rift'] ?? null;
+    $durationSeconds = (int) ($rifts[$riftKey]['duration_seconds'] ?? 1500);
+
+    if (
+        !is_array($activeRift) ||
+        ($activeRift['key'] ?? '') !== $riftKey ||
+        !isset($activeRift['started_at']) ||
+        (time() - (int)$activeRift['started_at']) < ($durationSeconds - RIFT_TOLERANCE_SECONDS)
+    ) {
+        http_response_code(409);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => false,
+            'message' => 'Focus Rift belum dimulai atau waktunya belum selesai.'
+        ]);
+        exit();
+    }
+
+    // Sekali pakai: bersihkan active_rift SEBELUM memberi hadiah
+    unset($_SESSION['active_rift']);
 
     $cats = game_categories();
     if (!isset($cats[$attribute])) {
@@ -94,9 +130,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     } catch (Exception $e) {
         $pdo->rollBack();
+        error_log("Focus Rift claim error: " . $e->getMessage());
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['success' => false, 'message' => 'Gagal mengklaim Focus Rift: ' . $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Gagal mengklaim Focus Rift.']);
         exit();
     }
 }

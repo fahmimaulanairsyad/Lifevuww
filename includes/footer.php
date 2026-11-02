@@ -1602,7 +1602,7 @@
                 // Start / Pause toggle
                 const toggleBtn = document.getElementById('btnRiftToggle');
                 if (toggleBtn) {
-                    toggleBtn.addEventListener('click', function() {
+                    toggleBtn.addEventListener('click', async function() {
                         if (isRunning) {
                             // Pause
                             isRunning = false;
@@ -1619,6 +1619,44 @@
                             toggleBtn.className = 'btn-core btn-outline flex-grow-1';
                             updateDisplay();
                         } else {
+                            // Start baru vs Resume dari jeda
+                            const isNewStart = (remainingSeconds >= totalSeconds);
+                            if (isNewStart) {
+                                const fd = new FormData();
+                                const csrfInput = document.querySelector('input[name="csrf_token"]');
+                                fd.append('csrf_token', csrfInput ? csrfInput.value : '');
+                                fd.append('action', 'start_rift');
+                                fd.append('rift_key', currentRiftKey);
+                                try {
+                                    const res = await fetch('focus_rift.php', {
+                                        method: 'POST',
+                                        body: fd,
+                                        headers: {
+                                            'X-Requested-With': 'XMLHttpRequest',
+                                            'Accept': 'application/json'
+                                        }
+                                    });
+                                    const data = await res.json();
+                                    if (!res.ok || !data.success) {
+                                        const errMsg = data.message || 'Gagal memulai Focus Rift.';
+                                        if (window.showToast) {
+                                            window.showToast('Gagal', errMsg, 'fa-exclamation-triangle', 'danger');
+                                        } else {
+                                            alert(errMsg);
+                                        }
+                                        return;
+                                    }
+                                } catch (err) {
+                                    console.error('Start rift error:', err);
+                                    if (window.showToast) {
+                                        window.showToast('Gagal', 'Terjadi kesalahan jaringan.', 'fa-exclamation-triangle', 'danger');
+                                    } else {
+                                        alert('Terjadi kesalahan jaringan.');
+                                    }
+                                    return;
+                                }
+                            }
+
                             // Start / Resume
                             isRunning = true;
                             riftEndTime = Date.now() + (remainingSeconds * 1000);
@@ -2117,7 +2155,7 @@
             const canvas = window.__lvCharCardCanvas;
             if (!canvas) return;
             const fileName = window.__lvCharCardFileName || 'lifevuww-status.png';
-            const shareText = 'Progres RPG hidupku di Lifevuww — level-up setiap hari!';
+            const shareText = 'Progres RPG hidupku di Lifevuww: level-up setiap hari!';
 
             const canvasToBlob = () => new Promise((resolve) => {
                 if (canvas.toBlob) {
@@ -2149,9 +2187,9 @@
             // Fallback: unduh PNG agar bisa dikirim manual ke sosmed / WA
             window.downloadCharCardPng();
             if (window.showToast) {
-                window.showToast('Perangkat Tidak Mendukung Share', 'PNG tersimpan — kirim secara manual ke sosmed / WhatsApp.', 'fa-circle-info', 'accent');
+                window.showToast('Perangkat Tidak Mendukung Share', 'PNG tersimpan: kirim secara manual ke sosmed / WhatsApp.', 'fa-circle-info', 'accent');
             } else {
-                alert('Perangkat tidak mendukung berbagi langsung. PNG telah diunduh — kirim secara manual ke sosmed / WhatsApp.');
+                alert('Perangkat tidak mendukung berbagi langsung. PNG telah diunduh: kirim secara manual ke sosmed / WhatsApp.');
             }
         };
 
