@@ -77,7 +77,9 @@ function run_lifevuww_migrations(PDO $pdo): array {
             `user_id` int(11) NOT NULL,
             `selector` varchar(64) NOT NULL,
             `validator_hash` char(64) NOT NULL,
+            `prev_validator_hash` char(64) DEFAULT NULL,
             `expires_at` datetime NOT NULL,
+            `rotated_at` datetime DEFAULT NULL,
             `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (`id`),
             UNIQUE KEY `uniq_selector` (`selector`),
@@ -86,6 +88,33 @@ function run_lifevuww_migrations(PDO $pdo): array {
             CONSTRAINT `fk_remember_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
     ");
+
+    // Explicit check & migration for quest_logs.created_at
+    try {
+        $qlCols = $pdo->query("DESCRIBE quest_logs")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        if (!in_array('created_at', $qlCols, true)) {
+            $pdo->exec("ALTER TABLE `quest_logs` ADD COLUMN `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
+            $results[] = "Added column created_at to quest_logs";
+        }
+    } catch (Exception $e) {}
+
+    // Explicit check & migration for remember_tokens.prev_validator_hash
+    try {
+        $rtCols = $pdo->query("DESCRIBE remember_tokens")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        if (!in_array('prev_validator_hash', $rtCols, true)) {
+            $pdo->exec("ALTER TABLE `remember_tokens` ADD COLUMN `prev_validator_hash` CHAR(64) NULL DEFAULT NULL");
+            $results[] = "Added column prev_validator_hash to remember_tokens";
+        }
+    } catch (Exception $e) {}
+
+    // Explicit check & migration for remember_tokens.rotated_at
+    try {
+        $rtCols = $pdo->query("DESCRIBE remember_tokens")->fetchAll(PDO::FETCH_COLUMN) ?: [];
+        if (!in_array('rotated_at', $rtCols, true)) {
+            $pdo->exec("ALTER TABLE `remember_tokens` ADD COLUMN `rotated_at` DATETIME NULL DEFAULT NULL");
+            $results[] = "Added column rotated_at to remember_tokens";
+        }
+    } catch (Exception $e) {}
 
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS `user_relics` (
@@ -125,7 +154,7 @@ function run_lifevuww_migrations(PDO $pdo): array {
                 }
             }
             if (!$err) {
-                $stmt = $pdo->prepare("INSERT INTO schema_migrations (migration) VALUES (?)");
+                $stmt = $pdo->prepare("INSERT IGNORE INTO schema_migrations (migration) VALUES (?)");
                 $stmt->execute([$base]);
                 $results[] = "Executed migration $base";
             }
@@ -135,19 +164,33 @@ function run_lifevuww_migrations(PDO $pdo): array {
     return $results;
 }
 
+// Naikkan setiap menambah file migrasi
+if (!defined('LV_SCHEMA_VERSION')) {
+    define('LV_SCHEMA_VERSION', '009_audit_fixes.sql');
+}
+
 function ensure_lifevuww_migrated(PDO $pdo): void {
     static $alreadyChecked = false;
     if ($alreadyChecked) return;
     $alreadyChecked = true;
 
     try {
-        $pdo->query("SELECT target_count, is_pinned, sort_order FROM habits LIMIT 1");
-        $pdo->query("SELECT is_pinned, sort_order, end_date FROM quests LIMIT 1");
-        $pdo->query("SELECT specialization FROM users LIMIT 1");
-        $pdo->query("SELECT id, selector, validator_hash FROM remember_tokens LIMIT 1");
-        $pdo->query("SELECT id FROM user_relics LIMIT 1");
+        $needsMigration = false;
+        try {
+            $stmt = $pdo->prepare("SELECT 1 FROM schema_migrations WHERE migration = ? LIMIT 1");
+            $stmt->execute([LV_SCHEMA_VERSION]);
+            if (!$stmt->fetchColumn()) {
+                $needsMigration = true;
+            }
+        } catch (Exception $probeEx) {
+            $needsMigration = true;
+        }
+
+        if ($needsMigration) {
+            run_lifevuww_migrations($pdo);
+        }
     } catch (Exception $e) {
-        run_lifevuww_migrations($pdo);
+        error_log("Migration error: " . $e->getMessage());
     }
 }
 

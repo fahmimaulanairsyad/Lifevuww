@@ -160,6 +160,7 @@ CREATE TABLE IF NOT EXISTS `quest_logs` (
   `completed_at` datetime DEFAULT NULL,
   `skill_id` int(11) DEFAULT NULL,
   `exp_reward` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`log_id`),
   KEY `quest_id` (`quest_id`),
   KEY `user_id` (`user_id`),
@@ -218,7 +219,9 @@ CREATE TABLE IF NOT EXISTS `remember_tokens` (
   `user_id` int(11) NOT NULL,
   `selector` varchar(64) NOT NULL,
   `validator_hash` char(64) NOT NULL,
+  `prev_validator_hash` char(64) DEFAULT NULL,
   `expires_at` datetime NOT NULL,
+  `rotated_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_selector` (`selector`),
@@ -240,5 +243,27 @@ CREATE TABLE IF NOT EXISTS `user_relics` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `fk_user_relics_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- Table: schema_migrations
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `schema_migrations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `migration` varchar(255) NOT NULL,
+  `executed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_migration` (`migration`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT IGNORE INTO `schema_migrations` (`migration`) VALUES
+('001_initial_schema.sql'),
+('002_rpg_expansion.sql'),
+('003_hardening_and_indexes.sql'),
+('004_boss_quests_subtasks.sql'),
+('005_flexible_habits_and_counters.sql'),
+('006_rpg_expansion_v2.sql'),
+('007_pin_and_custom_order.sql'),
+('008_remember_tokens.sql'),
+('009_audit_fixes.sql');
 
 SET foreign_key_checks = 1;
