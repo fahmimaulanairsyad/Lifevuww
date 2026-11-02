@@ -13,16 +13,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $rawPassword = $_POST['password'] ?? '';
 
     // Validasi server-side
-    if (strlen($username) < 3) {
+    $usernameLen = mb_strlen($username);
+    $emailLen = mb_strlen($email);
+    $passLen = strlen($rawPassword);
+
+    if ($usernameLen < 3) {
         $error = "Nama pengguna minimal 3 karakter.";
+    } elseif ($usernameLen > 50) {
+        $error = "Nama pengguna maksimal 50 karakter.";
+    } elseif (strcasecmp($username, 'DemoPlayer') === 0) {
+        $error = "Nama pengguna ini dicadangkan.";
+    } elseif ($emailLen > 100) {
+        $error = "Alamat email maksimal 100 karakter.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "Masukkan alamat email yang valid.";
-    } elseif (strlen($rawPassword) < 8) {
+    } elseif ($passLen < 8) {
         $error = "Kata sandi minimal 8 karakter.";
-    } elseif (strlen($rawPassword) > 72) {
+    } elseif ($passLen > 72) {
         $error = "Kata sandi maksimal 72 karakter.";
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+        $stmt = $pdo->prepare("SELECT 1 FROM users WHERE username = ? OR email = ?");
         $stmt->execute([$username, $email]);
         $existing_user = $stmt->fetch();
 
@@ -30,10 +40,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "Nama pengguna atau email sudah dipakai.";
         } else {
             $password = password_hash($rawPassword, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
-            $stmt->execute([$username, $password, $email]);
-            header("Location: login.php");
-            exit();
+            try {
+                $stmt = $pdo->prepare("INSERT INTO users (username, password, email) VALUES (?, ?, ?)");
+                $stmt->execute([$username, $password, $email]);
+                header("Location: login.php");
+                exit();
+            } catch (PDOException $e) {
+                if ($e->getCode() === '23000' || (isset($e->errorInfo[0]) && $e->errorInfo[0] === '23000')) {
+                    $error = "Nama pengguna atau email sudah dipakai.";
+                } else {
+                    error_log("Registration error: " . $e->getMessage());
+                    $error = "Terjadi kesalahan pada sistem. Silakan coba lagi nanti.";
+                }
+            }
         }
     }
 }

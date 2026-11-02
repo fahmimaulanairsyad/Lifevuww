@@ -24,7 +24,7 @@
                 </div>
                 <div class="modal-body">
                     <p class="mb-3" style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.55;">
-                        Kartu ini adalah ringkasan visual progres RPG-mu di Lifevuww — level, rank, HP, EXP, streak, saldo Gold, relik terpasang, dan radar 5 atribut kehidupan.
+                        Kartu ini adalah ringkasan visual progres RPG-mu di Lifevuww: level, rank, HP, EXP, streak, saldo Gold, relik terpasang, dan radar 5 atribut kehidupan.
                         Gunakan sebagai wallpaper, status, atau bukti perjalanan disiplinmu, lalu bagikan ke sosmed / WhatsApp untuk memamerkan progresmu.
                     </p>
                     <div class="char-card-preview-frame">
@@ -716,21 +716,40 @@
             const existing = document.getElementById('dopamineToast');
             if (existing) existing.remove();
 
+            const safeIcon = /^fa-[a-z0-9-]+$/.test(icon) ? icon : 'fa-check';
+            const safeType = /^[a-z-]+$/.test(type) ? type : 'accent';
+
             const toast = document.createElement('div');
             toast.className = 'dopamine-toast';
             toast.id = 'dopamineToast';
             toast.setAttribute('role', 'status');
-            toast.innerHTML = `
-                <div class="toast-icon">
-                    <i class="fas ${icon}"></i>
-                </div>
-                <div class="toast-body">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-rewards">
-                        <span class="toast-reward ${type}">${message}</span>
-                    </div>
-                </div>
-            `;
+
+            const iconBox = document.createElement('div');
+            iconBox.className = 'toast-icon';
+            const iconEl = document.createElement('i');
+            iconEl.className = 'fas ' + safeIcon;
+            iconBox.appendChild(iconEl);
+
+            const bodyBox = document.createElement('div');
+            bodyBox.className = 'toast-body';
+
+            const titleEl = document.createElement('div');
+            titleEl.className = 'toast-title';
+            titleEl.textContent = title;
+
+            const rewardsBox = document.createElement('div');
+            rewardsBox.className = 'toast-rewards';
+
+            const rewardSpan = document.createElement('span');
+            rewardSpan.className = 'toast-reward ' + safeType;
+            rewardSpan.textContent = message;
+
+            rewardsBox.appendChild(rewardSpan);
+            bodyBox.appendChild(titleEl);
+            bodyBox.appendChild(rewardsBox);
+
+            toast.appendChild(iconBox);
+            toast.appendChild(bodyBox);
             document.body.appendChild(toast);
 
             setTimeout(() => {

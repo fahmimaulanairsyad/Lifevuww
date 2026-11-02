@@ -192,10 +192,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_reward'])) {
         $name = trim($_POST['reward_name'] ?? '');
         $cost = min(99999, max(1, intval($_POST['cost'] ?? 0)));
-        $icon = $_POST['icon'] ?? 'fa-gift';
+        $rawIcon = $_POST['icon'] ?? 'fa-gift';
+        $allowedIcons = ['fa-gift', 'fa-coffee', 'fa-gamepad', 'fa-pizza-slice', 'fa-ticket-alt', 'fa-shopping-cart', 'fa-bed'];
+        $icon = in_array($rawIcon, $allowedIcons, true) ? $rawIcon : 'fa-gift';
 
-        if ($name === '') {
+        if ($name === '' || mb_strlen($name) < 1) {
             $error = "Nama hadiah tidak boleh kosong.";
+            if ($isAjax) shop_json_response(['success' => false, 'message' => $error], 400);
+        } elseif (mb_strlen($name) > 100) {
+            $error = "Nama hadiah maksimal 100 karakter.";
             if ($isAjax) shop_json_response(['success' => false, 'message' => $error], 400);
         } else {
             $stmt = $pdo->prepare("INSERT INTO rewards (user_id, reward_name, cost, icon) VALUES (?, ?, ?, ?)");
@@ -822,24 +827,48 @@ document.addEventListener('DOMContentLoaded', function() {
                     const newRow = document.createElement('div');
                     newRow.className = 'data-row';
                     newRow.style.padding = '0.65rem 0';
-                    newRow.innerHTML = `
-                        <div class="data-main">
-                            <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--status-warning-dim); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--status-warning); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
-                                <i class="fas ${data.icon || 'fa-gift'}"></i>
-                            </div>
-                            <div>
-                                <div class="data-title" style="font-size: 0.85rem;">${data.reward_name}</div>
-                                <div class="data-meta font-mono" style="font-size: 0.72rem;">
-                                    <span>${data.claimed_at}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="data-actions">
-                            <span class="badge-status warning font-mono">
-                                <i class="fas fa-coins me-1"></i>-${Number(data.cost).toLocaleString('id-ID')} Gold
-                            </span>
-                        </div>
-                    `;
+
+                    const dataMain = document.createElement('div');
+                    dataMain.className = 'data-main';
+
+                    const iconBox = document.createElement('div');
+                    iconBox.style.cssText = 'width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--status-warning-dim); border: 1px solid rgba(245, 158, 11, 0.2); color: var(--status-warning); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;';
+                    const iconI = document.createElement('i');
+                    const safeIcon = /^fa-[a-z0-9-]+$/.test(data.icon || '') ? data.icon : 'fa-gift';
+                    iconI.className = 'fas ' + safeIcon;
+                    iconBox.appendChild(iconI);
+
+                    const textWrap = document.createElement('div');
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'data-title';
+                    titleDiv.style.fontSize = '0.85rem';
+                    titleDiv.textContent = data.reward_name || '';
+
+                    const metaDiv = document.createElement('div');
+                    metaDiv.className = 'data-meta font-mono';
+                    metaDiv.style.fontSize = '0.72rem';
+                    const metaSpan = document.createElement('span');
+                    metaSpan.textContent = data.claimed_at || '';
+                    metaDiv.appendChild(metaSpan);
+
+                    textWrap.appendChild(titleDiv);
+                    textWrap.appendChild(metaDiv);
+
+                    dataMain.appendChild(iconBox);
+                    dataMain.appendChild(textWrap);
+
+                    const dataActions = document.createElement('div');
+                    dataActions.className = 'data-actions';
+                    const badge = document.createElement('span');
+                    badge.className = 'badge-status warning font-mono';
+                    const coinI = document.createElement('i');
+                    coinI.className = 'fas fa-coins me-1';
+                    badge.appendChild(coinI);
+                    badge.appendChild(document.createTextNode('-' + Number(data.cost || 0).toLocaleString('id-ID') + ' Gold'));
+                    dataActions.appendChild(badge);
+
+                    newRow.appendChild(dataMain);
+                    newRow.appendChild(dataActions);
                     logsList.insertBefore(newRow, logsList.firstChild);
                 }
             }
