@@ -3958,3 +3958,19 @@ body.is-reordering-active {
     }
 }
 
+
+/* ==========================================================
+   SOVEREIGN EXPANSION: Ambient Focus Audio (Focus Rift)
+   ========================================================== */
+#riftAmbientSelect {
+    background-color: var(--bg-input);
+    border-color: var(--border-hairline);
+    color: var(--text-primary);
+    font-size: 0.78rem;
+}
+
+#riftAmbientSelect:focus {
+    border-color: var(--accent-border);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+    outline: none;
+}

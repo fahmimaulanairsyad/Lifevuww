@@ -367,6 +367,19 @@
                     <i class="fas fa-shield-alt text-accent me-1"></i> Tetap fokus hingga waktu habis untuk membuka segel hadiah penuh!
                 </div>
 
+                <!-- Ambient Focus Audio (procedural Web Audio, tanpa file MP3) -->
+                <div class="mb-3">
+                    <label for="riftAmbientSelect" class="form-label text-muted" style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <i class="fas fa-music me-1"></i> Ambient Focus Audio
+                    </label>
+                    <select class="form-select form-select-sm font-mono" id="riftAmbientSelect" style="font-size: 0.78rem;">
+                        <option value="off" selected>Mati (Tanpa Suara Latar)</option>
+                        <option value="brown">Brown Noise (Deep Focus)</option>
+                        <option value="binaural">Binaural Drone (40Hz Flow State)</option>
+                        <option value="rain">Night Rain (Hujan Lembut)</option>
+                    </select>
+                </div>
+
                 <!-- Control Buttons -->
                 <div class="d-flex gap-2">
                     <button type="button" class="btn-core btn-outline flex-grow-1" id="btnRiftToggle">
@@ -1431,6 +1444,102 @@
 
             let timerInterval = null;
             let totalSeconds = 1500;
+            /* ============ Ambient Focus Audio (Web Audio API murni) ============ */
+            window.LVAmbient = (function() {
+                let actx = null, master = null, active = [];
+                function ensureCtx() {
+                    if (!actx) {
+                        const AC = window.AudioContext || window.webkitAudioContext;
+                        if (!AC) return null;
+                        actx = new AC();
+                    }
+                    if (actx.state === 'suspended') { actx.resume().catch(() => {}); }
+                    return actx;
+                }
+                function noiseBuffer(ctx, kind) {
+                    const len = ctx.sampleRate * 2;
+                    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+                    const d = buf.getChannelData(0);
+                    if (kind === 'brown') {
+                        let last = 0;
+                        for (let i = 0; i < len; i++) {
+                            const white = Math.random() * 2 - 1;
+                            last = (last + 0.02 * white) / 1.02;
+                            d[i] = last * 3.5;
+                        }
+                    } else {
+                        let b0 = 0, b1 = 0, b2 = 0;
+                        for (let i = 0; i < len; i++) {
+                            const white = Math.random() * 2 - 1;
+                            b0 = 0.997 * b0 + 0.029 * white;
+                            b1 = 0.985 * b1 + 0.032 * white;
+                            b2 = 0.95 * b2 + 0.048 * white;
+                            d[i] = (b0 + b1 + b2 + white * 0.05) * 0.6;
+                        }
+                    }
+                    return buf;
+                }
+                function stop() {
+                    active.forEach(n => { try { if (n.stop) n.stop(); else n.disconnect(); } catch (e) {} });
+                    active = [];
+                    if (master) { try { master.disconnect(); } catch (e) {} master = null; }
+                }
+                function start(mode) {
+                    stop();
+                    if (!mode || mode === 'off') return;
+                    const ctx = ensureCtx();
+                    if (!ctx) return;
+                    master = ctx.createGain();
+                    master.gain.value = 1;
+                    master.connect(ctx.destination);
+                    if (mode === 'brown') {
+                        const src = ctx.createBufferSource();
+                        src.buffer = noiseBuffer(ctx, 'brown');
+                        src.loop = true;
+                        const lp = ctx.createBiquadFilter();
+                        lp.type = 'lowpass';
+                        lp.frequency.value = 400;
+                        const g = ctx.createGain();
+                        g.gain.value = 0.5;
+                        src.connect(lp); lp.connect(g); g.connect(master);
+                        src.start();
+                        active.push(src);
+                    } else if (mode === 'binaural') {
+                        [[200, -1], [240, 1]].forEach(([freq, pan]) => {
+                            const osc = ctx.createOscillator();
+                            osc.type = 'sine';
+                            osc.frequency.value = freq;
+                            const p = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+                            const g = ctx.createGain();
+                            g.gain.value = 0.06;
+                            osc.connect(g);
+                            if (p) { p.pan.value = pan; g.connect(p); p.connect(master); }
+                            else { g.connect(master); }
+                            osc.start();
+                            active.push(osc);
+                        });
+                    } else if (mode === 'rain') {
+                        const src = ctx.createBufferSource();
+                        src.buffer = noiseBuffer(ctx, 'pink');
+                        src.loop = true;
+                        const lp = ctx.createBiquadFilter();
+                        lp.type = 'lowpass';
+                        lp.frequency.value = 1200;
+                        const g = ctx.createGain();
+                        g.gain.value = 0.22;
+                        const lfo = ctx.createOscillator();
+                        lfo.frequency.value = 0.25;
+                        const lfoGain = ctx.createGain();
+                        lfoGain.gain.value = 0.08;
+                        lfo.connect(lfoGain); lfoGain.connect(g.gain);
+                        src.connect(lp); lp.connect(g); g.connect(master);
+                        src.start(); lfo.start();
+                        active.push(src); active.push(lfo);
+                    }
+                }
+                return { start, stop };
+            })();
+
             let remainingSeconds = 1500;
             let isRunning = false;
             let currentRiftKey = 'beta';
@@ -1657,6 +1766,7 @@
                             }
                             remainingSeconds = calcRemaining();
                             riftEndTime = null;
+                            if (window.LVAmbient) window.LVAmbient.stop();
                             sessionStorage.setItem(SKEY_PAUSED, remainingSeconds);
                             sessionStorage.removeItem(SKEY_END);
                             updateDocTitle();
@@ -1714,6 +1824,8 @@
                             toggleBtn.innerHTML = '<i class="fas fa-pause me-1 text-warning"></i> Jeda Fokus';
                             toggleBtn.className = 'btn-core btn-outline flex-grow-1 text-warning';
                             if (typeof LVSound !== 'undefined') LVSound.tick();
+                            const ambSel = document.getElementById('riftAmbientSelect');
+                            if (ambSel && window.LVAmbient && ambSel.value !== 'off') window.LVAmbient.start(ambSel.value);
                             updateDisplay();
                             updateDocTitle(remainingSeconds);
                             startTickLoop();
@@ -1726,6 +1838,7 @@
                 if (resetBtn) {
                     resetBtn.addEventListener('click', function() {
                         isRunning = false;
+                        if (window.LVAmbient) window.LVAmbient.stop();
                         window.lvReleaseWakeLock();
                         if (timerInterval) {
                             clearInterval(timerInterval);
@@ -1748,9 +1861,30 @@
                     });
                 }
 
+                // Pilihan suara ambient: start/stop seketika saat diganti
+                const ambientSelect = document.getElementById('riftAmbientSelect');
+                if (ambientSelect && window.LVAmbient) {
+                    ambientSelect.addEventListener('change', function() {
+                        if (this.value === 'off') {
+                            window.LVAmbient.stop();
+                        } else {
+                            window.LVAmbient.start(this.value);
+                        }
+                    });
+                }
+
+                // Suara ambient otomatis berhenti ketika modal ditutup
+                const riftModalEl = document.getElementById('focusRiftModal');
+                if (riftModalEl) {
+                    riftModalEl.addEventListener('hidden.bs.modal', function() {
+                        if (window.LVAmbient) window.LVAmbient.stop();
+                    });
+                }
+
                 // Complete Focus Rift AJAX Claim
                 async function completeFocusRift() {
                     isRunning = false;
+                    if (window.LVAmbient) window.LVAmbient.stop();
                     window.lvReleaseWakeLock();
                     if (window.lvHaptic) window.lvHaptic(30);
                     if (timerInterval) {
