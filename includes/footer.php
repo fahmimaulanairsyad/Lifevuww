@@ -762,8 +762,9 @@
 
         // Capture clicks on completion buttons
         document.addEventListener('click', function(e) {
-            const btn = e.target.closest('button[name="complete_habit"], button[name="complete_quest"]');
+            const btn = e.target.closest('button[name="complete_habit"], button[name="complete_quest"], .btn-cal-checkin-habit, .btn-cal-checkin-quest');
             if (btn) {
+                if (window.lvHaptic) window.lvHaptic(18);
                 const rect = btn.getBoundingClientRect();
                 const x = rect.left + rect.width / 2;
                 const y = rect.top;
@@ -1382,6 +1383,41 @@
             });
         })();
 
+        /* ============ Screen Wake Lock API & Haptic Helpers ============ */
+        let lvWakeLockSentinel = null;
+
+        window.lvRequestWakeLock = async function() {
+            if ('wakeLock' in navigator) {
+                try {
+                    if (!lvWakeLockSentinel) {
+                        lvWakeLockSentinel = await navigator.wakeLock.request('screen');
+                        lvWakeLockSentinel.addEventListener('release', () => {
+                            lvWakeLockSentinel = null;
+                        });
+                    }
+                } catch (err) {}
+            }
+        };
+
+        window.lvReleaseWakeLock = async function() {
+            if (lvWakeLockSentinel) {
+                try {
+                    await lvWakeLockSentinel.release();
+                } catch (err) {
+                } finally {
+                    lvWakeLockSentinel = null;
+                }
+            }
+        };
+
+        window.lvHaptic = function(ms = 18) {
+            if (navigator && typeof navigator.vibrate === 'function') {
+                try {
+                    navigator.vibrate(ms);
+                } catch (_) {}
+            }
+        };
+
         /* ============ Focus Rift Pomodoro Timer Engine ============ */
         (function() {
             const origDocTitle = document.title;
@@ -1494,16 +1530,20 @@
 
             // Visibility Change Listener (Instant Anti-Throttling Sync)
             document.addEventListener('visibilitychange', function() {
-                if (document.visibilityState === 'visible' && isRunning && riftEndTime) {
-                    remainingSeconds = calcRemaining();
-                    updateDisplay();
-                    updateDocTitle(remainingSeconds);
-                    if (remainingSeconds <= 0) {
-                        clearInterval(timerInterval);
-                        timerInterval = null;
-                        isRunning = false;
-                        updateDocTitle();
-                        completeFocusRift();
+                if (document.visibilityState === 'visible' && isRunning) {
+                    window.lvRequestWakeLock();
+                    if (riftEndTime) {
+                        remainingSeconds = calcRemaining();
+                        updateDisplay();
+                        updateDocTitle(remainingSeconds);
+                        if (remainingSeconds <= 0) {
+                            clearInterval(timerInterval);
+                            timerInterval = null;
+                            isRunning = false;
+                            updateDocTitle();
+                            window.lvReleaseWakeLock();
+                            completeFocusRift();
+                        }
                     }
                 }
             });
@@ -1548,6 +1588,7 @@
                         riftEndTime = endTs;
                         remainingSeconds = diff;
                         isRunning = true;
+                        window.lvRequestWakeLock();
                         const toggleBtn = document.getElementById('btnRiftToggle');
                         if (toggleBtn) {
                             toggleBtn.innerHTML = '<i class="fas fa-pause me-1 text-warning"></i> Jeda Fokus';
@@ -1607,6 +1648,7 @@
                         if (isRunning) {
                             // Pause
                             isRunning = false;
+                            window.lvReleaseWakeLock();
                             if (timerInterval) {
                                 clearInterval(timerInterval);
                                 timerInterval = null;
@@ -1660,6 +1702,7 @@
 
                             // Start / Resume
                             isRunning = true;
+                            window.lvRequestWakeLock();
                             riftEndTime = Date.now() + (remainingSeconds * 1000);
                             sessionStorage.setItem(SKEY_END, riftEndTime);
                             sessionStorage.setItem(SKEY_TOTAL, totalSeconds);
@@ -1681,6 +1724,7 @@
                 if (resetBtn) {
                     resetBtn.addEventListener('click', function() {
                         isRunning = false;
+                        window.lvReleaseWakeLock();
                         if (timerInterval) {
                             clearInterval(timerInterval);
                             timerInterval = null;
@@ -1705,6 +1749,8 @@
                 // Complete Focus Rift AJAX Claim
                 async function completeFocusRift() {
                     isRunning = false;
+                    window.lvReleaseWakeLock();
+                    if (window.lvHaptic) window.lvHaptic(30);
                     if (timerInterval) {
                         clearInterval(timerInterval);
                         timerInterval = null;

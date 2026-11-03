@@ -788,6 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 if (typeof LVSound !== 'undefined') LVSound.coin();
+                if (window.lvHaptic) window.lvHaptic(18);
                 if (window.spawnFloatingReward) {
                     const rect = btn.getBoundingClientRect();
                     window.spawnFloatingReward(rect.left + rect.width / 2, rect.top, '<i class="fas fa-check text-accent"></i> Habit Selesai!');
@@ -841,6 +842,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 if (typeof LVSound !== 'undefined') LVSound.fanfare();
+                if (window.lvHaptic) window.lvHaptic(28);
                 if (window.spawnFloatingReward) {
                     const rect = btn.getBoundingClientRect();
                     window.spawnFloatingReward(rect.left + rect.width / 2, rect.top, '<i class="fas fa-crown text-warning"></i> Misi Tuntas!');

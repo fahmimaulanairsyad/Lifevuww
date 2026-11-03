@@ -779,6 +779,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     LVSound.coin();
                 }
             }
+            if (window.lvHaptic) window.lvHaptic(24);
 
             const iconMap = {
                 'buy_potion': 'fa-heart',
