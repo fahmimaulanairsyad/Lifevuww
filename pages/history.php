@@ -124,6 +124,7 @@ function status_badge($status) {
         <h1 class="page-title">Riwayat Aktivitas</h1>
         <p class="page-subtitle">Jejak penyelesaian habit dan misi per tanggal.</p>
     </div>
+    <a href="journal.php" class="btn-core btn-outline font-mono" style="font-size: 0.78rem;"><i class="fas fa-book text-accent me-1"></i> Tulis Jurnal</a>
 </div>
 
 <!-- Heatmap Konsistensi 60 Hari (GitHub Style) -->

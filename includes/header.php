@@ -277,6 +277,10 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                     <i class="fas fa-dungeon"></i>
                     <span class="dock-label">Dungeon</span>
                 </a>
+                <a href="journal.php" class="dock-item <?php echo $currentPage == 'journal.php' ? 'active' : ''; ?>" data-tooltip="Jurnal">
+                    <i class="fas fa-book"></i>
+                    <span class="dock-label">Jurnal</span>
+                </a>
                 <a href="shop.php" class="dock-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" data-tooltip="Toko">
                     <i class="fas fa-store"></i>
                     <span class="dock-label">Toko</span>
