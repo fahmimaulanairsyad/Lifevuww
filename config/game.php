@@ -809,3 +809,132 @@ function get_user_passive_buffs(
 
 
 
+
+// ============================================================
+// SOVEREIGN EXPANSION (v3.0): Astral Companions & Skill Tree
+// ============================================================
+
+// Katalog 5 Familiar orisinal. Bonus tumbuh mengikuti bond level familar aktif.
+function game_companions(): array {
+    return [
+        'obsidian_wolf' => [
+            'name' => 'Shadow Fang Wolf',
+            'icon' => 'fa-paw',
+            'accent' => '#10b981',
+            'bonus' => '+8% EXP semua Habit & +5 DMG ke Dungeon Boss',
+            'exp_bonus_habit' => 0.08,
+            'dmg_bonus' => 5,
+        ],
+        'chrono_owl' => [
+            'name' => 'Chrono Starlight Owl',
+            'icon' => 'fa-feather-alt',
+            'accent' => '#06b6d4',
+            'bonus' => '+12% EXP dari Focus Rift & item ber-Time-Block',
+            'exp_bonus_timed' => 0.12,
+        ],
+        'crimson_drake' => [
+            'name' => 'Crimson Ember Drake',
+            'icon' => 'fa-dragon',
+            'accent' => '#f43f5e',
+            'bonus' => '+15% Damage ke Dungeon Boss & +10% EXP Quest',
+            'dmg_multiplier' => 0.15,
+            'exp_bonus_quest' => 0.10,
+        ],
+        'auric_griffin' => [
+            'name' => 'Auric Sovereign Griffin',
+            'icon' => 'fa-crown',
+            'accent' => '#f59e0b',
+            'bonus' => '+15% perolehan Gold dari semua sumber',
+            'gold_multiplier' => 0.15,
+        ],
+        'aegis_tortoise' => [
+            'name' => 'Aegis Spirit Tortoise',
+            'icon' => 'fa-shield-alt',
+            'accent' => '#6366f1',
+            'bonus' => 'Pengurangan penalti HP gagal sebesar 15%',
+            'penalty_reduction' => 0.15,
+        ],
+    ];
+}
+
+// Murni: hitung bond level (1-10, tiap 80 EXP naik 1 level), stage evolusi,
+// dan skala bonus aktif. Dipakai UI Sanctum + engine dungeon.
+function game_companion_level(int $companionExp): array {
+    $bondLevel = max(1, min(10, intdiv(max(0, $companionExp), 80) + 1));
+    if ($bondLevel >= 8) {
+        $stage = 'Sovereign';
+    } elseif ($bondLevel >= 4) {
+        $stage = 'Awakened';
+    } else {
+        $stage = 'Hatchling';
+    }
+    $intoLevel = max(0, $companionExp) % 80;
+    return [
+        'bond_level' => $bondLevel,
+        'stage' => $stage,
+        'bonus_scale' => 1.0 + ($bondLevel - 1) * 0.05,
+        'exp_into_level' => $intoLevel,
+        'exp_for_next' => 80,
+    ];
+}
+
+// Katalog Pohon Bakat: 3 cabang x 3 tier pasif + 3 Active Skill harian.
+// Passive: efek terdokumentasi di katalog (dinilai test berdasarkan struktur).
+function game_skill_tree(): array {
+    return [
+        'branches' => [
+            'discipline' => [
+                'label' => 'Discipline',
+                'icon' => 'fa-shield-alt',
+                'nodes' => [
+                    ['code' => 'discipline_1', 'tier' => 1, 'cost' => 1, 'name' => 'Iron Routine', 'desc' => 'Slot jadwal habit +1 prioritas pin'],
+                    ['code' => 'discipline_2', 'tier' => 2, 'cost' => 2, 'name' => 'Unbreakable Chain', 'desc' => 'Streak tidak reset saat absen 1 hari'],
+                    ['code' => 'discipline_3', 'tier' => 3, 'cost' => 3, 'name' => 'Sovereign Will', 'desc' => 'Penalti HP habit -20%'],
+                ],
+            ],
+            'focus' => [
+                'label' => 'Focus',
+                'icon' => 'fa-crosshairs',
+                'nodes' => [
+                    ['code' => 'focus_1', 'tier' => 1, 'cost' => 1, 'name' => 'Deep Current', 'desc' => 'Durasi Focus Rift +5 menit'],
+                    ['code' => 'focus_2', 'tier' => 2, 'cost' => 2, 'name' => 'Flow State', 'desc' => 'EXP Focus Rift +10%'],
+                    ['code' => 'focus_3', 'tier' => 3, 'cost' => 3, 'name' => 'Ascended Mind', 'desc' => 'Ambient Focus Audio +1 kanal eksklusif'],
+                ],
+            ],
+            'fortune' => [
+                'label' => 'Fortune',
+                'icon' => 'fa-coins',
+                'nodes' => [
+                    ['code' => 'fortune_1', 'tier' => 1, 'cost' => 1, 'name' => 'Lucky Star', 'desc' => 'Gold reward +5%'],
+                    ['code' => 'fortune_2', 'tier' => 2, 'cost' => 2, 'name' => 'Midas Touch', 'desc' => 'Peluang Supply Crate bonus +10%'],
+                    ['code' => 'fortune_3', 'tier' => 3, 'cost' => 3, 'name' => 'Sovereign Treasury', 'desc' => 'Gold reward +15% kumulatif'],
+                ],
+            ],
+        ],
+        'actives' => [
+            'overdrive_surge' => [
+                'name' => 'Overdrive Surge',
+                'icon' => 'fa-bolt',
+                'cost' => 2,
+                'desc' => 'Status Overdrive: +50% EXP tambahan selama 2 jam ke depan',
+            ],
+            'vital_transmutation' => [
+                'name' => 'Vital Transmutation',
+                'icon' => 'fa-heart',
+                'cost' => 2,
+                'desc' => 'Ubah 25 Gold menjadi pemulihan instan +40 HP',
+            ],
+            'tactical_inspiration' => [
+                'name' => 'Tactical Inspiration',
+                'icon' => 'fa-crosshairs',
+                'cost' => 2,
+                'desc' => 'Serangan instan 100 True Damage ke Boss minggu ini + 15 EXP',
+            ],
+        ],
+    ];
+}
+
+// Murni: SP tersedia = level - 1 - sudah dibelanjakan (mulai 0 SP di level 1).
+function game_available_skill_points(int $userLevel, int $spentPoints): int {
+    return max(0, $userLevel - 1 - max(0, $spentPoints));
+}

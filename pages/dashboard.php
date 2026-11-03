@@ -322,10 +322,30 @@ try {
         <button type="button" class="btn-core btn-outline font-mono" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="Buka Focus Rift Pomodoro Battle Timer">
             <i class="fas fa-hourglass-half text-accent me-1"></i> Focus Rift
         </button>
+        <a href="dungeon.php" class="btn-core btn-outline font-mono" title="Dungeon Raid Boss Mingguan">
+            <i class="fas fa-dungeon text-danger me-1"></i> Dungeon
+        </a>
         <button type="button" class="btn-core btn-outline font-mono" id="btnDownloadCardDashboard" title="Unduh Kartu Status PNG">
             <i class="fas fa-camera text-accent me-1"></i> Unduh Kartu (PNG)
         </button>
     </div>
+</div>
+
+<?php
+// Sovereign Expansion: chip status Companion + Skill Tree + Overdrive
+$dashCompanions = game_companions();
+$dashCompKey = isset($dashCompanions[$user['active_companion'] ?? '']) ? $user['active_companion'] : 'obsidian_wolf';
+$dashComp = $dashCompanions[$dashCompKey];
+$dashBond = game_companion_level((int) ($user['companion_exp'] ?? 0));
+$dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['overdrive_until']) > time();
+?>
+<div class="bento-panel mb-4 p-2 px-3 d-flex flex-wrap align-items-center gap-3" style="font-size: 0.76rem;">
+    <span title="Astral Companion aktif"><i class="fas <?php echo $dashComp['icon']; ?> me-1" style="color: <?php echo $dashComp['accent']; ?>;"></i> <?php echo htmlspecialchars($dashComp['name']); ?> <span class="font-mono text-muted">(<?php echo $dashBond['stage']; ?> Lv.<?php echo $dashBond['bond_level']; ?>)</span></span>
+    <span title="Skill Points tersedia" class="font-mono"><i class="fas fa-sitemap text-accent me-1"></i> SP: <?php echo game_available_skill_points((int) ($user['level'] ?? 1), (int) ($user['spent_skill_points'] ?? 0)); ?></span>
+    <?php if ($dashOverdrive): ?>
+        <span class="badge-status warning font-mono"><i class="fas fa-bolt me-1"></i> OVERDRIVE +50% EXP s/d <?php echo htmlspecialchars(date('H:i', strtotime((string) $user['overdrive_until']))); ?></span>
+    <?php endif; ?>
+    <a href="skills.php" class="ms-auto font-mono text-accent" style="font-size: 0.72rem;">Kelola Sanctum <i class="fas fa-arrow-right ms-1"></i></a>
 </div>
 
 <?php if (isset($_SESSION['dashboard_alert'])): 

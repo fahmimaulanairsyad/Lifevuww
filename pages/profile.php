@@ -449,6 +449,18 @@ require_once __DIR__ . '/../includes/header.php';
 
             <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($user['username'] ?? 'User'); ?></h2>
             <span class="badge-status accent mb-3"><?php echo htmlspecialchars($rank); ?></span>
+            <?php
+            // Sovereign Expansion: Familiar aktif di kartu profil
+            $profCompanions = game_companions();
+            $profCompKey = isset($profCompanions[$user['active_companion'] ?? '']) ? $user['active_companion'] : 'obsidian_wolf';
+            $profComp = $profCompanions[$profCompKey];
+            $profBond = game_companion_level((int) ($user['companion_exp'] ?? 0));
+            ?>
+            <div class="mb-3 d-inline-flex align-items-center gap-2" style="font-size: 0.78rem; border: 1px solid <?php echo $profComp['accent']; ?>44; border-radius: 999px; padding: 0.3rem 0.8rem;">
+                <i class="fas <?php echo $profComp['icon']; ?>" style="color: <?php echo $profComp['accent']; ?>;"></i>
+                <?php echo htmlspecialchars($profComp['name']); ?>
+                <span class="font-mono text-muted"><?php echo $profBond['stage']; ?> Lv.<?php echo $profBond['bond_level']; ?></span>
+            </div>
 
             <!-- Tombol Keluar dari Akun (Desktop & Mobile) -->
             <a href="../logout.php" class="btn-core btn-outline text-danger w-100 mt-2" style="font-size: 0.8rem; border-color: rgba(244, 63, 94, 0.25);" data-confirm="Yakin ingin keluar dari akun?" data-confirm-title="Keluar Akun" data-confirm-variant="danger" data-confirm-btn="Ya, Keluar">
