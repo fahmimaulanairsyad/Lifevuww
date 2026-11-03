@@ -6,13 +6,13 @@ enforce_login();
 $userId = $_SESSION['user_id'];
 
 // Fungsi untuk menambahkan habit
-function addHabit($pdo, $userId, $habitName, $difficulty, $resetPeriod, $category, $targetCount = 1, $scheduleType = 'daily', $scheduleValue = '1') {
+function addHabit($pdo, $userId, $habitName, $difficulty, $resetPeriod, $category, $targetCount = 1, $scheduleType = 'daily', $scheduleValue = '1', $startTime = null, $endTime = null) {
     $expReward = exp_for_difficulty($difficulty, 0);
     $targetCount = max(1, min(50, (int)$targetCount));
 
     $stmt = $pdo->prepare("
-    INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, completed_today, last_reset, target_count, current_count, schedule_type, schedule_value)
-    VALUES (:user_id, :habit_name, :difficulty, :exp_reward, :reset_period, :category, 0, NOW(), :target_count, 0, :schedule_type, :schedule_value)
+    INSERT INTO habits (user_id, habit_name, difficulty, exp_reward, reset_period, category, completed_today, last_reset, target_count, current_count, schedule_type, schedule_value, start_time, end_time)
+    VALUES (:user_id, :habit_name, :difficulty, :exp_reward, :reset_period, :category, 0, NOW(), :target_count, 0, :schedule_type, :schedule_value, :start_time, :end_time)
     ");
 
     // Eksekusi query untuk memasukkan habit baru ke dalam database
@@ -25,7 +25,9 @@ function addHabit($pdo, $userId, $habitName, $difficulty, $resetPeriod, $categor
         ':category' => $category,
         ':target_count' => $targetCount,
         ':schedule_type' => $scheduleType,
-        ':schedule_value' => $scheduleValue
+        ':schedule_value' => $scheduleValue,
+        ':start_time' => $startTime,
+        ':end_time' => $endTime
     ]);
 }
 
@@ -209,16 +211,16 @@ function deleteHabit($pdo, $userId, $habitId) {
 }
 
 // Fungsi untuk update habit
-function updateHabit($pdo, $userId, $habitId, $habitName, $difficulty, $resetPeriod, $category, $targetCount = 1, $scheduleType = 'daily', $scheduleValue = '1') {
+function updateHabit($pdo, $userId, $habitId, $habitName, $difficulty, $resetPeriod, $category, $targetCount = 1, $scheduleType = 'daily', $scheduleValue = '1', $startTime = null, $endTime = null) {
     $expReward = exp_for_difficulty($difficulty);
     $targetCount = max(1, min(50, (int)$targetCount));
     $stmt = $pdo->prepare("
         UPDATE habits 
         SET habit_name = ?, difficulty = ?, reset_period = ?, category = ?, exp_reward = ?,
-            target_count = ?, schedule_type = ?, schedule_value = ?
+            target_count = ?, schedule_type = ?, schedule_value = ?, start_time = ?, end_time = ?
         WHERE habit_id = ? AND user_id = ?
     ");
-    $stmt->execute([$habitName, $difficulty, $resetPeriod, $category, $expReward, $targetCount, $scheduleType, $scheduleValue, $habitId, $userId]);
+    $stmt->execute([$habitName, $difficulty, $resetPeriod, $category, $expReward, $targetCount, $scheduleType, $scheduleValue, $startTime, $endTime, $habitId, $userId]);
 }
 
 // (Reset harian/mingguan/bulanan ditangani run_daily_rollover() di enforce_login())
@@ -454,13 +456,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $diff = $_POST['difficulty'] ?? '';
         $cat = $_POST['category'] ?? '';
         [$targetCount, $scheduleType, $scheduleValue, $resetPeriod] = parse_habit_schedule_payload($_POST);
+        $startTime = validate_time_block_input($_POST['start_time'] ?? null);
+        $endTime = validate_time_block_input($_POST['end_time'] ?? null);
 
         if ($habitId <= 0 || mb_strlen($name) < 1 || mb_strlen($name) > 100 || !in_array($diff, $validDiffs, true) || !in_array($cat, $validCats, true)) {
             header("Location: habits.php?error=validation");
             exit();
         }
 
-        updateHabit($pdo, $userId, $habitId, $name, $diff, $resetPeriod, $cat, $targetCount, $scheduleType, $scheduleValue);
+        updateHabit($pdo, $userId, $habitId, $name, $diff, $resetPeriod, $cat, $targetCount, $scheduleType, $scheduleValue, $startTime, $endTime);
         header("Location: habits.php");
         exit();
     }
@@ -470,13 +474,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $diff = $_POST['difficulty'] ?? '';
         $cat = $_POST['category'] ?? '';
         [$targetCount, $scheduleType, $scheduleValue, $resetPeriod] = parse_habit_schedule_payload($_POST);
+        $startTime = validate_time_block_input($_POST['start_time'] ?? null);
+        $endTime = validate_time_block_input($_POST['end_time'] ?? null);
 
-        if (mb_strlen($name) < 1 || mb_strlen($name) > 100 || !in_array($diff, $validDiffs, true) || !in_array($cat, $validCats, true)) {
+        $mbNameLen = mb_strlen($name);
+        if ($mbNameLen < 1 || $mbNameLen > 100 || !in_array($diff, $validDiffs, true) || !in_array($cat, $validCats, true)) {
             header("Location: habits.php?error=validation");
             exit();
         }
 
-        addHabit($pdo, $userId, $name, $diff, $resetPeriod, $cat, $targetCount, $scheduleType, $scheduleValue);
+        addHabit($pdo, $userId, $name, $diff, $resetPeriod, $cat, $targetCount, $scheduleType, $scheduleValue, $startTime, $endTime);
         header("Location: habits.php");
         exit();
     }
@@ -643,6 +650,20 @@ require_once '../includes/header.php';
                             <span class="input-group-text bg-surface text-muted">Bulan Sekali</span>
                         </div>
                     </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="habitStartTime" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Mulai (Opsional)</label>
+                            <input type="time" class="form-control font-mono" id="habitStartTime" name="start_time">
+                        </div>
+                        <div class="col-6">
+                            <label for="habitEndTime" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Selesai (Opsional)</label>
+                            <input type="time" class="form-control font-mono" id="habitEndTime" name="end_time">
+                        </div>
+                        <div class="col-12">
+                            <div class="text-muted" style="font-size: 0.72rem;">Isi rentang waktu untuk mengaktifkan Time-Blocking pada timeline harian &amp; kalender taktis.</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-core btn-ghost" data-bs-dismiss="modal">Batal</button>
@@ -766,6 +787,16 @@ require_once '../includes/header.php';
                                 <span class="badge-status font-mono" title="Pola jadwal rutinitas"><i class="fas fa-calendar-alt me-1"></i><?php echo htmlspecialchars($schedBadge); ?></span>
                                 <?php if (!$isDue): ?>
                                     <span class="badge-status warning font-mono" style="opacity: 0.85;" title="Tidak wajib hari ini"><i class="fas fa-hourglass-half me-1"></i>Jadwal Opsional Hari Ini</span>
+                                <?php endif; ?>
+                                <?php if (!empty($habit['start_time']) && !empty($habit['end_time'])): 
+                                    $isLive = is_time_block_active($habit['start_time'], $habit['end_time']);
+                                ?>
+                                    <span class="badge-status font-mono <?php echo $isLive ? 'accent' : ''; ?>" title="Time Block">
+                                        <i class="fas fa-clock me-1"></i><?php echo htmlspecialchars(format_time_block($habit['start_time'], $habit['end_time'])); ?>
+                                    </span>
+                                    <?php if ($isLive): ?>
+                                        <span class="badge-status accent font-mono pulse-live"><i class="fas fa-circle me-1" style="font-size: 0.45rem;"></i>LIVE NOW</span>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -937,6 +968,17 @@ require_once '../includes/header.php';
                                             <span class="input-group-text bg-surface text-muted">Setiap</span>
                                             <input type="number" class="form-control font-mono" name="interval_months_val" min="1" max="24" value="<?php echo $hType === 'interval_months' ? max(1, (int)$hVal) : 1; ?>">
                                             <span class="input-group-text bg-surface text-muted">Bulan Sekali</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <label for="edit_hstart_<?php echo $habit['habit_id']; ?>" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Mulai (Opsional)</label>
+                                            <input type="time" class="form-control font-mono" id="edit_hstart_<?php echo $habit['habit_id']; ?>" name="start_time" value="<?php echo !empty($habit['start_time']) ? htmlspecialchars(substr($habit['start_time'], 0, 5)) : ''; ?>">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="edit_hend_<?php echo $habit['habit_id']; ?>" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Selesai (Opsional)</label>
+                                            <input type="time" class="form-control font-mono" id="edit_hend_<?php echo $habit['habit_id']; ?>" name="end_time" value="<?php echo !empty($habit['end_time']) ? htmlspecialchars(substr($habit['end_time'], 0, 5)) : ''; ?>">
                                         </div>
                                     </div>
                                 </div>

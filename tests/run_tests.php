@@ -158,6 +158,27 @@ assert_test("Payload interval_days 3", parse_habit_schedule_payload(['schedule_t
 assert_test("Payload interval_weeks 2", parse_habit_schedule_payload(['schedule_type'=>'interval_weeks','interval_weeks_val'=>'2']) === [1,'interval_weeks','2','weekly']);
 assert_test("Payload interval_months 1", parse_habit_schedule_payload(['schedule_type'=>'interval_months','interval_months_val'=>'1']) === [1,'interval_months','1','monthly']);
 
+echo "\n10. Time-Blocking & Kalender Taktis:\n";
+assert_test("Validasi input jam '09:30' valid", validate_time_block_input('09:30') === '09:30:00');
+assert_test("Validasi input jam '09:30:00' valid", validate_time_block_input('09:30:00') === '09:30:00');
+assert_test("Validasi input jam kosong menghasilkan null", validate_time_block_input('') === null && validate_time_block_input(null) === null);
+assert_test("Validasi input jam 'abc' menghasilkan null", validate_time_block_input('abc') === null);
+assert_test("Format rentang jam '09:00:00' dan '10:30:00'", format_time_block('09:00:00', '10:30:00') === '09:00 - 10:30');
+assert_test("Format rentang jam parsial/null menghasilkan null", format_time_block('09:00:00', null) === null);
+assert_test("Time block aktif pada jam 09:30 (antara 09:00 dan 10:30)", is_time_block_active('09:00:00', '10:30:00', '09:30:00') === true);
+assert_test("Time block tidak aktif pada jam 11:00 (antara 09:00 dan 10:30)", is_time_block_active('09:00:00', '10:30:00', '11:00:00') === false);
+assert_test("Time block lewat tengah malam (23:00 - 02:00) aktif pada 23:30", is_time_block_active('23:00:00', '02:00:00', '23:30:00') === true);
+assert_test("Time block lewat tengah malam (23:00 - 02:00) aktif pada 01:15", is_time_block_active('23:00:00', '02:00:00', '01:15:00') === true);
+assert_test("Time block lewat tengah malam (23:00 - 02:00) tidak aktif pada 12:00", is_time_block_active('23:00:00', '02:00:00', '12:00:00') === false);
+
+$overlapItems = [
+    ['id' => 1, 'name' => 'Item 1', 'start_time' => '09:00', 'end_time' => '10:30'],
+    ['id' => 2, 'name' => 'Item 2', 'start_time' => '10:00', 'end_time' => '11:00'],
+    ['id' => 3, 'name' => 'Item 3', 'start_time' => '11:00', 'end_time' => '12:00'],
+];
+$overlaps = detect_time_block_overlaps($overlapItems);
+assert_test("Deteksi tabrakan waktu: Item 1 dan Item 2 bertabrakan", count($overlaps) === 1 && $overlaps[0]['item1']['id'] === 1 && $overlaps[0]['item2']['id'] === 2);
+
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";
 if ($failed > 0) {

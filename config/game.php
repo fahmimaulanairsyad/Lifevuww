@@ -648,3 +648,69 @@ function parse_habit_schedule_payload($data): array {
     return [$targetCount, $scheduleType, $scheduleValue, $resetPeriod];
 }
 
+// --- 15. Time Blocking & Kalender Taktis Helpers ---
+function validate_time_block_input(?string $time): ?string {
+    if ($time === null) return null;
+    $time = trim($time);
+    if ($time === '') return null;
+    if (preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $time)) {
+        return (strlen($time) === 5) ? $time . ':00' : $time;
+    }
+    return null;
+}
+
+function format_time_block(?string $startTime, ?string $endTime): ?string {
+    if (empty($startTime) || empty($endTime)) return null;
+    $s = substr($startTime, 0, 5);
+    $e = substr($endTime, 0, 5);
+    return "$s - $e";
+}
+
+function is_time_block_active(?string $startTime, ?string $endTime, ?string $currentTime = null): bool {
+    if (empty($startTime) || empty($endTime)) return false;
+    $now = $currentTime ?? date('H:i:s');
+    $st = (strlen($startTime) === 5) ? $startTime . ':00' : $startTime;
+    $et = (strlen($endTime) === 5) ? $endTime . ':00' : $endTime;
+    if ($st <= $et) {
+        return ($now >= $st && $now <= $et);
+    } else {
+        return ($now >= $st || $now <= $et);
+    }
+}
+
+function time_to_minutes(string $time): int {
+    $parts = explode(':', $time);
+    return ((int)$parts[0] * 60) + (int)($parts[1] ?? 0);
+}
+
+function detect_time_block_overlaps(array $items): array {
+    $overlaps = [];
+    $timedItems = [];
+    foreach ($items as $item) {
+        if (!empty($item['start_time']) && !empty($item['end_time'])) {
+            $timedItems[] = $item;
+        }
+    }
+    $n = count($timedItems);
+    for ($i = 0; $i < $n; $i++) {
+        $s1 = time_to_minutes(substr($timedItems[$i]['start_time'], 0, 5));
+        $e1 = time_to_minutes(substr($timedItems[$i]['end_time'], 0, 5));
+        if ($e1 <= $s1) $e1 += 1440;
+
+        for ($j = $i + 1; $j < $n; $j++) {
+            $s2 = time_to_minutes(substr($timedItems[$j]['start_time'], 0, 5));
+            $e2 = time_to_minutes(substr($timedItems[$j]['end_time'], 0, 5));
+            if ($e2 <= $s2) $e2 += 1440;
+
+            if (max($s1, $s2) < min($e1, $e2)) {
+                $overlaps[] = [
+                    'item1' => $timedItems[$i],
+                    'item2' => $timedItems[$j],
+                ];
+            }
+        }
+    }
+    return $overlaps;
+}
+
+

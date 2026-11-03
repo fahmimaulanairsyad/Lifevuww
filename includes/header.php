@@ -48,7 +48,7 @@ $activeHtmlAura = $serverAura ?: 'emerald';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261101_02" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261103_01" rel="stylesheet">
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
@@ -192,6 +192,7 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                 </a>
 
                 <!-- Telemetry Control Center (Right) -->
+                <?php $currentPage = basename($_SERVER['PHP_SELF']); ?>
                 <div class="hud-telemetry">
                     <!-- Unified Glass Status Capsule -->
                     <div class="hud-unified-capsule">
@@ -211,6 +212,12 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                             <span class="font-mono" id="hudGoldVal"><?php echo number_format($navUser['gold'] ?? 0); ?></span>
                         </div>
                     </div>
+
+                    <!-- Kalender Taktis Pintasan Cepat -->
+                    <a href="calendar.php" class="hud-cmd-trigger <?php echo $currentPage == 'calendar.php' ? 'active' : ''; ?>" title="Kalender & Time-Blocking">
+                        <i class="fas fa-calendar-alt text-accent"></i>
+                        <span class="font-mono d-none d-lg-inline ms-1" style="font-size: 0.72rem;">Kalender</span>
+                    </a>
 
                     <!-- Focus Rift Timer Trigger -->
                     <button type="button" class="hud-cmd-trigger" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="🌀 Focus Rift - Pomodoro Battle Timer">
@@ -257,6 +264,10 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                 <a href="quests.php" class="dock-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>" data-tooltip="Misi">
                     <i class="fas fa-map-signs"></i>
                     <span class="dock-label">Misi</span>
+                </a>
+                <a href="calendar.php" class="dock-item <?php echo $currentPage == 'calendar.php' ? 'active' : ''; ?>" data-tooltip="Kalender">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="dock-label">Kalender</span>
                 </a>
                 <a href="skills.php" class="dock-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" data-tooltip="Keahlian">
                     <i class="fas fa-book-open"></i>

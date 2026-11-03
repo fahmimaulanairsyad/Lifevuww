@@ -1216,6 +1216,7 @@
                 { title: 'Dasbor', category: 'Navigasi', icon: 'fa-home', url: 'dashboard.php', keywords: 'home dasbor utama' },
                 { title: 'Kebiasaan & Rutinitas', category: 'Navigasi', icon: 'fa-check-square', url: 'habits.php', keywords: 'habit kebiasaan rutinitas checklist' },
                 { title: 'Misi & Petualangan', category: 'Navigasi', icon: 'fa-map-signs', url: 'quests.php', keywords: 'quest misi petualangan boss target' },
+                { title: 'Kalender & Time-Blocking', category: 'Navigasi', icon: 'fa-calendar-alt', url: 'calendar.php', keywords: 'kalender calendar time block jadwal schedule agenda timeline' },
                 { title: 'Keahlian & Radar Karakter', category: 'Navigasi', icon: 'fa-book-open', url: 'skills.php', keywords: 'skill keahlian radar atribut stats' },
                 { title: 'Toko Hadiah & Ramuan', category: 'Navigasi', icon: 'fa-store', url: 'shop.php', keywords: 'shop toko belanja potion ramuan reward' },
                 { title: 'Riwayat & Heatmap Konsistensi', category: 'Navigasi', icon: 'fa-history', url: 'history.php', keywords: 'history riwayat log heatmap catatan' },

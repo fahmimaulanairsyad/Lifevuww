@@ -31,7 +31,9 @@ function run_lifevuww_migrations(PDO $pdo): array {
         'schedule_value' => "ALTER TABLE `habits` ADD COLUMN `schedule_value` VARCHAR(100) NOT NULL DEFAULT '1'",
         'last_completed_at' => "ALTER TABLE `habits` ADD COLUMN `last_completed_at` DATETIME DEFAULT NULL",
         'is_pinned' => "ALTER TABLE `habits` ADD COLUMN `is_pinned` TINYINT(1) NOT NULL DEFAULT 0",
-        'sort_order' => "ALTER TABLE `habits` ADD COLUMN `sort_order` INT(11) NOT NULL DEFAULT 0"
+        'sort_order' => "ALTER TABLE `habits` ADD COLUMN `sort_order` INT(11) NOT NULL DEFAULT 0",
+        'start_time' => "ALTER TABLE `habits` ADD COLUMN `start_time` TIME DEFAULT NULL",
+        'end_time' => "ALTER TABLE `habits` ADD COLUMN `end_time` TIME DEFAULT NULL"
     ];
 
     foreach ($newCols as $col => $sql) {
@@ -51,7 +53,9 @@ function run_lifevuww_migrations(PDO $pdo): array {
     $newQuestCols = [
         'is_pinned' => "ALTER TABLE `quests` ADD COLUMN `is_pinned` TINYINT(1) NOT NULL DEFAULT 0",
         'sort_order' => "ALTER TABLE `quests` ADD COLUMN `sort_order` INT(11) NOT NULL DEFAULT 0",
-        'end_date' => "ALTER TABLE `quests` ADD COLUMN `end_date` DATE DEFAULT NULL"
+        'end_date' => "ALTER TABLE `quests` ADD COLUMN `end_date` DATE DEFAULT NULL",
+        'start_time' => "ALTER TABLE `quests` ADD COLUMN `start_time` TIME DEFAULT NULL",
+        'end_time' => "ALTER TABLE `quests` ADD COLUMN `end_time` TIME DEFAULT NULL"
     ];
     foreach ($newQuestCols as $col => $sql) {
         if (!in_array($col, $questCols, true)) {
@@ -166,7 +170,7 @@ function run_lifevuww_migrations(PDO $pdo): array {
 
 // Naikkan setiap menambah file migrasi
 if (!defined('LV_SCHEMA_VERSION')) {
-    define('LV_SCHEMA_VERSION', '009_audit_fixes.sql');
+    define('LV_SCHEMA_VERSION', '010_timeblock_and_calendar.sql');
 }
 
 function ensure_lifevuww_migrated(PDO $pdo): void {

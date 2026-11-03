@@ -112,14 +112,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $expReward = exp_for_difficulty($difficulty);
+        $startTime = validate_time_block_input($_POST['start_time'] ?? null);
+        $endTime = validate_time_block_input($_POST['end_time'] ?? null);
 
         try {
             $stmt = $pdo->prepare("
                 UPDATE quests
-                SET quest_name = ?, difficulty = ?, start_date = ?, end_date = ?, exp_reward = ?, duration_days = ?, category = ?, subtasks = ?
+                SET quest_name = ?, difficulty = ?, start_date = ?, end_date = ?, exp_reward = ?, duration_days = ?, category = ?, subtasks = ?, start_time = ?, end_time = ?
                 WHERE quest_id = ? AND user_id = ?
             ");
-            $stmt->execute([$quest_name, $difficulty, $start_date, $end_date, $expReward, $durationDays, $category, $subtasksJson, $questId, $_SESSION['user_id']]);
+            $stmt->execute([$quest_name, $difficulty, $start_date, $end_date, $expReward, $durationDays, $category, $subtasksJson, $startTime, $endTime, $questId, $_SESSION['user_id']]);
             header("Location: quests.php");
             exit();
         } catch (PDOException $e) {
@@ -421,14 +423,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $expReward = exp_for_difficulty($difficulty, 0);
+        $startTime = validate_time_block_input($_POST['start_time'] ?? null);
+        $endTime = validate_time_block_input($_POST['end_time'] ?? null);
 
         try {
             if ($expReward === 0) {
                 throw new Exception("Invalid difficulty level, EXP reward cannot be zero.");
             }
 
-            $stmt = $pdo->prepare("INSERT INTO quests (user_id, quest_name, difficulty, start_date, end_date, exp_reward, duration_days, status, category, subtasks) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$_SESSION['user_id'], $quest_name, $difficulty, $start_date, $end_date, $expReward, $durationDays, 'In Progress', $category, $subtasksJson]);
+            $stmt = $pdo->prepare("INSERT INTO quests (user_id, quest_name, difficulty, start_date, end_date, exp_reward, duration_days, status, category, subtasks, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$_SESSION['user_id'], $quest_name, $difficulty, $start_date, $end_date, $expReward, $durationDays, 'In Progress', $category, $subtasksJson, $startTime, $endTime]);
 
             header("Location: quests.php");
             exit();
@@ -514,6 +518,17 @@ require_once __DIR__ . '/../includes/header.php';
                         </div>
                         <div class="col-6 d-flex align-items-end">
                             <div class="text-muted" style="font-size: 0.72rem; line-height: 1.4;">Durasi misi dihitung otomatis dari selisih tanggal mulai &amp; selesai yang kamu pilih.</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                            <label for="questStartTime" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Mulai (Opsional)</label>
+                            <input type="time" class="form-control font-mono" id="questStartTime" name="start_time">
+                        </div>
+                        <div class="col-6">
+                            <label for="questEndTime" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Selesai (Opsional)</label>
+                            <input type="time" class="form-control font-mono" id="questEndTime" name="end_time">
                         </div>
                     </div>
 
@@ -643,6 +658,16 @@ require_once __DIR__ . '/../includes/header.php';
                                     <i class="fas fa-hourglass-half"></i> <?php echo $daysLeft < 0 ? 'Telat' : ($daysLeft === 0 ? 'Hari Terakhir!' : "Sisa {$daysLeft} hari"); ?>
                                 </span>
                                 <span class="text-danger font-mono" title="Penalti jika gagal"><i class="fas fa-heart text-danger"></i> -<?php echo $hpPenalty; ?> HP</span>
+                                <?php if (!empty($quest['start_time']) && !empty($quest['end_time'])): 
+                                    $isLive = is_time_block_active($quest['start_time'], $quest['end_time']);
+                                ?>
+                                    <span class="badge-status font-mono <?php echo $isLive ? 'accent' : ''; ?>" title="Time Block">
+                                        <i class="fas fa-clock me-1"></i><?php echo htmlspecialchars(format_time_block($quest['start_time'], $quest['end_time'])); ?>
+                                    </span>
+                                    <?php if ($isLive): ?>
+                                        <span class="badge-status accent font-mono pulse-live"><i class="fas fa-circle me-1" style="font-size: 0.45rem;"></i>LIVE NOW</span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </div>
 
                             <!-- Boss Quest HP Bar & Subtask Checklist -->
@@ -763,6 +788,17 @@ require_once __DIR__ . '/../includes/header.php';
                                         </div>
                                         <div class="col-6 d-flex align-items-end">
                                             <div class="text-muted" style="font-size: 0.72rem; line-height: 1.4;">Durasi misi dihitung ulang otomatis dari rentang tanggal ini.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-2 mt-2">
+                                        <div class="col-6">
+                                            <label for="edit_qstart_time_<?php echo $quest['quest_id']; ?>" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Mulai (Opsional)</label>
+                                            <input type="time" class="form-control font-mono" id="edit_qstart_time_<?php echo $quest['quest_id']; ?>" name="start_time" value="<?php echo !empty($quest['start_time']) ? htmlspecialchars(substr($quest['start_time'], 0, 5)) : ''; ?>">
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="edit_qend_time_<?php echo $quest['quest_id']; ?>" class="form-label"><i class="fas fa-clock text-accent me-1"></i> Jam Selesai (Opsional)</label>
+                                            <input type="time" class="form-control font-mono" id="edit_qend_time_<?php echo $quest['quest_id']; ?>" name="end_time" value="<?php echo !empty($quest['end_time']) ? htmlspecialchars(substr($quest['end_time'], 0, 5)) : ''; ?>">
                                         </div>
                                     </div>
                                     <?php
@@ -953,6 +989,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check URL open_modal parameter for auto-open
     const params = new URLSearchParams(window.location.search);
     if (params.get('open_modal') === '1') {
+        const qStart = params.get('start_date');
+        const qEnd = params.get('end_date');
+        if (qStart) {
+            const startInp = document.getElementById('startDate');
+            if (startInp) startInp.value = qStart;
+        }
+        if (qEnd) {
+            const endInp = document.getElementById('endDate');
+            if (endInp) endInp.value = qEnd;
+        }
+
         const modalEl = document.getElementById('addQuestModal');
         if (modalEl) {
             if (modalEl.parentElement !== document.body) {

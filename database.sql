@@ -78,6 +78,8 @@ CREATE TABLE IF NOT EXISTS `habits` (
   `last_completed_at` datetime DEFAULT NULL,
   `is_pinned` tinyint(1) NOT NULL DEFAULT 0,
   `sort_order` int(11) NOT NULL DEFAULT 0,
+  `start_time` time DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
   PRIMARY KEY (`habit_id`),
   KEY `user_id` (`user_id`),
   KEY `reset_period_id` (`reset_period_id`),
@@ -105,6 +107,8 @@ CREATE TABLE IF NOT EXISTS `quests` (
   `subtasks` text DEFAULT NULL,
   `is_pinned` tinyint(1) NOT NULL DEFAULT 0,
   `sort_order` int(11) NOT NULL DEFAULT 0,
+  `start_time` time DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
   PRIMARY KEY (`quest_id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `quests_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -264,6 +268,7 @@ INSERT IGNORE INTO `schema_migrations` (`migration`) VALUES
 ('006_rpg_expansion_v2.sql'),
 ('007_pin_and_custom_order.sql'),
 ('008_remember_tokens.sql'),
-('009_audit_fixes.sql');
+('009_audit_fixes.sql'),
+('010_timeblock_and_calendar.sql');
 
 SET foreign_key_checks = 1;

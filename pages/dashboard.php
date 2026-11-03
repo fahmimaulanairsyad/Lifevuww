@@ -75,6 +75,62 @@ try {
     $stmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
     $recentActivityList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Query Ringkasan Time-Block Hari Ini (Habit & Quest dengan jadwal aktif)
+    $todayDate = date('Y-m-d');
+    $stmtHabitsToday = $pdo->prepare("SELECT * FROM habits WHERE user_id = ?");
+    $stmtHabitsToday->execute([$_SESSION['user_id']]);
+    $allUserHabits = $stmtHabitsToday->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+    $todayTimeBlocks = [];
+    foreach ($allUserHabits as $h) {
+        if (isHabitDueToday($h, $todayDate)) {
+            $isDone = (!empty($h['completed_today']) || (int)($h['current_count'] ?? 0) >= (int)($h['target_count'] ?? 1));
+            $todayTimeBlocks[] = [
+                'kind' => 'habit',
+                'id' => $h['habit_id'],
+                'title' => $h['habit_name'],
+                'category' => $h['category'] ?? 'Health',
+                'exp' => $h['exp_reward'] ?? 5,
+                'start_time' => $h['start_time'],
+                'end_time' => $h['end_time'],
+                'is_done' => $isDone,
+                'is_pinned' => !empty($h['is_pinned']),
+                'sort_order' => (int)($h['sort_order'] ?? 0),
+            ];
+        }
+    }
+
+    $stmtQuestsToday = $pdo->prepare("SELECT * FROM quests WHERE user_id = ? AND status = 'In Progress' AND (start_date <= CURDATE() AND (end_date IS NULL OR end_date >= CURDATE()))");
+    $stmtQuestsToday->execute([$_SESSION['user_id']]);
+    $allUserQuests = $stmtQuestsToday->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    foreach ($allUserQuests as $q) {
+        $todayTimeBlocks[] = [
+            'kind' => 'quest',
+            'id' => $q['quest_id'],
+            'title' => $q['quest_name'],
+            'category' => $q['category'] ?? 'General',
+            'exp' => $q['exp_reward'] ?? 10,
+            'start_time' => $q['start_time'],
+            'end_time' => $q['end_time'],
+            'is_done' => false,
+            'is_pinned' => !empty($q['is_pinned']),
+            'sort_order' => (int)($q['sort_order'] ?? 0),
+        ];
+    }
+
+    usort($todayTimeBlocks, function($a, $b) {
+        $hasTimeA = (!empty($a['start_time']) && !empty($a['end_time'])) ? 1 : 0;
+        $hasTimeB = (!empty($b['start_time']) && !empty($b['end_time'])) ? 1 : 0;
+        if ($hasTimeA !== $hasTimeB) return $hasTimeB - $hasTimeA;
+        if ($hasTimeA && $hasTimeB) {
+            $cmp = strcmp($a['start_time'], $b['start_time']);
+            if ($cmp !== 0) return $cmp;
+        }
+        $pinDiff = ($b['is_pinned'] ? 1 : 0) - ($a['is_pinned'] ? 1 : 0);
+        if ($pinDiff !== 0) return $pinDiff;
+        return $a['sort_order'] - $b['sort_order'];
+    });
+
     // Query untuk Grafik Aktivitas 7 Hari Terakhir
     $stmtActivity = $pdo->prepare("
         SELECT DATE(log_date) as day_date, SUM(exp_gained) as daily_exp
@@ -278,6 +334,72 @@ try {
         <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Perisai</div>
         <div class="metric-value" style="color: var(--status-info);"><span class="count-up" data-target="<?php echo (int)($user['streak_freeze'] ?? 0); ?>"><?php echo $user['streak_freeze'] ?? 0; ?></span> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SLOT</span></div>
         <div class="metric-sub">Hari terlindungi</div>
+    </div>
+</div>
+
+<!-- Ringkasan Jadwal Time-Block Hari Ini -->
+<div class="bento-panel spotlight-card mb-4" style="margin-top: 1.5rem;">
+    <div class="panel-header">
+        <div>
+            <h3 class="panel-title"><i class="fas fa-clock text-accent"></i> Jadwal Time-Block Hari Ini</h3>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Agenda rutinitas dan misi aktif berdasarkan rentang jam fokus.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge-status font-mono" style="font-size: 0.72rem;"><?php echo count($todayTimeBlocks); ?> Agenda</span>
+            <a href="calendar.php" class="btn-core btn-outline font-mono" style="font-size: 0.75rem;">
+                <i class="fas fa-calendar-alt me-1"></i> Kalender Taktis &rarr;
+            </a>
+        </div>
+    </div>
+    
+    <div class="data-list">
+        <?php if (!empty($todayTimeBlocks)): ?>
+            <?php foreach (array_slice($todayTimeBlocks, 0, 5) as $tb): 
+                $hasTime = (!empty($tb['start_time']) && !empty($tb['end_time']));
+                $isLive = $hasTime && is_time_block_active($tb['start_time'], $tb['end_time']);
+            ?>
+                <div class="data-row">
+                    <div class="data-main">
+                        <div style="width: 28px; height: 28px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isLive ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.75rem;">
+                            <i class="fas <?php echo $tb['kind'] === 'quest' ? 'fa-map-signs' : 'fa-check-square'; ?>"></i>
+                        </div>
+                        <div>
+                            <div class="data-title" style="<?php echo $tb['is_done'] ? 'text-decoration: line-through; opacity: 0.6;' : ''; ?>">
+                                <?php echo htmlspecialchars($tb['title']); ?>
+                            </div>
+                            <div class="data-meta font-mono">
+                                <span class="badge-status font-mono"><?php echo $tb['kind'] === 'quest' ? 'Misi' : 'Habit'; ?></span>
+                                <span class="badge-status"><?php echo htmlspecialchars($tb['category']); ?></span>
+                                <?php if ($hasTime): ?>
+                                    <span class="badge-status font-mono <?php echo $isLive ? 'accent' : ''; ?>">
+                                        <i class="fas fa-clock me-1"></i><?php echo htmlspecialchars(format_time_block($tb['start_time'], $tb['end_time'])); ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="badge-status font-mono text-muted">Sepanjang Hari</span>
+                                <?php endif; ?>
+                                <?php if ($isLive): ?>
+                                    <span class="badge-status accent font-mono pulse-live"><i class="fas fa-circle me-1" style="font-size: 0.45rem;"></i>LIVE NOW</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="data-actions">
+                        <span class="badge-status accent font-mono">
+                            +<?php echo htmlspecialchars($tb['exp']); ?> EXP
+                        </span>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+            <?php if (count($todayTimeBlocks) > 5): ?>
+                <div class="text-center pt-2">
+                    <a href="calendar.php" style="font-size: 0.75rem; color: var(--text-secondary);">Lihat semua <?php echo count($todayTimeBlocks); ?> agenda di Kalender &rarr;</a>
+                </div>
+            <?php endif; ?>
+        <?php else: ?>
+            <div class="text-center py-4 text-muted" style="font-size: 0.85rem;">
+                Belum ada jadwal khusus hari ini. Buka kalender untuk merencanakan time-blocking!
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
