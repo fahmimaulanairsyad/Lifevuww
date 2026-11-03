@@ -454,6 +454,22 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
             <p class="text-muted mb-0" style="font-size: 0.74rem;">Peralatan abadi penempa kedisiplinan dan penguat status karakter.</p>
         </div>
     </div>
+
+    <!-- Active Relic Buffs Strip -->
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <?php if (isset($userRelics['chrono_blade'])): ?>
+            <span class="badge-status accent font-mono"><i class="fas fa-khanda me-1"></i>Chrono Blade: +20% EXP &amp; Gold (Focus Rift)</span>
+        <?php endif; ?>
+        <?php if (isset($userRelics['archon_signet'])): ?>
+            <span class="badge-status warning font-mono"><i class="fas fa-ring me-1"></i>Archon Signet: +25% Gold (Semua Sumber)</span>
+        <?php endif; ?>
+        <?php if (isset($userRelics['sovereign_mantle'])): ?>
+            <span class="badge-status accent font-mono"><i class="fas fa-shield-halved me-1"></i>Sovereign Mantle: -30% Penalti HP &amp; +25 Max HP</span>
+        <?php endif; ?>
+        <?php if (empty($userRelics)): ?>
+            <span class="badge-status font-mono text-muted"><i class="fas fa-info-circle me-1"></i>Beli relik untuk mengaktifkan passive buff permanen</span>
+        <?php endif; ?>
+    </div>
     
     <div class="row g-3">
         <?php foreach ($relicsList as $rKey => $relic): 

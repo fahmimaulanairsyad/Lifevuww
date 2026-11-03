@@ -526,6 +526,32 @@ require_once __DIR__ . '/../includes/header.php';
         </span>
     </div>
 
+    <!-- Active Passive Buffs Info Badge -->
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 p-2" style="background: var(--bg-surface-hover); border-radius: var(--radius); border: 1px solid var(--border-hairline);">
+        <span class="text-muted font-mono" style="font-size: 0.72rem;"><i class="fas fa-bolt text-accent me-1"></i>Efek Pasif Aktif:</span>
+        <?php if ($userSpec === 'Obsidian Vanguard'): ?>
+            <span class="badge-status accent font-mono">+10% EXP (Semua)</span>
+            <span class="badge-status accent font-mono">-20% Penalti HP</span>
+        <?php elseif ($userSpec === 'Arcane Scholar'): ?>
+            <span class="badge-status info font-mono">+20% EXP & +20% Gold (Intelligence)</span>
+        <?php elseif ($userSpec === 'Crimson Striker'): ?>
+            <span class="badge-status danger font-mono">+20% EXP & +20% Gold (Physical & Health)</span>
+        <?php elseif ($userSpec === 'Solar Sovereign'): ?>
+            <span class="badge-status warning font-mono">+20% EXP & +20% Gold (Wealth & Social)</span>
+        <?php elseif ($userSpec === 'Abyssal Archon'): ?>
+            <span class="badge-status font-mono" style="color: #a78bfa; border-color: rgba(167, 139, 250, 0.4); background: rgba(139, 92, 246, 0.1);">+25% EXP (Hard &amp; Crimson Rift)</span>
+        <?php endif; ?>
+        <?php if (isset($userRelics['chrono_blade'])): ?>
+            <span class="badge-status accent font-mono">+20% EXP &amp; Gold (Focus Rift)</span>
+        <?php endif; ?>
+        <?php if (isset($userRelics['archon_signet'])): ?>
+            <span class="badge-status warning font-mono">+25% Gold</span>
+        <?php endif; ?>
+        <?php if (isset($userRelics['sovereign_mantle'])): ?>
+            <span class="badge-status accent font-mono">-30% Penalti HP &amp; +25 Max HP</span>
+        <?php endif; ?>
+    </div>
+
     <div class="row g-3" id="specializationGroup">
         <?php foreach ($specList as $sId => $spec): 
             $isActiveSpec = ($sId === $userSpec);

@@ -235,9 +235,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $oldExp = (int) ($oldUserData['exp'] ?? 0);
                 $oldLvl = calculateLevel($oldExp);
 
-                // Tambahkan EXP dan Gold ke pengguna (dengan bonus boss 1.5x dan bonus passive mastery jika applicable)
-                $expReward = (int) floor($quest['exp_reward'] * $multiplier * $masteryMultiplier);
-                $goldReward = (int) ($expReward * 2); // Quest memberikan Gold lebih banyak (x2)
+                // Hitung Passive Buffs (Spesialisasi & Relik)
+                $buffs = get_user_passive_buffs($pdo, $_SESSION['user_id'], $quest['category'] ?? 'General', 'quest', $quest['difficulty'] ?? 'Medium');
+
+                // Tambahkan EXP dan Gold ke pengguna (dengan bonus boss 1.5x, bonus passive mastery, dan passive buffs)
+                $baseExpReward = $quest['exp_reward'] * $multiplier * $masteryMultiplier;
+                $expReward = (int) floor($baseExpReward * $buffs['exp_multiplier']);
+                $goldReward = (int) floor($baseExpReward * 2 * $buffs['gold_multiplier']); // Quest memberikan Gold lebih banyak (x2)
 
                 $newExpTotal = $oldExp + $expReward;
                 $newLvl = calculateLevel($newExpTotal);

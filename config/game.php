@@ -713,4 +713,99 @@ function detect_time_block_overlaps(array $items): array {
     return $overlaps;
 }
 
+// --- 16. Efek Pasif Nyata (Real Passive Buffs) Spesialisasi & Relik ---
+function game_calculate_passive_buffs(
+    string $specialization,
+    array $ownedRelicKeys,
+    string $category = 'General',
+    string $source = 'habit',
+    string $difficulty = 'Medium'
+): array {
+    $expBonus = 0.0;
+    $goldBonus = 0.0;
+    $hpPenaltyReduction = 0.0;
+    $bonusMaxHp = 0;
+
+    // 1. Buff Spesialisasi
+    switch ($specialization) {
+        case 'Obsidian Vanguard':
+            $expBonus += 0.10;
+            $hpPenaltyReduction += 0.20;
+            break;
+        case 'Arcane Scholar':
+            if ($category === 'Intelligence') {
+                $expBonus += 0.20;
+                $goldBonus += 0.20;
+            }
+            break;
+        case 'Crimson Striker':
+            if ($category === 'Physical' || $category === 'Health') {
+                $expBonus += 0.20;
+                $goldBonus += 0.20;
+            }
+            break;
+        case 'Solar Sovereign':
+            if ($category === 'Wealth' || $category === 'Social') {
+                $expBonus += 0.20;
+                $goldBonus += 0.20;
+            }
+            break;
+        case 'Abyssal Archon':
+            if ($difficulty === 'Hard' || $source === 'focus_rift_crimson') {
+                $expBonus += 0.25;
+            }
+            break;
+    }
+
+    // 2. Buff Relik
+    $hasRelic = function(string $key) use ($ownedRelicKeys): bool {
+        return in_array($key, $ownedRelicKeys, true) || isset($ownedRelicKeys[$key]);
+    };
+
+    if ($hasRelic('chrono_blade') && str_starts_with($source, 'focus_rift')) {
+        $expBonus += 0.20;
+        $goldBonus += 0.20;
+    }
+
+    if ($hasRelic('archon_signet')) {
+        $goldBonus += 0.25;
+    }
+
+    if ($hasRelic('sovereign_mantle')) {
+        $hpPenaltyReduction += 0.30;
+        $bonusMaxHp += 25;
+    }
+
+    return [
+        'exp_multiplier' => round(1.0 + $expBonus, 4),
+        'gold_multiplier' => round(1.0 + $goldBonus, 4),
+        'hp_penalty_multiplier' => round(max(0.30, 1.0 - $hpPenaltyReduction), 4),
+        'bonus_max_hp' => $bonusMaxHp
+    ];
+}
+
+function get_user_passive_buffs(
+    PDO $pdo,
+    int $userId,
+    string $category = 'General',
+    string $source = 'habit',
+    string $difficulty = 'Medium'
+): array {
+    try {
+        $stmt = $pdo->prepare("SELECT specialization FROM users WHERE user_id = ?");
+        $stmt->execute([$userId]);
+        $spec = (string)($stmt->fetchColumn() ?: 'Obsidian Vanguard');
+        $ownedRelics = getUserRelics($pdo, $userId);
+        return game_calculate_passive_buffs($spec, array_keys($ownedRelics), $category, $source, $difficulty);
+    } catch (Exception $e) {
+        return [
+            'exp_multiplier' => 1.0,
+            'gold_multiplier' => 1.0,
+            'hp_penalty_multiplier' => 1.0,
+            'bonus_max_hp' => 0
+        ];
+    }
+}
+
+
 

@@ -179,6 +179,43 @@ $overlapItems = [
 $overlaps = detect_time_block_overlaps($overlapItems);
 assert_test("Deteksi tabrakan waktu: Item 1 dan Item 2 bertabrakan", count($overlaps) === 1 && $overlaps[0]['item1']['id'] === 1 && $overlaps[0]['item2']['id'] === 2);
 
+echo "\n11. Efek Pasif Nyata (Real Passive Buffs):\n";
+$bVanguard = game_calculate_passive_buffs('Obsidian Vanguard', []);
+assert_test("Obsidian Vanguard: +10% EXP & -20% Penalti HP", $bVanguard['exp_multiplier'] === 1.1 && $bVanguard['hp_penalty_multiplier'] === 0.8 && $bVanguard['gold_multiplier'] === 1.0);
+
+$bScholarMatch = game_calculate_passive_buffs('Arcane Scholar', [], 'Intelligence');
+assert_test("Arcane Scholar (Intelligence): +20% EXP & +20% Gold", $bScholarMatch['exp_multiplier'] === 1.2 && $bScholarMatch['gold_multiplier'] === 1.2 && $bScholarMatch['hp_penalty_multiplier'] === 1.0);
+
+$bScholarOther = game_calculate_passive_buffs('Arcane Scholar', [], 'Physical');
+assert_test("Arcane Scholar (Physical): default 1.0", $bScholarOther['exp_multiplier'] === 1.0 && $bScholarOther['gold_multiplier'] === 1.0);
+
+$bStriker = game_calculate_passive_buffs('Crimson Striker', [], 'Physical');
+assert_test("Crimson Striker (Physical): +20% EXP & +20% Gold", $bStriker['exp_multiplier'] === 1.2 && $bStriker['gold_multiplier'] === 1.2);
+
+$bSolar = game_calculate_passive_buffs('Solar Sovereign', [], 'Wealth');
+assert_test("Solar Sovereign (Wealth): +20% EXP & +20% Gold", $bSolar['exp_multiplier'] === 1.2 && $bSolar['gold_multiplier'] === 1.2);
+
+$bArchonHard = game_calculate_passive_buffs('Abyssal Archon', [], 'General', 'quest', 'Hard');
+assert_test("Abyssal Archon (Hard): +25% EXP", $bArchonHard['exp_multiplier'] === 1.25);
+
+$bArchonCrimson = game_calculate_passive_buffs('Abyssal Archon', [], 'General', 'focus_rift_crimson');
+assert_test("Abyssal Archon (Crimson Rift): +25% EXP", $bArchonCrimson['exp_multiplier'] === 1.25);
+
+$bChronoRift = game_calculate_passive_buffs('None', ['chrono_blade'], 'General', 'focus_rift_beta');
+assert_test("Chrono Blade (Focus Rift): +20% EXP & +20% Gold", $bChronoRift['exp_multiplier'] === 1.2 && $bChronoRift['gold_multiplier'] === 1.2);
+
+$bChronoHabit = game_calculate_passive_buffs('None', ['chrono_blade'], 'General', 'habit');
+assert_test("Chrono Blade (Habit): no bonus", $bChronoHabit['exp_multiplier'] === 1.0 && $bChronoHabit['gold_multiplier'] === 1.0);
+
+$bSignet = game_calculate_passive_buffs('None', ['archon_signet']);
+assert_test("Archon Signet: +25% Gold", $bSignet['gold_multiplier'] === 1.25);
+
+$bMantle = game_calculate_passive_buffs('None', ['sovereign_mantle']);
+assert_test("Sovereign Mantle: -30% Penalti HP (0.7) & +25 Max HP", $bMantle['hp_penalty_multiplier'] === 0.7 && $bMantle['bonus_max_hp'] === 25);
+
+$bCombo = game_calculate_passive_buffs('Obsidian Vanguard', ['sovereign_mantle', 'archon_signet']);
+assert_test("Combo Vanguard + Mantle + Signet: 1.1 EXP, 1.25 Gold, 0.5 HP Penalti, +25 Max HP", $bCombo['exp_multiplier'] === 1.1 && $bCombo['gold_multiplier'] === 1.25 && $bCombo['hp_penalty_multiplier'] === 0.5 && $bCombo['bonus_max_hp'] === 25);
+
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";
 if ($failed > 0) {

@@ -61,12 +61,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $rift = $rifts[$riftKey];
     $baseExp = (int) $rift['exp_reward'];
-    $goldGain = (int) $rift['gold_reward'];
+    $baseGold = (int) $rift['gold_reward'];
 
-    // Passive EXP Mastery boost dari Boss yang sudah ditaklukkan
+    // Passive EXP Mastery boost dari Boss yang sudah ditaklukkan & Passive Buffs (Spesialisasi/Relik)
     $mastery = getBossMasteryStats($pdo, $userId);
     $masteryMul = $mastery['multiplier'] ?? 1.0;
-    $expGain = (int) floor($baseExp * $masteryMul);
+
+    $riftSource = ($riftKey === 'crimson') ? 'focus_rift_crimson' : 'focus_rift_' . $riftKey;
+    $buffs = get_user_passive_buffs($pdo, $userId, $attribute, $riftSource, 'Medium');
+
+    $expGain = (int) floor($baseExp * $masteryMul * $buffs['exp_multiplier']);
+    $goldGain = (int) floor($baseGold * $buffs['gold_multiplier']);
 
     $pdo->beginTransaction();
     try {

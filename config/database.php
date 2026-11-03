@@ -654,6 +654,9 @@ if (!function_exists('run_daily_rollover')) {
                 $missedByDay = game_missed_habits_by_day($allHabits, $from, $to, $completedLogs);
                 ksort($missedByDay);
 
+                $userBuffs = get_user_passive_buffs($pdo, $userId, 'General', 'rollover', 'Medium');
+                $hpPenaltyMul = $userBuffs['hp_penalty_multiplier'] ?? 1.0;
+
                 $freezeLeft = (int) ($user['streak_freeze'] ?? 0);
                 $freezeUsed = 0;
                 $habitDamage = 0;
@@ -681,7 +684,8 @@ if (!function_exists('run_daily_rollover')) {
                         foreach ($hIds as $hid) {
                             $h = $habitMap[$hid] ?? null;
                             $diff = $h['difficulty'] ?? 'Easy';
-                            $habitDamage += $diffRules[$diff]['hp_penalty_habit'] ?? 5;
+                            $basePen = $diffRules[$diff]['hp_penalty_habit'] ?? 5;
+                            $habitDamage += max(1, (int) round($basePen * $hpPenaltyMul));
                             $missedStreakIds[$hid] = true;
                             $stmtLogFail->execute([$hid, $userId, $date]);
                         }
@@ -718,7 +722,8 @@ if (!function_exists('run_daily_rollover')) {
                 $expired = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
                 $diffRules = game_difficulties();
                 foreach ($expired as $q) {
-                    $qd = $diffRules[$q['difficulty']]['hp_penalty_quest'] ?? 10;
+                    $baseQd = $diffRules[$q['difficulty']]['hp_penalty_quest'] ?? 10;
+                    $qd = max(1, (int) round($baseQd * $hpPenaltyMul));
                     $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")
                         ->execute([$qd, $userId]);
                     $pdo->prepare("UPDATE quests SET status = 'Failed' WHERE quest_id = ?")

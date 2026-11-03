@@ -58,13 +58,15 @@ function completeHabit($pdo, $userId, $habitId) {
         $stmtStreak->execute([$habitId, $userId]);
         $newStreak = (int) $stmtStreak->fetchColumn();
 
-        // Hitung Multiplier berdasarkan Streak (sentral via game.php) + Boss Mastery
+        // Hitung Multiplier berdasarkan Streak (sentral via game.php) + Boss Mastery + Passive Buffs
         $multiplier = game_streak_multiplier($newStreak);
         $masteryStats = getBossMasteryStats($pdo, $userId);
         $masteryMul = $masteryStats['multiplier'] ?? 1.0;
+        $buffs = get_user_passive_buffs($pdo, $userId, $habit['category'] ?? 'General', 'habit', $habit['difficulty'] ?? 'Medium');
 
-        $finalExp = (int) floor($habit['exp_reward'] * $multiplier * $masteryMul);
-        $earnedGold = $finalExp; // Gold yang didapat sama dengan EXP akhir
+        $baseVal = $habit['exp_reward'] * $multiplier * $masteryMul;
+        $finalExp = (int) floor($baseVal * $buffs['exp_multiplier']);
+        $earnedGold = (int) floor($baseVal * $buffs['gold_multiplier']);
 
         // Ambil data user lama untuk deteksi Level Up & Rank Up
         $stmtUserOld = $pdo->prepare("SELECT exp, level FROM users WHERE user_id = ? FOR UPDATE");
@@ -343,7 +345,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $curStreak = (int)$hStmt->fetchColumn();
                 $multiplier = game_streak_multiplier($curStreak);
                 $masteryMul = getBossMasteryStats($pdo, $userId)['multiplier'] ?? 1.0;
-                $finalExp = (int) floor($habit['exp_reward'] * $multiplier * $masteryMul);
+                $buffs = get_user_passive_buffs($pdo, $userId, $habit['category'] ?? 'General', 'habit', $habit['difficulty'] ?? 'Medium');
+                $baseVal = $habit['exp_reward'] * $multiplier * $masteryMul;
+                $finalExp = (int) floor($baseVal * $buffs['exp_multiplier']);
+                $earnedGold = (int) floor($baseVal * $buffs['gold_multiplier']);
 
                 if ($isAjax) {
                     header('Content-Type: application/json; charset=utf-8');
@@ -357,11 +362,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'streak' => $curStreak,
                         'multiplier' => $multiplier,
                         'exp_reward' => $finalExp,
-                        'gold_reward' => $finalExp,
+                        'gold_reward' => $earnedGold,
                         'user_exp' => $uData['exp'],
                         'user_level' => $uData['level'],
                         'user_gold' => $uData['gold'],
-                        'floating_text' => "+{$finalExp} EXP • +{$finalExp} Gold (Tuntas {$target}/{$target}!)"
+                        'floating_text' => "+{$finalExp} EXP • +{$earnedGold} Gold (Tuntas {$target}/{$target}!)"
                     ]);
                     exit();
                 }
