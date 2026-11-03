@@ -32,6 +32,12 @@ CREATE TABLE IF NOT EXISTS `users` (
   `specialization` varchar(50) NOT NULL DEFAULT 'Obsidian Vanguard',
   `last_crate_date` date DEFAULT NULL,
   `last_emergency_heal_date` date DEFAULT NULL,
+  `active_companion` varchar(40) NOT NULL DEFAULT 'obsidian_wolf',
+  `companion_exp` int(11) NOT NULL DEFAULT 0,
+  `spent_skill_points` int(11) NOT NULL DEFAULT 0,
+  `unlocked_skills` text DEFAULT NULL,
+  `overdrive_until` datetime DEFAULT NULL,
+  `last_skill_cast_date` date DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`),
@@ -251,6 +257,45 @@ CREATE TABLE IF NOT EXISTS `user_relics` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
+-- Table: dungeon_raids (Dungeon Raid Boss Mingguan - Sovereign Expansion)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `dungeon_raids` (
+  `raid_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `week_key` varchar(10) NOT NULL,
+  `boss_key` varchar(40) NOT NULL,
+  `boss_hp` int(11) NOT NULL,
+  `boss_max_hp` int(11) NOT NULL,
+  `total_damage_dealt` int(11) NOT NULL DEFAULT 0,
+  `is_defeated` tinyint(1) NOT NULL DEFAULT 0,
+  `reward_claimed` tinyint(1) NOT NULL DEFAULT 0,
+  `battle_log` text DEFAULT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`raid_id`),
+  UNIQUE KEY `uniq_user_week` (`user_id`, `week_key`),
+  CONSTRAINT `fk_dungeon_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- Table: journal_entries (Jurnal Taktis & Mood/Energy Tracker)
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `journal_entries` (
+  `entry_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `entry_date` date NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `content` text NOT NULL,
+  `mood_score` tinyint(1) NOT NULL DEFAULT 3,
+  `energy_score` tinyint(1) NOT NULL DEFAULT 3,
+  `tags` varchar(120) DEFAULT NULL,
+  `exp_awarded` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`entry_id`),
+  KEY `idx_journal_user_date` (`user_id`, `entry_date`),
+  CONSTRAINT `fk_journal_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 -- Table: schema_migrations
 -- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `schema_migrations` (
@@ -272,6 +317,7 @@ INSERT IGNORE INTO `schema_migrations` (`migration`) VALUES
 ('008_remember_tokens.sql'),
 ('009_audit_fixes.sql'),
 ('010_timeblock_and_calendar.sql'),
-('011_directives_and_recovery.sql');
+('011_directives_and_recovery.sql'),
+('012_sovereign_expansion.sql');
 
 SET foreign_key_checks = 1;

@@ -87,6 +87,63 @@ function run_lifevuww_migrations(PDO $pdo): array {
         } catch (Exception $e) {}
     }
 
+    // Sovereign Expansion (v3.0): Companion, Skill Tree, Overdrive
+    $sovereignUserCols = [
+        'active_companion' => "ALTER TABLE `users` ADD COLUMN `active_companion` VARCHAR(40) NOT NULL DEFAULT 'obsidian_wolf'",
+        'companion_exp' => "ALTER TABLE `users` ADD COLUMN `companion_exp` INT(11) NOT NULL DEFAULT 0",
+        'spent_skill_points' => "ALTER TABLE `users` ADD COLUMN `spent_skill_points` INT(11) NOT NULL DEFAULT 0",
+        'unlocked_skills' => "ALTER TABLE `users` ADD COLUMN `unlocked_skills` TEXT DEFAULT NULL",
+        'overdrive_until' => "ALTER TABLE `users` ADD COLUMN `overdrive_until` DATETIME DEFAULT NULL",
+        'last_skill_cast_date' => "ALTER TABLE `users` ADD COLUMN `last_skill_cast_date` DATE DEFAULT NULL",
+    ];
+    foreach ($sovereignUserCols as $col => $sql) {
+        if (!in_array($col, $userCols, true)) {
+            try {
+                $pdo->exec($sql);
+                $results[] = "Added column $col to users";
+            } catch (Exception $e) {}
+        }
+    }
+
+    // Tabel Dungeon Raid Mingguan (gate boss per minggu, uniq per user+minggu)
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `dungeon_raids` (
+            `raid_id` INT(11) NOT NULL AUTO_INCREMENT,
+            `user_id` INT(11) NOT NULL,
+            `week_key` VARCHAR(10) NOT NULL,
+            `boss_key` VARCHAR(40) NOT NULL,
+            `boss_hp` INT(11) NOT NULL,
+            `boss_max_hp` INT(11) NOT NULL,
+            `total_damage_dealt` INT(11) NOT NULL DEFAULT 0,
+            `is_defeated` TINYINT(1) NOT NULL DEFAULT 0,
+            `reward_claimed` TINYINT(1) NOT NULL DEFAULT 0,
+            `battle_log` TEXT DEFAULT NULL,
+            `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            PRIMARY KEY (`raid_id`),
+            UNIQUE KEY `uniq_user_week` (`user_id`, `week_key`),
+            CONSTRAINT `fk_dungeon_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    ");
+
+    // Tabel Jurnal Taktis (mood/energy harian + Wisdom Bonus)
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS `journal_entries` (
+            `entry_id` INT(11) NOT NULL AUTO_INCREMENT,
+            `user_id` INT(11) NOT NULL,
+            `entry_date` DATE NOT NULL,
+            `title` VARCHAR(150) NOT NULL,
+            `content` TEXT NOT NULL,
+            `mood_score` TINYINT(1) NOT NULL DEFAULT 3,
+            `energy_score` TINYINT(1) NOT NULL DEFAULT 3,
+            `tags` VARCHAR(120) DEFAULT NULL,
+            `exp_awarded` TINYINT(1) NOT NULL DEFAULT 0,
+            `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`entry_id`),
+            KEY `idx_journal_user_date` (`user_id`, `entry_date`),
+            CONSTRAINT `fk_journal_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+    ");
+
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS `remember_tokens` (
             `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -182,7 +239,7 @@ function run_lifevuww_migrations(PDO $pdo): array {
 
 // Naikkan setiap menambah file migrasi
 if (!defined('LV_SCHEMA_VERSION')) {
-    define('LV_SCHEMA_VERSION', '011_directives_and_recovery.sql');
+    define('LV_SCHEMA_VERSION', '012_sovereign_expansion.sql');
 }
 
 function ensure_lifevuww_migrated(PDO $pdo): void {
