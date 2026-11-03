@@ -493,6 +493,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         completeHabit($pdo, $userId, $habitId);
         $pdo->prepare("UPDATE habits SET current_count = target_count, last_completed_at = NOW() WHERE habit_id = ? AND user_id = ?")
             ->execute([$habitId, $userId]);
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => true, 'habit_id' => $habitId]);
+            exit();
+        }
         header("Location: habits.php");
         exit();
     }
@@ -1022,6 +1027,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const catSelect = document.getElementById('category');
         if (catSelect && newCat && validCats.includes(newCat)) {
             catSelect.value = newCat;
+        }
+        const sTime = params.get('start_time');
+        const eTime = params.get('end_time');
+        if (sTime && /^\d{2}:\d{2}$/.test(sTime)) {
+            const sInp = document.getElementById('habitStartTime');
+            if (sInp) sInp.value = sTime;
+        }
+        if (eTime && /^\d{2}:\d{2}$/.test(eTime)) {
+            const eInp = document.getElementById('habitEndTime');
+            if (eInp) eInp.value = eTime;
         }
         const modalEl = document.getElementById('addHabitModal');
         if (modalEl) {

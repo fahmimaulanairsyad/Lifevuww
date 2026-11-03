@@ -3607,7 +3607,28 @@ body.is-reordering-active {
     height: 60px;
     display: flex;
     align-items: flex-start;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.timeline-hour-row:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.timeline-schedule-hint {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.68rem;
+    color: var(--accent);
+    opacity: 0;
+    transition: opacity 0.15s ease;
     pointer-events: none;
+}
+
+.timeline-hour-row:hover .timeline-schedule-hint {
+    opacity: 0.85;
 }
 
 .timeline-hour-label {

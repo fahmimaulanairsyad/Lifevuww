@@ -278,6 +278,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $pdo->commit();
 
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    echo json_encode(['success' => true, 'quest_id' => $questId, 'exp' => $expReward, 'gold' => $goldReward]);
+                    exit();
+                }
+
                 // Redirect ke halaman quests.php
                 header("Location: quests.php");
                 exit();
@@ -998,6 +1004,16 @@ document.addEventListener('DOMContentLoaded', function() {
         if (qEnd) {
             const endInp = document.getElementById('endDate');
             if (endInp) endInp.value = qEnd;
+        }
+        const qStartTime = params.get('start_time');
+        const qEndTime = params.get('end_time');
+        if (qStartTime && /^\d{2}:\d{2}$/.test(qStartTime)) {
+            const stInp = document.getElementById('questStartTime');
+            if (stInp) stInp.value = qStartTime;
+        }
+        if (qEndTime && /^\d{2}:\d{2}$/.test(qEndTime)) {
+            const etInp = document.getElementById('questEndTime');
+            if (etInp) etInp.value = qEndTime;
         }
 
         const modalEl = document.getElementById('addQuestModal');
