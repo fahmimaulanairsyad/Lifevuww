@@ -216,6 +216,71 @@ assert_test("Sovereign Mantle: -30% Penalti HP (0.7) & +25 Max HP", $bMantle['hp
 $bCombo = game_calculate_passive_buffs('Obsidian Vanguard', ['sovereign_mantle', 'archon_signet']);
 assert_test("Combo Vanguard + Mantle + Signet: 1.1 EXP, 1.25 Gold, 0.5 HP Penalti, +25 Max HP", $bCombo['exp_multiplier'] === 1.1 && $bCombo['gold_multiplier'] === 1.25 && $bCombo['hp_penalty_multiplier'] === 0.5 && $bCombo['bonus_max_hp'] === 25);
 
+echo "\n10. Astral Companions (game_companions & game_companion_level):\n";
+$comps = game_companions();
+assert_test("Terdapat 5 Familiar orisinal", count($comps) === 5);
+assert_test("Kunci katalog lengkap", isset($comps['obsidian_wolf'], $comps['chrono_owl'], $comps['crimson_drake'], $comps['auric_griffin'], $comps['aegis_tortoise']));
+assert_test("Setiap familiar punya nama, ikon, aksen, dan bonus", count(array_filter($comps, fn($c) => isset($c['name'], $c['icon'], $c['accent'], $c['bonus']))) === 5);
+assert_test("Shadow Fang Wolf memberi +5 flat DMG", ($comps['obsidian_wolf']['dmg_bonus'] ?? 0) === 5);
+assert_test("Crimson Ember Drake multiplier DMG 15%", ($comps['crimson_drake']['dmg_multiplier'] ?? 0) === 0.15);
+assert_test("Auric Griffin multiplier Gold 15%", ($comps['auric_griffin']['gold_multiplier'] ?? 0) === 0.15);
+assert_test("Aegis Tortoise pengurangan penalti 15%", ($comps['aegis_tortoise']['penalty_reduction'] ?? 0) === 0.15);
+assert_test("Chrono Owl bonus EXP timed 12%", ($comps['chrono_owl']['exp_bonus_timed'] ?? 0) === 0.12);
+
+$lv0 = game_companion_level(0);
+assert_test("EXP 0 = Bond Lv.1 Hatchling", $lv0['bond_level'] === 1 && $lv0['stage'] === 'Hatchling');
+assert_test("Bonus skala Lv.1 = 1.0", $lv0['bonus_scale'] === 1.0);
+assert_test("EXP 80 = Bond Lv.2", game_companion_level(80)['bond_level'] === 2);
+assert_test("EXP 240 = Lv.4 Awakened (skala 1.15)", game_companion_level(240)['bond_level'] === 4 && game_companion_level(240)['stage'] === 'Awakened' && game_companion_level(240)['bonus_scale'] === 1.15);
+assert_test("EXP 560 = Lv.8 Sovereign (skala 1.35)", game_companion_level(560)['bond_level'] === 8 && game_companion_level(560)['stage'] === 'Sovereign' && game_companion_level(560)['bonus_scale'] === 1.35);
+assert_test("EXP 800 = Lv.10 maksimum", game_companion_level(800)['bond_level'] === 10);
+assert_test("EXP 10000 di-cap di Lv.10", game_companion_level(10000)['bond_level'] === 10);
+assert_test("Progres dalam level benar (83 EXP = 3/80)", game_companion_level(83)['exp_into_level'] === 3);
+
+echo "\n11. Pohon Bakat (game_skill_tree & game_available_skill_points):\n";
+$tree = game_skill_tree();
+assert_test("3 cabang: Discipline, Focus, Fortune", array_keys($tree['branches']) === ['discipline', 'focus', 'fortune']);
+$totalNodes = 0; $costSets = [];
+foreach ($tree['branches'] as $bk => $br) {
+    $totalNodes += count($br['nodes']);
+    $costSets[$bk] = array_map(fn($n) => (int) $n['cost'], $br['nodes']);
+}
+assert_test("Total 9 node pasif", $totalNodes === 9);
+assert_test("Biaya tier per cabang 1, 2, 3", $costSets['discipline'] === [1, 2, 3] && $costSets['focus'] === [1, 2, 3] && $costSets['fortune'] === [1, 2, 3]);
+assert_test("Terdapat 3 Active Skill", count($tree['actives']) === 3);
+assert_test("Active skills terkenal", isset($tree['actives']['overdrive_surge'], $tree['actives']['vital_transmutation'], $tree['actives']['tactical_inspiration']));
+assert_test("Semua active skill berbiaya 2 SP", count(array_filter($tree['actives'], fn($a) => (int) $a['cost'] === 2)) === 3);
+assert_test("SP level 1 = 0", game_available_skill_points(1, 0) === 0);
+assert_test("SP level 5 dengan 2 terpakai = 2", game_available_skill_points(5, 2) === 2);
+assert_test("SP level 10 tanpa belanja = 9", game_available_skill_points(10, 0) === 9);
+assert_test("SP tidak pernah negatif", game_available_skill_points(1, 5) === 0);
+assert_test("SP terpakai negatif diabaikan", game_available_skill_points(5, -3) === 7);
+
+echo "\n12. Dungeon Raid (game_dungeon_bosses & kalkulasi damage):\n";
+$bosses = game_dungeon_bosses();
+assert_test("Terdapat 5 Boss Gate", count($bosses) === 5);
+assert_test("Urutan Gate E,C,B,A,S", array_keys($bosses) === ['gate_e_crawler', 'gate_c_lich', 'gate_b_colossus', 'gate_a_valkyrie', 'gate_s_monarch']);
+assert_test("HP boss 300/600/1000/1500/2500", array_values(array_map(fn($b) => (int) $b['hp'], $bosses)) === [300, 600, 1000, 1500, 2500]);
+assert_test("Reward EXP 50/100/160/250/400", array_values(array_map(fn($b) => (int) $b['reward_exp'], $bosses)) === [50, 100, 160, 250, 400]);
+assert_test("Reward Gold 40/80/130/200/350", array_values(array_map(fn($b) => (int) $b['reward_gold'], $bosses)) === [40, 80, 130, 200, 350]);
+assert_test("Streak Freeze reward 0/0/1/1/2", array_values(array_map(fn($b) => (int) $b['reward_freeze'], $bosses)) === [0, 0, 1, 1, 2]);
+$pk = game_dungeon_pick_boss_key('2026-W45');
+assert_test("Rotasi boss menghasilkan kunci valid", isset($bosses[$pk]));
+assert_test("Rotasi boss stabil untuk week_key sama", game_dungeon_pick_boss_key('2026-W45') === $pk && game_dungeon_pick_boss_key('2026-W45') === $pk);
+assert_test("Wolf Lv.1: 100 base + 5 flat = 105", game_dungeon_effective_damage(100, 'obsidian_wolf', 0) === 105);
+assert_test("Wolf Lv.10: 100 x 1.45 + 5 = 150", game_dungeon_effective_damage(100, 'obsidian_wolf', 800) === 150);
+assert_test("Drake Lv.1: 100 x 1.15 = 115", game_dungeon_effective_damage(100, 'crimson_drake', 0) === 115);
+assert_test("Tortoise Lv.6: 100 x skala 1.25 = 125", game_dungeon_effective_damage(100, 'aegis_tortoise', 400) === 125);
+assert_test("Damage minimum dibatasi 1", game_dungeon_effective_damage(0, 'aegis_tortoise', 400) === 1);
+
+echo "\n13. Time Block (validate_time_block_input):\n";
+assert_test("String kosong -> null (Sepanjang Hari)", validate_time_block_input('') === null);
+assert_test("null -> null", validate_time_block_input(null) === null);
+assert_test("HH:MM valid dinormalisasi ke HH:MM:SS", validate_time_block_input('09:30') === '09:30:00');
+assert_test("HH:MM:SS valid diterima apa adanya", validate_time_block_input('09:30:15') === '09:30:15');
+assert_test("Format tidak valid ditolak", validate_time_block_input('9:5') === null);
+assert_test("Nilai di luar jam ditolak", validate_time_block_input('25:00') === null);
+
 echo "\n----------------------------------------\n";
 echo "Hasil Pengujian: $passed / $total lulus";
 if ($failed > 0) {

@@ -83,6 +83,26 @@ Setiap kebiasaan positif yang Anda selesaikan memberikan **Experience Points (EX
 
 ---
 
+## 🚀 Lifevuww v3.0 — Sovereign Expansion
+
+### 1. 🗓️ Kalender Taktis & Time Blocking
+Habit dan Misi bisa diberi rentang jam (`start_time`/`end_time`) langsung dari modal Tambah/Edit, lengkap tombol **"× Hapus Jam (Sepanjang Hari)"** karena browser HP tidak menyediakan tombol clear untuk `<input type="time">`. Halaman **Kalender** menghadirkan tampilan bulan & hari dengan agenda ber-jam dan tombol **"× Lepas Jam"** satu klik per kartu agenda.
+
+### 2. ⚔️ Dungeon Raid Boss Mingguan (`dungeon.php`)
+Setiap minggu satu Boss Gate terpilih otomatis (Ironhide Crawler 300 HP → Sovereign of the Abyss 2500 HP). Damage terkumpul dari aktivitas produktivitas: **Habit** +20..35, **Misi** +60..120, **Focus Rift** +40..90, **Jurnal** +25. Boss tumbang → **Klaim Loot Kemenangan** (EXP + Gold + Streak Freeze), lalu **Buka Gate Tingkat Berikutnya**.
+
+### 3. 🌳 Active Skill Tree (`skills.php`)
+9 node pasif dalam 3 jalur (Discipline, Focus, Fortune — tier 1/2/3 SP) plus 3 **Active Skill harian** (1x per hari): *Overdrive Surge* (+50% EXP 2 jam), *Vital Transmutation* (25 Gold → +40 HP), *Tactical Inspiration* (100 True Damage ke Boss + 15 EXP). Skill Points tersedia = Level − 1 − terpakai; **Reset SP (50 Gold)** mengunci ulang seluruh pohon.
+
+### 4. 🐾 Astral Companions (`skills.php` — Companion Sanctum)
+5 Familiar orisinal: Shadow Fang Wolf, Chrono Starlight Owl, Crimson Ember Drake, Auric Sovereign Griffin, Aegis Spirit Tortoise — bonus unik per familiar yang tumbuh mengikuti **Bond Level** (1–10, tiap 80 EXP; stage Hatchling → Awakened → Sovereign dengan skala bonus ×1.0 → ×1.45). Bond EXP naik sebesar damage yang diberikan ke Dungeon Boss. Familiar aktif tampil di Dasbor, Profil, dan Sanctum.
+
+### 5. 📓 Jurnal Taktis & Mood/Energy Tracker (`journal.php`)
+Refleksi harian dengan skor Mood (1–5) & Energi (1–5), tag, pencarian, edit/hapus, serta **Wisdom Bonus +10 EXP & +5 Gold** untuk entri pertama tiap hari (juga +25 DMG ke Dungeon Boss). Kartu **Analitik 14 Hari** merangkum rata-rata mood/energi dan korelasinya dengan jumlah Habit+Misi yang selesai.
+
+### 6. 🎧 Ambient Focus Soundscape (Focus Rift)
+Pilihan suara fokus prosedural **Web Audio API murni** di modal Focus Rift: Brown Noise (deep focus), Binaural Drone (40Hz flow state), dan Night Rain (hujan lembut) — tanpa file audio eksternal, otomatis berhenti saat jeda/reset/selesai/modal ditutup.
+
 ## 🎮 Mekanisme Inti Game RPG
 
 ### 1. ⚔️ Rumus Karakter & Hierarki Gelar (Rank)

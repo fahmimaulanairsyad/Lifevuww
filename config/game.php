@@ -653,8 +653,10 @@ function validate_time_block_input(?string $time): ?string {
     if ($time === null) return null;
     $time = trim($time);
     if ($time === '') return null;
-    if (preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $time)) {
-        return (strlen($time) === 5) ? $time . ':00' : $time;
+    if (preg_match('/^(\d{2}):(\d{2})(?::(\d{2}))?$/', $time, $m)) {
+        $hh = (int) $m[1]; $mm = (int) $m[2]; $ss = isset($m[3]) ? (int) $m[3] : 0;
+        if ($hh > 23 || $mm > 59 || $ss > 59) return null; // tolak di luar jangkauan
+        return sprintf('%02d:%02d:%02d', $hh, $mm, $ss);
     }
     return null;
 }
@@ -936,7 +938,7 @@ function game_skill_tree(): array {
 
 // Murni: SP tersedia = level - 1 - sudah dibelanjakan (mulai 0 SP di level 1).
 function game_available_skill_points(int $userLevel, int $spentPoints): int {
-    return max(0, $userLevel - 1 - max(0, $spentPoints));
+    return max(0, $userLevel - 1 - $spentPoints);
 }
 
 // ============================================================
@@ -960,6 +962,18 @@ function game_dungeon_pick_boss_key(string $weekKey): string {
     $keys = array_keys(game_dungeon_bosses());
     $idx = abs(crc32('lv-dungeon-' . $weekKey)) % count($keys);
     return $keys[$idx];
+}
+
+// Murni: kalkulasi damage efektif ke Boss dari base damage + familiar aktif
+// (flat dmg bonus & multiplier, diskalakan bond level). Minimum 1.
+function game_dungeon_effective_damage(int $baseDamage, string $companionKey, int $companionExp): int {
+    $comps = game_companions();
+    $comp = $comps[$companionKey] ?? ($comps['obsidian_wolf'] ?? []);
+    $bond = game_companion_level($companionExp);
+    $dmg = (float) $baseDamage * $bond['bonus_scale'];
+    if (isset($comp['dmg_bonus'])) $dmg += (float) $comp['dmg_bonus'];
+    if (isset($comp['dmg_multiplier'])) $dmg *= (1.0 + (float) $comp['dmg_multiplier']);
+    return max(1, (int) round($dmg));
 }
 
 // Terapkan damage ke Boss minggu berjalan. Bonus familar aktif ikut
@@ -988,7 +1002,7 @@ function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $act
         return ['applied' => 0, 'defeated' => true, 'message' => 'Boss minggu ini sudah tumbang. Klaim lootnya!'];
     }
 
-    // Bonus familiar aktif (diskalakan bond level)
+    // Bonus familiar aktif (diskalakan bond level) — murni via helper
     $stmtUser = $pdo->prepare("SELECT active_companion, companion_exp FROM users WHERE user_id = ?");
     $stmtUser->execute([$userId]);
     $uRow = $stmtUser->fetch(PDO::FETCH_ASSOC);
@@ -996,11 +1010,7 @@ function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $act
     $compKey = isset($comps[$uRow['active_companion'] ?? '']) ? $uRow['active_companion'] : 'obsidian_wolf';
     $comp = $comps[$compKey];
     $bond = game_companion_level((int) ($uRow['companion_exp'] ?? 0));
-
-    $dmg = (float) $baseDamage * $bond['bonus_scale'];
-    if (isset($comp['dmg_bonus'])) $dmg += (float) $comp['dmg_bonus'];
-    if (isset($comp['dmg_multiplier'])) $dmg *= (1.0 + (float) $comp['dmg_multiplier']);
-    $dmg = max(1, (int) round($dmg));
+    $dmg = game_dungeon_effective_damage($baseDamage, $compKey, (int) ($uRow['companion_exp'] ?? 0));
 
     $newHp = max(0, (int) $raid['boss_hp'] - $dmg);
     $defeated = $newHp <= 0 ? 1 : (int) $raid['is_defeated'];
