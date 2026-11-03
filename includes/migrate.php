@@ -66,12 +66,24 @@ function run_lifevuww_migrations(PDO $pdo): array {
         }
     }
 
-    // Explicit check & migration for user specialization & relics
+    // Explicit check & migration for user specialization & directives/recovery columns
     $userCols = $pdo->query("DESCRIBE users")->fetchAll(PDO::FETCH_COLUMN) ?: [];
     if (!in_array('specialization', $userCols, true)) {
         try {
             $pdo->exec("ALTER TABLE `users` ADD COLUMN `specialization` VARCHAR(50) NOT NULL DEFAULT 'Obsidian Vanguard'");
             $results[] = "Added column specialization to users";
+        } catch (Exception $e) {}
+    }
+    if (!in_array('last_crate_date', $userCols, true)) {
+        try {
+            $pdo->exec("ALTER TABLE `users` ADD COLUMN `last_crate_date` DATE DEFAULT NULL");
+            $results[] = "Added column last_crate_date to users";
+        } catch (Exception $e) {}
+    }
+    if (!in_array('last_emergency_heal_date', $userCols, true)) {
+        try {
+            $pdo->exec("ALTER TABLE `users` ADD COLUMN `last_emergency_heal_date` DATE DEFAULT NULL");
+            $results[] = "Added column last_emergency_heal_date to users";
         } catch (Exception $e) {}
     }
 
@@ -170,7 +182,7 @@ function run_lifevuww_migrations(PDO $pdo): array {
 
 // Naikkan setiap menambah file migrasi
 if (!defined('LV_SCHEMA_VERSION')) {
-    define('LV_SCHEMA_VERSION', '010_timeblock_and_calendar.sql');
+    define('LV_SCHEMA_VERSION', '011_directives_and_recovery.sql');
 }
 
 function ensure_lifevuww_migrated(PDO $pdo): void {

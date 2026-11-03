@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS `users` (
   `last_daily_check` date DEFAULT NULL,
   `reminder_time` time DEFAULT '20:00:00',
   `specialization` varchar(50) NOT NULL DEFAULT 'Obsidian Vanguard',
+  `last_crate_date` date DEFAULT NULL,
+  `last_emergency_heal_date` date DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`),
@@ -269,6 +271,7 @@ INSERT IGNORE INTO `schema_migrations` (`migration`) VALUES
 ('007_pin_and_custom_order.sql'),
 ('008_remember_tokens.sql'),
 ('009_audit_fixes.sql'),
-('010_timeblock_and_calendar.sql');
+('010_timeblock_and_calendar.sql'),
+('011_directives_and_recovery.sql');
 
 SET foreign_key_checks = 1;

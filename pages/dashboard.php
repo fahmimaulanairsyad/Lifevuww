@@ -3,6 +3,116 @@
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
+$userId = $_SESSION['user_id'];
+$todayDate = date('Y-m-d');
+
+// POST Handlers (Supply Crate & Emergency Recovery)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    validate_csrf();
+
+    // 1. Klaim Supply Crate Harian
+    if (isset($_POST['claim_supply_crate'])) {
+        $stmtHCount = $pdo->prepare("SELECT COUNT(*) FROM habit_logs WHERE user_id = ? AND status = 'Completed' AND completion_date = CURDATE()");
+        $stmtHCount->execute([$userId]);
+        $doneHabitsToday = (int)$stmtHCount->fetchColumn();
+
+        $stmtQCount = $pdo->prepare("SELECT COUNT(*) FROM quest_logs WHERE user_id = ? AND status = 'Completed' AND DATE(COALESCE(completed_at, completion_date, created_at)) = CURDATE()");
+        $stmtQCount->execute([$userId]);
+        $doneQuestsToday = (int)$stmtQCount->fetchColumn();
+
+        $stmtTbH = $pdo->prepare("SELECT COUNT(*) FROM habit_logs hl JOIN habits h ON hl.habit_id = h.habit_id WHERE hl.user_id = ? AND hl.status = 'Completed' AND hl.completion_date = CURDATE() AND h.start_time IS NOT NULL AND h.end_time IS NOT NULL");
+        $stmtTbH->execute([$userId]);
+        $doneTbHabits = (int)$stmtTbH->fetchColumn();
+
+        $stmtTbQ = $pdo->prepare("SELECT COUNT(*) FROM quest_logs ql JOIN quests q ON ql.quest_id = q.quest_id WHERE ql.user_id = ? AND ql.status = 'Completed' AND DATE(COALESCE(ql.completed_at, ql.completion_date, ql.created_at)) = CURDATE() AND q.start_time IS NOT NULL AND q.end_time IS NOT NULL");
+        $stmtTbQ->execute([$userId]);
+        $doneTbQuests = (int)$stmtTbQ->fetchColumn();
+
+        $target1Met = ($doneHabitsToday >= 2);
+        $target2Met = ($doneQuestsToday >= 1 || ($doneTbHabits + $doneTbQuests) >= 1);
+
+        if ($target1Met && $target2Met) {
+            $pdo->beginTransaction();
+            try {
+                $stmtU = $pdo->prepare("SELECT exp, gold, level, last_crate_date FROM users WHERE user_id = ? FOR UPDATE");
+                $stmtU->execute([$userId]);
+                $uRow = $stmtU->fetch(PDO::FETCH_ASSOC);
+
+                if ($uRow && ($uRow['last_crate_date'] ?? '') !== $todayDate) {
+                    $newExp = (int)$uRow['exp'] + 20;
+                    $newGold = (int)$uRow['gold'] + 25;
+                    $newLvl = calculateLevel($newExp);
+                    $newRank = calculateRank($newLvl);
+
+                    $pdo->prepare("UPDATE users SET exp = ?, gold = ?, level = ?, `rank` = ?, last_crate_date = CURDATE() WHERE user_id = ?")
+                        ->execute([$newExp, $newGold, $newLvl, $newRank, $userId]);
+                    $pdo->commit();
+
+                    $_SESSION['dashboard_alert'] = [
+                        'type' => 'success',
+                        'icon' => 'fa-box-open',
+                        'title' => 'Supply Crate Harian Terbuka!',
+                        'message' => '+20 EXP dan +25 Gold berhasil diklaim ke saldo karaktermu.'
+                    ];
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $pdo->rollBack();
+                }
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+            }
+        }
+        header("Location: dashboard.php");
+        exit();
+    }
+
+    // 2. Pemulihan Darurat (+30 HP)
+    if (isset($_POST['emergency_heal'])) {
+        $stmtHCount = $pdo->prepare("SELECT COUNT(*) FROM habit_logs WHERE user_id = ? AND status = 'Completed' AND completion_date = CURDATE()");
+        $stmtHCount->execute([$userId]);
+        $doneH = (int)$stmtHCount->fetchColumn();
+
+        $stmtQCount = $pdo->prepare("SELECT COUNT(*) FROM quest_logs WHERE user_id = ? AND status = 'Completed' AND DATE(COALESCE(completed_at, completion_date, created_at)) = CURDATE()");
+        $stmtQCount->execute([$userId]);
+        $doneQ = (int)$stmtQCount->fetchColumn();
+
+        if (($doneH + $doneQ) >= 1) {
+            $pdo->beginTransaction();
+            try {
+                $stmtU = $pdo->prepare("SELECT hp, max_hp, last_emergency_heal_date FROM users WHERE user_id = ? FOR UPDATE");
+                $stmtU->execute([$userId]);
+                $uRow = $stmtU->fetch(PDO::FETCH_ASSOC);
+
+                if ($uRow && (int)$uRow['hp'] <= 25 && ($uRow['last_emergency_heal_date'] ?? '') !== $todayDate) {
+                    $maxHp = (int)($uRow['max_hp'] ?? 100);
+                    $curHp = (int)($uRow['hp'] ?? 0);
+                    $newHp = min($maxHp, $curHp + 30);
+
+                    $pdo->prepare("UPDATE users SET hp = ?, last_emergency_heal_date = CURDATE() WHERE user_id = ?")
+                        ->execute([$newHp, $userId]);
+                    $pdo->commit();
+
+                    $_SESSION['dashboard_alert'] = [
+                        'type' => 'danger',
+                        'icon' => 'fa-heart',
+                        'title' => 'Protokol Pemulihan Darurat Berhasil!',
+                        'message' => '+30 HP berhasil dipulihkan secara gratis.'
+                    ];
+                    header("Location: dashboard.php");
+                    exit();
+                } else {
+                    $pdo->rollBack();
+                }
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
+            }
+        }
+        header("Location: dashboard.php");
+        exit();
+    }
+}
+
 $pageTitle = 'Dasbor';
 require_once __DIR__ . '/../includes/header.php';
 
@@ -172,6 +282,31 @@ try {
         $radarAttrData[$catKey] = (int)($userSkillsMap[$sId] ?? 0);
     }
 
+    // Daily Directive & Emergency Recovery Status
+    $stmtHCount = $pdo->prepare("SELECT COUNT(*) FROM habit_logs WHERE user_id = ? AND status = 'Completed' AND completion_date = CURDATE()");
+    $stmtHCount->execute([$userId]);
+    $doneHabitsToday = (int)$stmtHCount->fetchColumn();
+
+    $stmtQCount = $pdo->prepare("SELECT COUNT(*) FROM quest_logs WHERE user_id = ? AND status = 'Completed' AND DATE(COALESCE(completed_at, completion_date, created_at)) = CURDATE()");
+    $stmtQCount->execute([$userId]);
+    $doneQuestsToday = (int)$stmtQCount->fetchColumn();
+
+    $stmtTbH = $pdo->prepare("SELECT COUNT(*) FROM habit_logs hl JOIN habits h ON hl.habit_id = h.habit_id WHERE hl.user_id = ? AND hl.status = 'Completed' AND hl.completion_date = CURDATE() AND h.start_time IS NOT NULL AND h.end_time IS NOT NULL");
+    $stmtTbH->execute([$userId]);
+    $doneTbHabits = (int)$stmtTbH->fetchColumn();
+
+    $stmtTbQ = $pdo->prepare("SELECT COUNT(*) FROM quest_logs ql JOIN quests q ON ql.quest_id = q.quest_id WHERE ql.user_id = ? AND ql.status = 'Completed' AND DATE(COALESCE(ql.completed_at, ql.completion_date, ql.created_at)) = CURDATE() AND q.start_time IS NOT NULL AND q.end_time IS NOT NULL");
+    $stmtTbQ->execute([$userId]);
+    $doneTbQuests = (int)$stmtTbQ->fetchColumn();
+
+    $target1Met = ($doneHabitsToday >= 2);
+    $target2Met = ($doneQuestsToday >= 1 || ($doneTbHabits + $doneTbQuests) >= 1);
+    $isCrateClaimedToday = (($user['last_crate_date'] ?? '') === $todayDate);
+
+    $isEmergency = ((int)($user['hp'] ?? 100) <= 25);
+    $isHealedToday = (($user['last_emergency_heal_date'] ?? '') === $todayDate);
+    $canEmergencyHeal = ($isEmergency && !$isHealedToday && ($doneHabitsToday + $doneQuestsToday >= 1));
+
 } catch (PDOException $e) {
     error_log("Dashboard error: " . $e->getMessage());
     die("Error loading dashboard. Please try again later.");
@@ -192,6 +327,58 @@ try {
         </button>
     </div>
 </div>
+
+<?php if (isset($_SESSION['dashboard_alert'])): 
+    $dbAlert = $_SESSION['dashboard_alert'];
+    unset($_SESSION['dashboard_alert']);
+    $alertBg = ($dbAlert['type'] === 'danger') ? 'var(--status-danger-dim)' : 'var(--accent-dim)';
+    $alertBorder = ($dbAlert['type'] === 'danger') ? 'rgba(244, 63, 94, 0.3)' : 'var(--accent-border)';
+    $alertColor = ($dbAlert['type'] === 'danger') ? 'var(--status-danger)' : 'var(--accent)';
+?>
+    <div class="alert alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between p-3" role="status" style="background-color: var(--bg-surface); border: 1px solid <?php echo $alertBorder; ?>; border-radius: var(--radius);">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background-color: <?php echo $alertBg; ?>; color: <?php echo $alertColor; ?>; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas <?php echo htmlspecialchars($dbAlert['icon']); ?>"></i>
+            </div>
+            <div>
+                <strong style="font-size: 0.88rem; color: var(--text-primary); display: block;"><?php echo htmlspecialchars($dbAlert['title']); ?></strong>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);"><?php echo htmlspecialchars($dbAlert['message']); ?></div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+    </div>
+<?php endif; ?>
+
+<?php if ($isEmergency && !$isHealedToday): ?>
+    <!-- Emergency Recovery Zone (Zona Darurat) -->
+    <div class="alert alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between p-3" role="alert" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: var(--radius);">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background-color: var(--status-danger-dim); border: 1px solid var(--status-danger); color: var(--status-danger); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fas fa-heart-crack"></i>
+            </div>
+            <div>
+                <strong style="font-size: 0.9rem; color: #fca5a5; display: block;"><i class="fas fa-triangle-exclamation me-1"></i> ZONA DARURAT: Vital Karakter Kritis!</strong>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                    Poin kesehatanmu saat ini tersisa <span class="text-danger font-mono fw-bold"><?php echo (int)($user['hp'] ?? 0); ?> HP</span>. Tuntaskan minimal 1 rutinitas atau misi hari ini untuk mengaktifkan pemulihan darurat (+30 HP).
+                </div>
+            </div>
+        </div>
+        <div class="ms-3 flex-shrink-0">
+            <?php if ($canEmergencyHeal): ?>
+                <form method="POST" action="dashboard.php" class="m-0">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" name="emergency_heal" value="1" class="btn-core btn-accent font-mono" style="background-color: var(--status-danger) !important; border-color: var(--status-danger) !important; color: #fff !important; font-size: 0.78rem;">
+                        <i class="fas fa-heart me-1"></i> Pemulihan Darurat (+30 HP)
+                    </button>
+                </form>
+            <?php else: ?>
+                <button type="button" class="btn-core btn-outline font-mono text-muted" disabled style="opacity: 0.6; cursor: not-allowed; font-size: 0.76rem;" title="Selesaikan minimal 1 habit atau quest hari ini">
+                    <i class="fas fa-lock me-1"></i> Pemulihan Terkunci (0/1)
+                </button>
+            <?php endif; ?>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php if (isset($_SESSION['morning_report'])): 
     $mReport = $_SESSION['morning_report'];
@@ -334,6 +521,82 @@ try {
         <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Perisai</div>
         <div class="metric-value" style="color: var(--status-info);"><span class="count-up" data-target="<?php echo (int)($user['streak_freeze'] ?? 0); ?>"><?php echo $user['streak_freeze'] ?? 0; ?></span> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SLOT</span></div>
         <div class="metric-sub">Hari terlindungi</div>
+    </div>
+</div>
+
+<!-- Daily System Directive (Supply Crate Harian) -->
+<div class="bento-panel spotlight-card mb-4" style="border-top: 1px solid rgba(245, 158, 11, 0.4); background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(17, 17, 20, 0.95) 45%);">
+    <div class="panel-header mb-3">
+        <div>
+            <h3 class="panel-title"><i class="fas fa-box text-warning"></i> Daily System Directive</h3>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Selesaikan dua arahan taktis harian untuk membuka Supply Crate perbekalan.</p>
+        </div>
+        <div>
+            <?php if ($isCrateClaimedToday): ?>
+                <span class="badge-status accent font-mono" style="font-size: 0.75rem;">
+                    <i class="fas fa-check-double me-1"></i> Crate Terklaim
+                </span>
+            <?php elseif ($target1Met && $target2Met): ?>
+                <span class="badge-status warning font-mono pulse-live" style="font-size: 0.75rem;">
+                    <i class="fas fa-gift me-1"></i> Siap Diklaim!
+                </span>
+            <?php else: ?>
+                <span class="badge-status font-mono" style="font-size: 0.75rem;">
+                    Progres Arahan
+                </span>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="row g-3 align-items-center">
+        <div class="col-md-8">
+            <div class="d-flex flex-column gap-2">
+                <!-- Directive 1 -->
+                <div class="d-flex align-items-center justify-content-between p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas <?php echo $target1Met ? 'fa-check-circle text-accent' : 'fa-circle text-muted'; ?>" style="font-size: 0.85rem;"></i>
+                        <span style="font-size: 0.82rem; color: var(--text-primary);">Arahan 1: Tuntaskan minimal 2 Rutinitas hari ini</span>
+                    </div>
+                    <span class="badge-status font-mono <?php echo $target1Met ? 'accent' : ''; ?>" style="font-size: 0.72rem;">
+                        <?php echo min(2, $doneHabitsToday); ?> / 2
+                    </span>
+                </div>
+                <!-- Directive 2 -->
+                <div class="d-flex align-items-center justify-content-between p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas <?php echo $target2Met ? 'fa-check-circle text-accent' : 'fa-circle text-muted'; ?>" style="font-size: 0.85rem;"></i>
+                        <span style="font-size: 0.82rem; color: var(--text-primary);">Arahan 2: Tuntaskan minimal 1 Misi atau 1 Agenda Time-Block</span>
+                    </div>
+                    <span class="badge-status font-mono <?php echo $target2Met ? 'accent' : ''; ?>" style="font-size: 0.72rem;">
+                        <?php echo min(1, ($doneQuestsToday + $doneTbHabits + $doneTbQuests)); ?> / 1
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 text-center">
+            <?php if ($isCrateClaimedToday): ?>
+                <div class="p-3" style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--accent-border); border-radius: var(--radius);">
+                    <i class="fas fa-box-open text-accent fa-2x mb-2"></i>
+                    <div class="font-mono text-accent" style="font-size: 0.85rem; font-weight: 600;">Supply Crate Hari Ini Sudah Diklaim</div>
+                    <div class="text-muted mt-1" style="font-size: 0.72rem;">Kembali lagi besok untuk arahan sistem selanjutnya!</div>
+                </div>
+            <?php elseif ($target1Met && $target2Met): ?>
+                <form method="POST" action="dashboard.php" class="m-0">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" name="claim_supply_crate" value="1" class="btn-core btn-accent font-mono w-100 py-3" style="font-size: 0.84rem;">
+                        <i class="fas fa-gift me-1"></i> Klaim Supply Crate<br>
+                        <span style="font-size: 0.72rem; opacity: 0.9;">(+20 EXP &amp; +25 Gold)</span>
+                    </button>
+                </form>
+            <?php else: ?>
+                <div class="p-3" style="background: var(--bg-surface-hover); border: 1px dashed var(--border-hairline); border-radius: var(--radius);">
+                    <i class="fas fa-lock text-muted fa-2x mb-2"></i>
+                    <div class="font-mono text-muted" style="font-size: 0.82rem;">Supply Crate Tersegel</div>
+                    <div class="text-muted mt-1" style="font-size: 0.72rem;">Selesaikan kedua arahan di samping untuk membuka segel crate (+20 EXP &amp; +25 Gold).</div>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
 
