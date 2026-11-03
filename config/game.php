@@ -981,54 +981,61 @@ function game_dungeon_effective_damage(int $baseDamage, string $companionKey, in
 // tumbuh sebesar damage yang benar-benar diterapkan. Battle log disimpan
 // JSON maksimal 15 entri terakhir.
 function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $actionLabel): array {
-    $weekKey = date('o-W');
-    $bosses = game_dungeon_bosses();
+    // Seluruh operasi dungeon dilindungi: kegagalan DB apa pun TIDAK boleh
+    // membuat aksi utama (centang habit/quest/focus rift) ikut gagal.
+    try {
+        $weekKey = date('o-W');
+        $bosses = game_dungeon_bosses();
 
-    $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, is_defeated, total_damage_dealt, battle_log FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
-    $stmt->execute([$userId, $weekKey]);
-    $raid = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$raid) {
-        $bossKey = game_dungeon_pick_boss_key($weekKey);
-        $b = $bosses[$bossKey];
-        $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp) VALUES (?, ?, ?, ?, ?)")
-            ->execute([$userId, $weekKey, $bossKey, (int) $b['hp'], (int) $b['hp']]);
+        $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, is_defeated, total_damage_dealt, battle_log FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
         $stmt->execute([$userId, $weekKey]);
         $raid = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$raid) {
-            return ['applied' => 0, 'defeated' => false, 'message' => 'Raid minggu ini tidak tersedia.'];
+            $bossKey = game_dungeon_pick_boss_key($weekKey);
+            $b = $bosses[$bossKey];
+            $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp) VALUES (?, ?, ?, ?, ?)")
+                ->execute([$userId, $weekKey, $bossKey, (int) $b['hp'], (int) $b['hp']]);
+            $stmt->execute([$userId, $weekKey]);
+            $raid = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$raid) {
+                return ['applied' => 0, 'defeated' => false, 'message' => 'Raid minggu ini tidak tersedia.'];
+            }
         }
-    }
-    if ((int) $raid['boss_hp'] <= 0) {
-        return ['applied' => 0, 'defeated' => true, 'message' => 'Boss minggu ini sudah tumbang. Klaim lootnya!'];
-    }
+        if ((int) $raid['boss_hp'] <= 0) {
+            return ['applied' => 0, 'defeated' => true, 'message' => 'Boss minggu ini sudah tumbang. Klaim lootnya!'];
+        }
 
-    // Bonus familiar aktif (diskalakan bond level) — murni via helper
-    $stmtUser = $pdo->prepare("SELECT active_companion, companion_exp FROM users WHERE user_id = ?");
-    $stmtUser->execute([$userId]);
-    $uRow = $stmtUser->fetch(PDO::FETCH_ASSOC);
-    $comps = game_companions();
-    $compKey = isset($comps[$uRow['active_companion'] ?? '']) ? $uRow['active_companion'] : 'obsidian_wolf';
-    $comp = $comps[$compKey];
-    $bond = game_companion_level((int) ($uRow['companion_exp'] ?? 0));
-    $dmg = game_dungeon_effective_damage($baseDamage, $compKey, (int) ($uRow['companion_exp'] ?? 0));
+        // Bonus familiar aktif (diskalakan bond level) — murni via helper
+        $stmtUser = $pdo->prepare("SELECT active_companion, companion_exp FROM users WHERE user_id = ?");
+        $stmtUser->execute([$userId]);
+        $uRow = $stmtUser->fetch(PDO::FETCH_ASSOC);
+        $comps = game_companions();
+        $compKey = isset($comps[$uRow['active_companion'] ?? '']) ? $uRow['active_companion'] : 'obsidian_wolf';
+        $comp = $comps[$compKey];
+        $bond = game_companion_level((int) ($uRow['companion_exp'] ?? 0));
+        $dmg = game_dungeon_effective_damage($baseDamage, $compKey, (int) ($uRow['companion_exp'] ?? 0));
 
-    $newHp = max(0, (int) $raid['boss_hp'] - $dmg);
-    $defeated = $newHp <= 0 ? 1 : (int) $raid['is_defeated'];
+        $newHp = max(0, (int) $raid['boss_hp'] - $dmg);
+        $defeated = $newHp <= 0 ? 1 : (int) $raid['is_defeated'];
 
-    $log = json_decode((string) ($raid['battle_log'] ?? '[]'), true) ?: [];
-    $log[] = ['t' => date('Y-m-d H:i:s'), 'a' => $actionLabel, 'd' => $dmg];
-    if (count($log) > 15) $log = array_slice($log, -15);
+        $log = json_decode((string) ($raid['battle_log'] ?? '[]'), true) ?: [];
+        $log[] = ['t' => date('Y-m-d H:i:s'), 'a' => $actionLabel, 'd' => $dmg];
+        if (count($log) > 15) $log = array_slice($log, -15);
 
-    $pdo->prepare("UPDATE dungeon_raids SET boss_hp = ?, total_damage_dealt = total_damage_dealt + ?, is_defeated = ?, battle_log = ? WHERE raid_id = ?")
-        ->execute([$newHp, $dmg, $defeated, json_encode($log, JSON_UNESCAPED_UNICODE), (int) $raid['raid_id']]);
-    $pdo->prepare("UPDATE users SET companion_exp = companion_exp + ? WHERE user_id = ?")
-        ->execute([$dmg, $userId]);
+        $pdo->prepare("UPDATE dungeon_raids SET boss_hp = ?, total_damage_dealt = total_damage_dealt + ?, is_defeated = ?, battle_log = ? WHERE raid_id = ?")
+            ->execute([$newHp, $dmg, $defeated, json_encode($log, JSON_UNESCAPED_UNICODE), (int) $raid['raid_id']]);
+        $pdo->prepare("UPDATE users SET companion_exp = companion_exp + ? WHERE user_id = ?")
+            ->execute([$dmg, $userId]);
 
-    return [
-        'applied' => $dmg,
-        'defeated' => $newHp <= 0,
-        'boss_hp' => $newHp,
-        'boss_name' => $bosses[$raid['boss_key']]['name'] ?? $raid['boss_key'],
-        'message' => $newHp <= 0 ? 'Boss tumbang! Klaim loot kemenanganmu.' : 'Damage diterapkan ke ' . ($bosses[$raid['boss_key']]['name'] ?? ''),
-    ];
-}
+        return [
+            'applied' => $dmg,
+            'defeated' => $newHp <= 0,
+            'boss_hp' => $newHp,
+            'boss_name' => $bosses[$raid['boss_key']]['name'] ?? $raid['boss_key'],
+            'message' => $newHp <= 0 ? 'Boss tumbang! Klaim loot kemenanganmu.' : 'Damage diterapkan ke ' . ($bosses[$raid['boss_key']]['name'] ?? ''),
+        ];
+
+    } catch (Throwable $eDungeon) {
+        error_log('Dungeon damage failed: ' . $eDungeon->getMessage());
+        return ['damage' => 0, 'applied' => 0, 'defeated' => false];
+    }}
