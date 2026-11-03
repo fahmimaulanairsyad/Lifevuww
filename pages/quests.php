@@ -251,6 +251,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ?, `rank` = ? WHERE user_id = ?");
                 $stmt->execute([$expReward, $goldReward, $newLvl, $newRank, $_SESSION['user_id']]);
 
+                // Dungeon Raid: serang Boss mingguan (+60..120 DMG tergantung difficulty)
+                $qDiffIdx = array_search($quest['difficulty'], ['Easy', 'Medium', 'Hard'], true);
+                $raidDmgQ = 60 + ((int) ($qDiffIdx === false ? 0 : $qDiffIdx)) * 30;
+                deal_dungeon_damage($pdo, (int) $_SESSION['user_id'], $raidDmgQ, 'Quest: ' . ($quest['quest_name'] ?? 'Quest'));
+
                 if ($newLvl > $oldLvl) {
                     $_SESSION['level_up'] = [
                         'old_level' => $oldLvl,

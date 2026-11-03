@@ -938,3 +938,87 @@ function game_skill_tree(): array {
 function game_available_skill_points(int $userLevel, int $spentPoints): int {
     return max(0, $userLevel - 1 - max(0, $spentPoints));
 }
+
+// ============================================================
+// SOVEREIGN EXPANSION (v3.0): Dungeon Raid & Weekly Boss Rush
+// ============================================================
+
+// Katalog 5 Boss Mingguan (Gate E s/d Gate S). Reward diklaim lewat
+// halaman dungeon setelah boss_hp <= 0.
+function game_dungeon_bosses(): array {
+    return [
+        'gate_e_crawler' => ['name' => 'Ironhide Crawler', 'gate' => 'E-Rank', 'hp' => 300, 'reward_exp' => 50, 'reward_gold' => 40, 'reward_freeze' => 0, 'color' => '#a1a1aa', 'icon' => 'fa-bug'],
+        'gate_c_lich' => ['name' => 'Frostveil Archmage', 'gate' => 'C-Rank', 'hp' => 600, 'reward_exp' => 100, 'reward_gold' => 80, 'reward_freeze' => 0, 'color' => '#06b6d4', 'icon' => 'fa-hat-wizard'],
+        'gate_b_colossus' => ['name' => 'Obsidian Colossus', 'gate' => 'B-Rank', 'hp' => 1000, 'reward_exp' => 160, 'reward_gold' => 130, 'reward_freeze' => 1, 'color' => '#8b5cf6', 'icon' => 'fa-mountain'],
+        'gate_a_valkyrie' => ['name' => 'Crimson Valkyrie', 'gate' => 'A-Rank', 'hp' => 1500, 'reward_exp' => 250, 'reward_gold' => 200, 'reward_freeze' => 1, 'color' => '#f43f5e', 'icon' => 'fa-feather-pointed'],
+        'gate_s_monarch' => ['name' => 'Sovereign of the Abyss', 'gate' => 'S-Rank', 'hp' => 2500, 'reward_exp' => 400, 'reward_gold' => 350, 'reward_freeze' => 2, 'color' => '#f59e0b', 'icon' => 'fa-skull'],
+    ];
+}
+
+// Murni: pilih boss minggu ini dari rotasi hash week_key ( stabil antar request).
+function game_dungeon_pick_boss_key(string $weekKey): string {
+    $keys = array_keys(game_dungeon_bosses());
+    $idx = abs(crc32('lv-dungeon-' . $weekKey)) % count($keys);
+    return $keys[$idx];
+}
+
+// Terapkan damage ke Boss minggu berjalan. Bonus familar aktif ikut
+// (flat dmg bonus & multiplier, diskalakan bond level); companion_exp
+// tumbuh sebesar damage yang benar-benar diterapkan. Battle log disimpan
+// JSON maksimal 15 entri terakhir.
+function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $actionLabel): array {
+    $weekKey = date('o-W');
+    $bosses = game_dungeon_bosses();
+
+    $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, is_defeated, total_damage_dealt, battle_log FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
+    $stmt->execute([$userId, $weekKey]);
+    $raid = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$raid) {
+        $bossKey = game_dungeon_pick_boss_key($weekKey);
+        $b = $bosses[$bossKey];
+        $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp) VALUES (?, ?, ?, ?, ?)")
+            ->execute([$userId, $weekKey, $bossKey, (int) $b['hp'], (int) $b['hp']]);
+        $stmt->execute([$userId, $weekKey]);
+        $raid = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$raid) {
+            return ['applied' => 0, 'defeated' => false, 'message' => 'Raid minggu ini tidak tersedia.'];
+        }
+    }
+    if ((int) $raid['boss_hp'] <= 0) {
+        return ['applied' => 0, 'defeated' => true, 'message' => 'Boss minggu ini sudah tumbang. Klaim lootnya!'];
+    }
+
+    // Bonus familiar aktif (diskalakan bond level)
+    $stmtUser = $pdo->prepare("SELECT active_companion, companion_exp FROM users WHERE user_id = ?");
+    $stmtUser->execute([$userId]);
+    $uRow = $stmtUser->fetch(PDO::FETCH_ASSOC);
+    $comps = game_companions();
+    $compKey = isset($comps[$uRow['active_companion'] ?? '']) ? $uRow['active_companion'] : 'obsidian_wolf';
+    $comp = $comps[$compKey];
+    $bond = game_companion_level((int) ($uRow['companion_exp'] ?? 0));
+
+    $dmg = (float) $baseDamage * $bond['bonus_scale'];
+    if (isset($comp['dmg_bonus'])) $dmg += (float) $comp['dmg_bonus'];
+    if (isset($comp['dmg_multiplier'])) $dmg *= (1.0 + (float) $comp['dmg_multiplier']);
+    $dmg = max(1, (int) round($dmg));
+
+    $newHp = max(0, (int) $raid['boss_hp'] - $dmg);
+    $defeated = $newHp <= 0 ? 1 : (int) $raid['is_defeated'];
+
+    $log = json_decode((string) ($raid['battle_log'] ?? '[]'), true) ?: [];
+    $log[] = ['t' => date('Y-m-d H:i:s'), 'a' => $actionLabel, 'd' => $dmg];
+    if (count($log) > 15) $log = array_slice($log, -15);
+
+    $pdo->prepare("UPDATE dungeon_raids SET boss_hp = ?, total_damage_dealt = total_damage_dealt + ?, is_defeated = ?, battle_log = ? WHERE raid_id = ?")
+        ->execute([$newHp, $dmg, $defeated, json_encode($log, JSON_UNESCAPED_UNICODE), (int) $raid['raid_id']]);
+    $pdo->prepare("UPDATE users SET companion_exp = companion_exp + ? WHERE user_id = ?")
+        ->execute([$dmg, $userId]);
+
+    return [
+        'applied' => $dmg,
+        'defeated' => $newHp <= 0,
+        'boss_hp' => $newHp,
+        'boss_name' => $bosses[$raid['boss_key']]['name'] ?? $raid['boss_key'],
+        'message' => $newHp <= 0 ? 'Boss tumbang! Klaim loot kemenanganmu.' : 'Damage diterapkan ke ' . ($bosses[$raid['boss_key']]['name'] ?? ''),
+    ];
+}

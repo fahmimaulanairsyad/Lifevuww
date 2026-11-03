@@ -1221,6 +1221,7 @@
                 { title: 'Keahlian & Radar Karakter', category: 'Navigasi', icon: 'fa-book-open', url: 'skills.php', keywords: 'skill keahlian radar atribut stats' },
                 { title: 'Toko Hadiah & Ramuan', category: 'Navigasi', icon: 'fa-store', url: 'shop.php', keywords: 'shop toko belanja potion ramuan reward' },
                 { title: 'Riwayat & Heatmap Konsistensi', category: 'Navigasi', icon: 'fa-history', url: 'history.php', keywords: 'history riwayat log heatmap catatan' },
+                { title: 'Dungeon Raid Boss Mingguan', category: 'Navigasi', icon: 'fa-dungeon', url: 'dungeon.php', keywords: 'dungeon raid boss gate serang damage weekly' },
                 { title: 'Profil & Kredensial', category: 'Navigasi', icon: 'fa-user-circle', url: 'profile.php', keywords: 'profil profile akun settings kata sandi backup' },
                 { title: 'Buat Kebiasaan Baru', category: 'Aksi Cepat', icon: 'fa-plus', action: 'add_habit', keywords: 'tambah buat habit kebiasaan baru' },
                 { title: 'Buat Misi Baru', category: 'Aksi Cepat', icon: 'fa-plus-circle', action: 'add_quest', keywords: 'tambah buat misi quest baru boss' },

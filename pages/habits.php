@@ -84,6 +84,11 @@ function completeHabit($pdo, $userId, $habitId) {
         $pdo->prepare("UPDATE users SET exp = exp + ?, gold = gold + ?, level = ?, `rank` = ? WHERE user_id = ?")
             ->execute([$finalExp, $earnedGold, $newLvl, $newRank, $userId]);
 
+        // Dungeon Raid: serang Boss mingguan (+20..35 DMG tergantung difficulty)
+        $diffIdx = array_search($difficulty, ['Easy', 'Medium', 'Hard'], true);
+        $raidDmg = 20 + ((int) ($diffIdx === false ? 0 : $diffIdx)) * 7;
+        deal_dungeon_damage($pdo, $userId, $raidDmg, 'Habit: ' . ($habitName ?? 'Habit'));
+
         // Cek jika naik tingkat / rank
         if ($newLvl > $oldLvl) {
             $_SESSION['level_up'] = [

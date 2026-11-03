@@ -103,6 +103,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->commit();
 
+        // Dungeon Raid: serang Boss mingguan (+40..90 DMG tergantung tier rift)
+        $riftKeys = array_keys($rifts);
+        $riftIdx = array_search($riftKey, $riftKeys, true);
+        $riftDmg = 40 + ((int) ($riftIdx === false ? 0 : $riftIdx)) * 25;
+        deal_dungeon_damage($pdo, (int) $userId, $riftDmg, 'Focus Rift: ' . ($rift['title'] ?? $riftKey));
+
         $isLevelUp = ($newLvl > $oldLvl);
         if ($isLevelUp) {
             $_SESSION['level_up'] = [
