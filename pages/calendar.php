@@ -296,25 +296,25 @@ for ($day = 1; $day <= $daysInMonth; $day++) {
 $nowMinutes = time_to_minutes(date('H:i'));
 ?>
 
-<div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
+<div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2 calendar-page-header">
     <div>
         <h1 class="page-title"><i class="fas fa-calendar-alt text-accent me-2"></i>Kalender Taktis</h1>
         <p class="page-subtitle">Pusat kendali jadwal harian, time-blocking presisi, dan sinkronisasi agenda.</p>
     </div>
-    <div class="d-flex flex-wrap align-items-center gap-2">
+    <div class="calendar-controls-bar d-flex flex-wrap align-items-center gap-2">
         <div class="calendar-tab-pills">
             <a href="calendar.php?view=day&date=<?php echo urlencode($selectedDate); ?>" class="btn-filter-pill <?php echo $view === 'day' ? 'active' : ''; ?>">
-                <i class="fas fa-clock"></i> Hari Ini
+                <i class="fas fa-clock"></i> Hari
             </a>
             <a href="calendar.php?view=week&week_date=<?php echo urlencode($selectedDate); ?>" class="btn-filter-pill <?php echo $view === 'week' ? 'active' : ''; ?>">
-                <i class="fas fa-calendar-week"></i> Mingguan
+                <i class="fas fa-calendar-week"></i> Minggu
             </a>
             <a href="calendar.php?view=month&month=<?php echo urlencode(substr($selectedDate, 0, 7)); ?>" class="btn-filter-pill <?php echo $view === 'month' ? 'active' : ''; ?>">
-                <i class="fas fa-calendar"></i> Bulanan
+                <i class="fas fa-calendar"></i> Bulan
             </a>
         </div>
-        <button type="button" class="btn-core btn-outline font-mono" data-bs-toggle="modal" data-bs-target="#quickAddScheduleModal">
-            <i class="fas fa-plus text-accent me-1"></i> Tambah Jadwal
+        <button type="button" class="btn-core btn-outline font-mono btn-add-agenda" data-bs-toggle="modal" data-bs-target="#quickAddScheduleModal">
+            <i class="fas fa-plus text-accent me-1"></i> <span class="d-none d-sm-inline">Tambah </span>Agenda
         </button>
     </div>
 </div>
@@ -323,12 +323,12 @@ $nowMinutes = time_to_minutes(date('H:i'));
     <!-- ========================================== -->
     <!-- 1. TAB HARI INI: TIME-BLOCK TIMELINE VIEW -->
     <!-- ========================================== -->
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div class="d-flex align-items-center gap-2">
+    <div class="calendar-nav-toolbar d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div class="calendar-nav-date d-flex align-items-center gap-2">
             <a href="calendar.php?view=day&date=<?php echo date('Y-m-d', strtotime("$selectedDate -1 day")); ?>" class="btn-core btn-ghost p-1" title="Hari Sebelumnya">
                 <i class="fas fa-chevron-left"></i>
             </a>
-            <h2 style="font-size: 1.15rem; font-weight: 600; margin: 0;">
+            <h2 class="calendar-date-heading" style="font-size: 1.15rem; font-weight: 600; margin: 0;">
                 <?php echo indo_short_date($selectedDate); ?>
                 <?php if ($selectedDate === $todayDate): ?>
                     <span class="badge-status accent font-mono ms-1" style="font-size: 0.68rem;">HARI INI</span>
@@ -338,13 +338,13 @@ $nowMinutes = time_to_minutes(date('H:i'));
                 <i class="fas fa-chevron-right"></i>
             </a>
         </div>
-        <div class="d-flex gap-2">
+        <div class="calendar-nav-actions d-flex align-items-center gap-2">
             <?php if ($selectedDate !== $todayDate): ?>
-                <a href="calendar.php?view=day&date=<?php echo $todayDate; ?>" class="btn-core btn-ghost font-mono" style="font-size: 0.76rem;">
-                    Ke Hari Ini
+                <a href="calendar.php?view=day&date=<?php echo $todayDate; ?>" class="btn-core btn-ghost font-mono btn-today-nav" style="font-size: 0.76rem;">
+                    Hari Ini
                 </a>
             <?php endif; ?>
-            <a href="calendar.php?export_ics=1&date=<?php echo urlencode($selectedDate); ?>" class="btn-core btn-outline font-mono" style="font-size: 0.76rem;">
+            <a href="calendar.php?export_ics=1&date=<?php echo urlencode($selectedDate); ?>" class="btn-core btn-outline font-mono btn-export-ics" style="font-size: 0.76rem;">
                 <i class="fas fa-download me-1"></i> Export .ics
             </a>
         </div>
@@ -493,21 +493,24 @@ $nowMinutes = time_to_minutes(date('H:i'));
     <!-- ========================================== -->
     <!-- 2. TAB MINGGUAN: 7-DAY SCHEDULE VIEW       -->
     <!-- ========================================== -->
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div class="d-flex align-items-center gap-2">
+    <div class="calendar-nav-toolbar d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div class="calendar-nav-date d-flex align-items-center gap-2">
             <a href="calendar.php?view=week&week_date=<?php echo urlencode($prevWeekDate); ?>" class="btn-core btn-ghost p-1" title="Minggu Sebelumnya">
                 <i class="fas fa-chevron-left"></i>
             </a>
-            <h2 style="font-size: 1.15rem; font-weight: 600; margin: 0;">
+            <h2 class="calendar-date-heading" style="font-size: 1.05rem; font-weight: 600; margin: 0;">
                 Minggu: <?php echo indo_short_date($weekDays[0]['date']); ?> - <?php echo indo_short_date($weekDays[6]['date']); ?>
             </h2>
             <a href="calendar.php?view=week&week_date=<?php echo urlencode($nextWeekDate); ?>" class="btn-core btn-ghost p-1" title="Minggu Berikutnya">
                 <i class="fas fa-chevron-right"></i>
             </a>
         </div>
-        <div>
-            <a href="calendar.php?view=week&week_date=<?php echo $todayDate; ?>" class="btn-core btn-ghost font-mono" style="font-size: 0.76rem;">
-                Ke Minggu Ini
+        <div class="calendar-nav-actions d-flex align-items-center gap-2">
+            <a href="calendar.php?view=week&week_date=<?php echo $todayDate; ?>" class="btn-core btn-ghost font-mono btn-today-nav" style="font-size: 0.76rem;">
+                Minggu Ini
+            </a>
+            <a href="calendar.php?export_ics=1&date=<?php echo urlencode($selectedDate); ?>" class="btn-core btn-outline font-mono btn-export-ics" style="font-size: 0.76rem;">
+                <i class="fas fa-download me-1"></i> Export .ics
             </a>
         </div>
     </div>
@@ -515,7 +518,7 @@ $nowMinutes = time_to_minutes(date('H:i'));
     <div class="week-schedule-wrapper">
         <div class="week-schedule-grid">
             <?php foreach ($weekDays as $wDay): ?>
-                <div class="week-day-col <?php echo $wDay['is_today'] ? 'is-today-col' : ''; ?>">
+                <div class="week-day-col <?php echo $wDay['is_today'] ? 'is-today-col' : ''; ?>" data-date="<?php echo $wDay['date']; ?>">
                     <div class="week-day-header">
                         <div class="week-day-title"><?php echo $wDay['day_name']; ?></div>
                         <div class="week-day-number font-mono <?php echo $wDay['is_today'] ? 'text-accent' : ''; ?>"><?php echo $wDay['day_num']; ?></div>
@@ -529,7 +532,7 @@ $nowMinutes = time_to_minutes(date('H:i'));
                                 <div class="week-item-card <?php echo $item['kind'] === 'quest' ? 'type-quest' : 'type-habit'; ?> <?php echo $isLive ? 'is-live' : ''; ?>">
                                     <?php if ($hasTime): ?>
                                         <div class="font-mono text-muted mb-1" style="font-size: 0.65rem;">
-                                            <i class="fas fa-clock me-1"></i><?php echo htmlspecialchars(format_time_block($item['start_time'], $item['end_time'])); ?>
+                                             <i class="fas fa-clock me-1"></i><?php echo htmlspecialchars(format_time_block($item['start_time'], $item['end_time'])); ?>
                                             <?php if ($isLive): ?><span class="text-accent ms-1">• LIVE</span><?php endif; ?>
                                         </div>
                                     <?php endif; ?>
@@ -555,12 +558,12 @@ $nowMinutes = time_to_minutes(date('H:i'));
     <!-- ========================================== -->
     <!-- 3. TAB BULANAN: MONTH GRID VIEW            -->
     <!-- ========================================== -->
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div class="d-flex align-items-center gap-2">
+    <div class="calendar-nav-toolbar d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div class="calendar-nav-date d-flex align-items-center gap-2">
             <a href="calendar.php?view=month&month=<?php echo urlencode($prevMonthParam); ?>" class="btn-core btn-ghost p-1" title="Bulan Sebelumnya">
                 <i class="fas fa-chevron-left"></i>
             </a>
-            <h2 style="font-size: 1.15rem; font-weight: 600; margin: 0;">
+            <h2 class="calendar-date-heading" style="font-size: 1.15rem; font-weight: 600; margin: 0;">
                 <?php 
                     $monthsIndo = [1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April', 5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus', 9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'];
                     $mNum = (int)date('n', $monthTs);
@@ -571,9 +574,12 @@ $nowMinutes = time_to_minutes(date('H:i'));
                 <i class="fas fa-chevron-right"></i>
             </a>
         </div>
-        <div>
-            <a href="calendar.php?view=month&month=<?php echo date('Y-m'); ?>" class="btn-core btn-ghost font-mono" style="font-size: 0.76rem;">
-                Ke Bulan Ini
+        <div class="calendar-nav-actions d-flex align-items-center gap-2">
+            <a href="calendar.php?view=month&month=<?php echo date('Y-m'); ?>" class="btn-core btn-ghost font-mono btn-today-nav" style="font-size: 0.76rem;">
+                Bulan Ini
+            </a>
+            <a href="calendar.php?export_ics=1&date=<?php echo urlencode($selectedDate); ?>" class="btn-core btn-outline font-mono btn-export-ics" style="font-size: 0.76rem;">
+                <i class="fas fa-download me-1"></i> Export .ics
             </a>
         </div>
     </div>
@@ -708,6 +714,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const topPos = parseInt(liveLine.style.top, 10) || 0;
             container.scrollTop = Math.max(0, topPos - 180);
         }, 150);
+    }
+
+    // Auto-scroll & highlight today in Week View on mobile (<= 768px)
+    if (window.innerWidth <= 768) {
+        const todayCol = document.querySelector('.week-day-col.is-today-col');
+        if (todayCol) {
+            setTimeout(() => {
+                todayCol.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 200);
+        }
     }
 
     // Toggle Jam Aktif (06:00 - 22:00) vs 24 Jam Penuh

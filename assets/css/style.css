@@ -529,6 +529,238 @@ a:hover {
     transform: translateX(-50%) translateY(0);
 }
 
+.dock-mobile-only {
+    display: none !important;
+}
+
+.dock-desktop-only {
+    display: flex !important;
+}
+
+.dock-item.dock-more-trigger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+/* ==========================================================
+   MOBILE BOTTOM SHEET DRAWER (#mobileMoreDrawer)
+   ========================================================== */
+body.drawer-open {
+    overflow: hidden !important;
+}
+
+.mobile-more-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1040;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s;
+    pointer-events: none;
+}
+
+.mobile-more-backdrop.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.mobile-more-drawer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(18, 18, 22, 0.98);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border-top: 1px solid var(--border-subtle);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.85);
+    z-index: 1050;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 0.75rem 1rem calc(1rem + env(safe-area-inset-bottom, 12px)) 1rem;
+    max-height: 85vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.mobile-more-drawer.show {
+    transform: translateY(0);
+}
+
+.drawer-handle-bar {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 0.5rem;
+}
+
+.drawer-pill-handle {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border-subtle);
+}
+
+.drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.drawer-header-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+}
+
+.drawer-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.drawer-subtitle {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+.drawer-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-surface-hover);
+    border: 1px solid var(--border-hairline);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.drawer-close-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.drawer-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+}
+
+.drawer-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.drawer-card:active {
+    transform: scale(0.98);
+}
+
+.drawer-card.active {
+    border-color: var(--accent-border);
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.drawer-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.drawer-card-icon.dungeon { background: rgba(244, 63, 94, 0.12); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.25); }
+.drawer-card-icon.journal { background: rgba(14, 165, 233, 0.12); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.25); }
+.drawer-card-icon.skills { background: rgba(168, 85, 247, 0.12); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.25); }
+.drawer-card-icon.shop { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+.drawer-card-icon.history { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
+.drawer-card-icon.profile { background: rgba(99, 102, 241, 0.12); color: #6366f1; border: 1px solid rgba(99, 102, 241, 0.25); }
+
+.drawer-card-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+.drawer-card-desc {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+.drawer-card.active .drawer-card-title {
+    color: var(--accent);
+}
+
+.drawer-card-active-indicator {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 0.4rem;
+    color: var(--accent);
+}
+
+.drawer-footer {
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-hairline);
+    text-align: center;
+}
+
+.drawer-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: background 0.15s ease;
+}
+
+.drawer-logout-btn:hover {
+    background: var(--bg-surface-hover);
+    color: var(--status-danger);
+}
+
 /* Spatial Full-Width Main Canvas */
 .app-main {
     flex: 1;
@@ -1532,7 +1764,11 @@ body.nag-active .app-main {
         overflow-x: clip;
     }
 
-    /* Telemetry HUD on Mobile (< 768px) */
+    /* Telemetry HUD / Top Navbar on Mobile (<= 768px) */
+    .d-none-mobile {
+        display: none !important;
+    }
+
     .telemetry-hud {
         height: calc(52px + env(safe-area-inset-top, 0px));
         padding-top: env(safe-area-inset-top, 0px);
@@ -1543,12 +1779,12 @@ body.nag-active .app-main {
     }
 
     .hud-inner {
-        padding: 0 0.75rem;
-        gap: 6px;
+        padding: 0 0.5rem;
+        gap: 4px;
     }
 
     .hud-brand {
-        gap: 6px;
+        gap: 5px;
         flex-shrink: 0;
     }
 
@@ -1558,30 +1794,30 @@ body.nag-active .app-main {
     }
 
     .hud-telemetry {
-        gap: 6px;
+        gap: 4px;
         flex: 1;
         justify-content: flex-end;
     }
 
     .hud-unified-capsule {
-        padding: 4px 10px;
-        gap: 7px;
-        font-size: 11.5px;
+        padding: 3px 8px;
+        gap: 6px;
+        font-size: 11px;
         white-space: nowrap;
     }
 
     .hud-cap-item {
-        gap: 4px;
-        font-size: 11.5px;
+        gap: 3px;
+        font-size: 11px;
     }
 
     .hud-cap-item i {
-        font-size: 10px;
+        font-size: 9.5px;
     }
 
     .hud-cmd-trigger {
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
         padding: 0;
         justify-content: center;
         border-radius: 8px;
@@ -1593,9 +1829,10 @@ body.nag-active .app-main {
         font-size: 0.8rem;
     }
 
+    .hud-profile-btn,
     .hud-btn-icon {
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
         flex-shrink: 0;
         border-radius: 8px;
         background: var(--bg-surface-hover);
@@ -1603,16 +1840,32 @@ body.nag-active .app-main {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        text-decoration: none;
     }
 
-    /* Floating Dock - Expanding Active Pill Nav (< 768px) */
+    .hud-profile-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+    }
+
+    /* Floating Dock - 5-Tab Mobile Nav (<= 768px) */
+    .dock-desktop-only {
+        display: none !important;
+    }
+
+    .dock-mobile-only {
+        display: flex !important;
+    }
+
     .floating-magnetic-dock {
         position: fixed;
-        bottom: max(12px, env(safe-area-inset-bottom, 12px));
+        bottom: max(10px, env(safe-area-inset-bottom, 10px));
         left: 50%;
         right: auto;
         transform: translateX(-50%);
-        width: calc(100vw - 20px);
+        width: calc(100vw - 16px);
         max-width: 440px;
         z-index: 95;
     }
@@ -1622,10 +1875,10 @@ body.nag-active .app-main {
         align-items: center;
         justify-content: space-between;
         width: 100%;
-        padding: 6px 8px;
+        padding: 4px 6px;
         border-radius: 9999px;
         border: 1px solid var(--border-subtle);
-        background: rgba(17, 17, 20, 0.94);
+        background: rgba(17, 17, 20, 0.95);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
         box-shadow: 0 12px 32px -6px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -1633,60 +1886,60 @@ body.nag-active .app-main {
 
     .dock-item {
         position: relative;
-        display: inline-flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        flex-shrink: 0;
-        border-radius: 50%;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 1 1 20% !important;
+        max-width: 20% !important;
+        height: 46px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        padding: 2px 0 !important;
+        border-radius: 12px !important;
         color: var(--text-muted);
         text-decoration: none;
         background: transparent !important;
         border: none !important;
         transform: none !important;
+        gap: 2px !important;
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
     }
 
     .dock-item i {
-        font-size: 1.05rem;
-        transition: color 0.15s ease;
+        font-size: 1.05rem !important;
+        margin: 0 !important;
+        transition: color 0.15s ease, transform 0.15s ease;
     }
 
-    /* Inactive: hide text label */
-    .dock-item:not(.active) .dock-label {
-        display: none !important;
+    .dock-item .dock-label {
+        display: block !important;
+        font-size: 0.62rem !important;
+        line-height: 1 !important;
+        letter-spacing: -0.01em;
+        color: inherit !important;
+        font-weight: 500;
+        white-space: nowrap;
+        margin-top: 0 !important;
     }
 
-    /* Active: Expanding Pill with label */
     .dock-item.active {
-        width: auto !important;
-        min-width: 40px;
-        height: 40px;
-        padding: 8px 14px !important;
-        border-radius: 999px !important;
-        background: rgba(16, 185, 129, 0.16) !important;
-        border: 1px solid rgba(16, 185, 129, 0.35) !important;
         color: var(--accent) !important;
-        gap: 6px;
-        flex-shrink: 0;
-        box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+        background: rgba(16, 185, 129, 0.12) !important;
+        border: 1px solid rgba(16, 185, 129, 0.28) !important;
+        font-weight: 600;
+        box-shadow: 0 0 12px rgba(16, 185, 129, 0.18) !important;
     }
 
     .dock-item.active i {
         color: var(--accent) !important;
-        font-size: 1rem;
+        transform: scale(1.08);
     }
 
     .dock-item.active .dock-label {
-        display: inline-block !important;
-        font-size: 0.76rem;
-        font-weight: 600;
         color: var(--accent) !important;
-        letter-spacing: -0.01em;
-        white-space: nowrap;
-        margin-top: 0;
+        font-weight: 600;
     }
 
     .dock-item::after {
@@ -3955,6 +4208,95 @@ body.is-reordering-active {
     .month-indicator {
         padding: 2px;
         justify-content: center;
+    }
+
+    /* 7-Day Schedule (Weekly View) Responsive Breakdown (<= 768px) */
+    .week-schedule-wrapper {
+        overflow-x: visible;
+        padding-bottom: 0;
+    }
+
+    .week-schedule-grid {
+        grid-template-columns: 1fr !important;
+        min-width: 0 !important;
+        gap: 0.75rem !important;
+    }
+
+    .week-day-col {
+        min-height: unset !important;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-hairline);
+    }
+
+    .week-day-col.is-today-col {
+        border-color: var(--accent) !important;
+        background: rgba(16, 185, 129, 0.04) !important;
+        box-shadow: 0 0 16px rgba(16, 185, 129, 0.15);
+    }
+
+    .week-day-col.is-today-col .week-day-header {
+        background: rgba(16, 185, 129, 0.12) !important;
+        border-bottom-color: rgba(16, 185, 129, 0.25) !important;
+    }
+}
+
+/* Calendar Toolbar & Controls Responsiveness (<= 640px) */
+@media (max-width: 640px) {
+    .calendar-controls-bar {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.5rem !important;
+    }
+
+    .calendar-tab-pills {
+        flex: 1 1 auto;
+        justify-content: space-between;
+    }
+
+    .calendar-tab-pills .btn-filter-pill {
+        flex: 1;
+        text-align: center;
+        padding: 0.35rem 0.45rem !important;
+        font-size: 0.74rem !important;
+        justify-content: center;
+    }
+
+    .btn-add-agenda {
+        flex-shrink: 0;
+        padding: 0.35rem 0.65rem !important;
+        font-size: 0.75rem !important;
+    }
+
+    .calendar-nav-toolbar {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.5rem !important;
+    }
+
+    .calendar-nav-date {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .calendar-date-heading {
+        font-size: 0.95rem !important;
+        text-align: center;
+    }
+
+    .calendar-nav-actions {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 0.5rem !important;
+    }
+
+    .calendar-nav-actions .btn-today-nav,
+    .calendar-nav-actions .btn-export-ics {
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+        padding: 0.35rem 0.5rem !important;
+        font-size: 0.74rem !important;
     }
 }
 

@@ -412,6 +412,119 @@
         </div>
     </div>
 
+    <!-- Mobile Bottom Sheet Drawer for More Menu (<= 768px) -->
+    <div class="mobile-more-backdrop" id="mobileMoreBackdrop"></div>
+    <div class="mobile-more-drawer" id="mobileMoreDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Menu Fitur">
+        <div class="drawer-handle-bar">
+            <div class="drawer-pill-handle"></div>
+        </div>
+        <div class="drawer-header">
+            <div class="d-flex align-items-center gap-2">
+                <div class="drawer-header-icon">
+                    <i class="fas fa-th-large text-accent"></i>
+                </div>
+                <div>
+                    <h5 class="drawer-title">Menu &amp; Fitur Tambahan</h5>
+                    <span class="drawer-subtitle font-mono">Modul RPG Lifevuww</span>
+                </div>
+            </div>
+            <button type="button" class="drawer-close-btn" id="btnMobileMoreClose" aria-label="Tutup Menu">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <?php $curDrawerPage = basename($_SERVER['PHP_SELF']); ?>
+        <div class="drawer-grid">
+            <!-- 1. Dungeon Raid -->
+            <a href="dungeon.php" class="drawer-card <?php echo $curDrawerPage === 'dungeon.php' ? 'active' : ''; ?>">
+                <div class="drawer-card-icon dungeon">
+                    <i class="fas fa-dungeon"></i>
+                </div>
+                <div class="drawer-card-info">
+                    <div class="drawer-card-title">Dungeon Raid</div>
+                    <div class="drawer-card-desc">Boss &amp; Ekspedisi</div>
+                </div>
+                <?php if ($curDrawerPage === 'dungeon.php'): ?>
+                    <span class="drawer-card-active-indicator"><i class="fas fa-circle"></i></span>
+                <?php endif; ?>
+            </a>
+
+            <!-- 2. Jurnal Taktis -->
+            <a href="journal.php" class="drawer-card <?php echo $curDrawerPage === 'journal.php' ? 'active' : ''; ?>">
+                <div class="drawer-card-icon journal">
+                    <i class="fas fa-feather-pointed"></i>
+                </div>
+                <div class="drawer-card-info">
+                    <div class="drawer-card-title">Jurnal Taktis</div>
+                    <div class="drawer-card-desc">Catatan &amp; Refleksi</div>
+                </div>
+                <?php if ($curDrawerPage === 'journal.php'): ?>
+                    <span class="drawer-card-active-indicator"><i class="fas fa-circle"></i></span>
+                <?php endif; ?>
+            </a>
+
+            <!-- 3. Keahlian & Pet -->
+            <a href="skills.php" class="drawer-card <?php echo $curDrawerPage === 'skills.php' ? 'active' : ''; ?>">
+                <div class="drawer-card-icon skills">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="drawer-card-info">
+                    <div class="drawer-card-title">Keahlian &amp; Pet</div>
+                    <div class="drawer-card-desc">Pohon Skill &amp; Pasif</div>
+                </div>
+                <?php if ($curDrawerPage === 'skills.php'): ?>
+                    <span class="drawer-card-active-indicator"><i class="fas fa-circle"></i></span>
+                <?php endif; ?>
+            </a>
+
+            <!-- 4. Toko & Relik -->
+            <a href="shop.php" class="drawer-card <?php echo $curDrawerPage === 'shop.php' ? 'active' : ''; ?>">
+                <div class="drawer-card-icon shop">
+                    <i class="fas fa-store"></i>
+                </div>
+                <div class="drawer-card-info">
+                    <div class="drawer-card-title">Toko &amp; Relik</div>
+                    <div class="drawer-card-desc">Item &amp; Artefak</div>
+                </div>
+                <?php if ($curDrawerPage === 'shop.php'): ?>
+                    <span class="drawer-card-active-indicator"><i class="fas fa-circle"></i></span>
+                <?php endif; ?>
+            </a>
+
+            <!-- 5. Riwayat & Heatmap -->
+            <a href="history.php" class="drawer-card <?php echo $curDrawerPage === 'history.php' ? 'active' : ''; ?>">
+                <div class="drawer-card-icon history">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="drawer-card-info">
+                    <div class="drawer-card-title">Riwayat &amp; Heatmap</div>
+                    <div class="drawer-card-desc">Audit &amp; Konsistensi</div>
+                </div>
+                <?php if ($curDrawerPage === 'history.php'): ?>
+                    <span class="drawer-card-active-indicator"><i class="fas fa-circle"></i></span>
+                <?php endif; ?>
+            </a>
+
+            <!-- 6. Profil Hunter -->
+            <a href="profile.php" class="drawer-card <?php echo $curDrawerPage === 'profile.php' ? 'active' : ''; ?>">
+                <div class="drawer-card-icon profile">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="drawer-card-info">
+                    <div class="drawer-card-title">Profil Hunter</div>
+                    <div class="drawer-card-desc">Gelar &amp; Status</div>
+                </div>
+                <?php if ($curDrawerPage === 'profile.php'): ?>
+                    <span class="drawer-card-active-indicator"><i class="fas fa-circle"></i></span>
+                <?php endif; ?>
+            </a>
+        </div>
+        <div class="drawer-footer">
+            <a href="../logout.php" class="drawer-logout-btn" data-confirm="Yakin ingin keluar dari akun?" data-confirm-title="Keluar Akun" data-confirm-variant="danger" data-confirm-btn="Keluar">
+                <i class="fas fa-sign-out-alt me-1 text-danger"></i> Keluar dari Akun
+            </a>
+        </div>
+    </div>
+
     <!-- Bootstrap JS for Modals -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
@@ -434,6 +547,77 @@
                     document.body.appendChild(e.target);
                 }
             }, true);
+        })();
+
+        /* ============ Mobile More Drawer Controller ============ */
+        (function() {
+            const trigger = document.getElementById('btnMobileMoreDrawer');
+            const drawer = document.getElementById('mobileMoreDrawer');
+            const backdrop = document.getElementById('mobileMoreBackdrop');
+            const closeBtn = document.getElementById('btnMobileMoreClose');
+            if (!trigger || !drawer) return;
+
+            function openDrawer() {
+                drawer.classList.add('show');
+                if (backdrop) backdrop.classList.add('show');
+                drawer.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('drawer-open');
+                if (window.lvHaptic) window.lvHaptic(14);
+
+                try {
+                    history.pushState({ lv_drawer_open: true }, '');
+                } catch (e) {}
+            }
+
+            function closeDrawer(fromPopState) {
+                if (!drawer.classList.contains('show')) return;
+                drawer.classList.remove('show');
+                if (backdrop) backdrop.classList.remove('show');
+                drawer.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('drawer-open');
+
+                if (!fromPopState && history.state && history.state.lv_drawer_open) {
+                    try {
+                        history.back();
+                    } catch (e) {}
+                }
+            }
+
+            trigger.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (drawer.classList.contains('show')) {
+                    closeDrawer(false);
+                } else {
+                    openDrawer();
+                }
+            });
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeDrawer(false);
+                });
+            }
+
+            if (backdrop) {
+                backdrop.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeDrawer(false);
+                });
+            }
+
+            window.addEventListener('popstate', function(e) {
+                if (drawer.classList.contains('show')) {
+                    closeDrawer(true);
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && drawer.classList.contains('show')) {
+                    closeDrawer(false);
+                }
+            });
         })();
 
         /* ============ Sound toggles (sidebar + profile) ============ */
