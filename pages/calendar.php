@@ -406,14 +406,6 @@ $nowMinutes = time_to_minutes(date('H:i'));
                 </span>
                 <span class="text-muted font-mono" style="font-size: 0.72rem;">WIB (UTC+7)</span>
             </div>
-            <div class="btn-group btn-group-sm font-mono" role="group" id="dayHoursFilterGroup">
-                <button type="button" class="btn-core btn-filter-pill active" id="btnFilterActiveHours" style="font-size: 0.72rem; padding: 0.25rem 0.65rem;" title="Sembunyikan jam malam kosong (00:00-05:00 & 23:00)">
-                    <i class="fas fa-business-time me-1"></i> Jam Aktif (06:00-22:00)
-                </button>
-                <button type="button" class="btn-core btn-filter-pill" id="btnFilterAllHours" style="font-size: 0.72rem; padding: 0.25rem 0.65rem;" title="Tampilkan 24 jam penuh">
-                    <i class="fas fa-clock me-1"></i> 24 Jam
-                </button>
-            </div>
         </div>
 
         <div class="timeline-container" id="timelineScrollContainer" style="height: 620px; overflow-y: auto; position: relative;">
@@ -706,13 +698,25 @@ $nowMinutes = time_to_minutes(date('H:i'));
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-scroll timeline to current live red line
+    // Auto-scroll timeline 24 jam: ke Garis Waktu Sekarang (dikurangi ~120px)
+    // bila melihat tanggal hari ini, atau ke blok agenda paling pagi
+    // (default pukul 07:00) bila melihat tanggal lain.
     const liveLine = document.getElementById('timelineLiveLine');
     const container = document.getElementById('timelineScrollContainer');
-    if (liveLine && container) {
+    if (container) {
         setTimeout(() => {
-            const topPos = parseInt(liveLine.style.top, 10) || 0;
-            container.scrollTop = Math.max(0, topPos - 180);
+            let targetTop = 420; // default pukul 07:00 (7 x 60px)
+            if (liveLine) {
+                targetTop = (parseInt(liveLine.style.top, 10) || 0) - 120;
+            } else {
+                let minStart = null;
+                container.querySelectorAll('.timeblock-card[data-start-min]').forEach(card => {
+                    const sm = parseInt(card.dataset.startMin, 10);
+                    if (!isNaN(sm) && (minStart === null || sm < minStart)) minStart = sm;
+                });
+                if (minStart !== null) targetTop = minStart;
+            }
+            container.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
         }, 150);
     }
 
@@ -725,14 +729,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 200);
         }
     }
-
-    // Toggle Jam Aktif (06:00 - 22:00) vs 24 Jam Penuh
-    const defaultMode = (window.innerWidth <= 768) ? 'active' : '24h';
-    const savedHoursMode = localStorage.getItem('lv_calendar_hours_mode') || defaultMode;
-    applyDayTimelineFilter(savedHoursMode);
-
-    document.getElementById('btnFilterActiveHours')?.addEventListener('click', () => applyDayTimelineFilter('active'));
-    document.getElementById('btnFilterAllHours')?.addEventListener('click', () => applyDayTimelineFilter('24h'));
 
     // Klik Baris Jam Kosong -> Buka Quick Add Modal dengan Pre-fill Jam
     document.addEventListener('click', function(e) {
@@ -872,86 +868,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function applyDayTimelineFilter(mode) {
-    const container = document.getElementById('timelineScrollContainer');
-    const grid = container ? container.querySelector('.timeline-grid') : null;
-    const liveLine = document.getElementById('timelineLiveLine');
-    if (!grid) return;
-
-    localStorage.setItem('lv_calendar_hours_mode', mode);
-
-    const btnActive = document.getElementById('btnFilterActiveHours');
-    const btnAll = document.getElementById('btnFilterAllHours');
-    if (btnActive && btnAll) {
-        btnActive.classList.toggle('active', mode === 'active');
-        btnAll.classList.toggle('active', mode === '24h');
-    }
-
-    const cards = Array.from(grid.querySelectorAll('.timeblock-card'));
-    let hoursSet = [];
-
-    if (mode === 'active') {
-        const baseActive = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22];
-        const extraHours = new Set(baseActive);
-
-        cards.forEach(card => {
-            const sMin = parseInt(card.dataset.startMin, 10) || 0;
-            const eMin = parseInt(card.dataset.endMin, 10) || sMin + 30;
-            const hStart = Math.floor(sMin / 60);
-            const hEnd = Math.floor(Math.max(sMin, eMin - 1) / 60);
-            for (let h = hStart; h <= hEnd; h++) {
-                if (h >= 0 && h < 24) extraHours.add(h);
-            }
-        });
-        hoursSet = Array.from(extraHours).sort((a, b) => a - b);
-    } else {
-        hoursSet = Array.from({ length: 24 }, (_, i) => i);
-    }
-
-    // Update hour rows
-    const hourRows = grid.querySelectorAll('.timeline-hour-row');
-    hourRows.forEach(row => {
-        const h = parseInt(row.dataset.hourNum, 10);
-        const idx = hoursSet.indexOf(h);
-        if (idx !== -1) {
-            row.style.display = '';
-            row.style.top = (idx * 60) + 'px';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-
-    // Update grid height
-    grid.style.height = (hoursSet.length * 60) + 'px';
-
-    // Reposition cards
-    cards.forEach(card => {
-        const sMin = parseInt(card.dataset.startMin, 10) || 0;
-        const durMin = parseInt(card.dataset.durMin, 10) || 30;
-        const h = Math.floor(sMin / 60);
-        const idx = hoursSet.indexOf(h);
-        if (idx !== -1) {
-            card.style.display = '';
-            card.style.top = (idx * 60 + (sMin % 60)) + 'px';
-            card.style.height = Math.max(30, durMin) + 'px';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-
-    // Reposition live line
-    if (liveLine) {
-        const nowMin = parseInt(liveLine.dataset.nowMin, 10) || 0;
-        const nowH = Math.floor(nowMin / 60);
-        const nowIdx = hoursSet.indexOf(nowH);
-        if (nowIdx !== -1) {
-            liveLine.style.display = '';
-            liveLine.style.top = (nowIdx * 60 + (nowMin % 60)) + 'px';
-        } else {
-            liveLine.style.display = 'none';
-        }
-    }
-}
 
 // Cache of all habits & quests for client-side modal popup
 const allHabitsData = <?php echo json_encode($userHabits); ?>;
