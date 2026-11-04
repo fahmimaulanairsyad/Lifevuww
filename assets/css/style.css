@@ -4316,3 +4316,19 @@ body.is-reordering-active {
     box-shadow: 0 0 0 3px var(--accent-dim);
     outline: none;
 }
+
+/* ==========================================================
+   MOBILE DOCK v3: 4 primary + tombol Menu (sekunder lewat Drawer)
+   Duplikat dari <style id="lv-mobile-v3-fix"> di header.php; aturan
+   inline tetap sumber kebenaran (cache-proof di HTML, bukan file eksternal).
+   ========================================================== */
+@media (max-width: 768px) {
+    #floatingDock .dock-item.dock-mobile-secondary { display: none !important; }
+    #floatingDock .dock-item.dock-more-btn { display: inline-flex !important; }
+    .top-navbar .nav-hide-mobile, .hud-nav-links .nav-hide-mobile { display: none !important; }
+    .week-schedule-grid { grid-template-columns: 1fr !important; min-width: 0 !important; }
+}
+
+@media (min-width: 769px) {
+    #floatingDock .dock-item.dock-more-btn, #mobileMoreDrawer, #mobileMoreBackdrop { display: none !important; }
+}

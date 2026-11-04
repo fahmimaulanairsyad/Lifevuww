@@ -48,7 +48,20 @@ $activeHtmlAura = $serverAura ?: 'emerald';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261104_01" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261104_02" rel="stylesheet">
+    <!-- Cache-proof mobile v3 fix: inline di head agar tidak pernah tertahan
+         cache CSS eksternal di WebView APK / browser HP -->
+    <style id="lv-mobile-v3-fix">
+        @media (max-width: 768px) {
+            #floatingDock .dock-item.dock-mobile-secondary { display: none !important; }
+            #floatingDock .dock-item.dock-more-btn { display: inline-flex !important; }
+            .top-navbar .nav-hide-mobile, .hud-nav-links .nav-hide-mobile { display: none !important; }
+            .week-schedule-grid { grid-template-columns: 1fr !important; min-width: 0 !important; }
+        }
+        @media (min-width: 769px) {
+            #floatingDock .dock-item.dock-more-btn, #mobileMoreDrawer, #mobileMoreBackdrop { display: none !important; }
+        }
+    </style>
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
@@ -217,7 +230,7 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                     </div>
 
                     <!-- Kalender Taktis Pintasan Cepat (Desktop only in top nav) -->
-                    <a href="calendar.php" class="hud-cmd-trigger d-none-mobile <?php echo $currentPage == 'calendar.php' ? 'active' : ''; ?>" title="Kalender & Time-Blocking">
+                    <a href="calendar.php" class="hud-cmd-trigger d-none-mobile nav-hide-mobile <?php echo $currentPage == 'calendar.php' ? 'active' : ''; ?>" title="Kalender & Time-Blocking">
                         <i class="fas fa-calendar-alt text-accent"></i>
                         <span class="font-mono d-none d-lg-inline ms-1" style="font-size: 0.72rem;">Kalender</span>
                     </a>
@@ -229,18 +242,18 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                     </button>
 
                     <!-- Quick Command Trigger [Ctrl+K / ⌘K] -->
-                    <button type="button" class="hud-cmd-trigger d-none-mobile" onclick="window.openCommandPalette && window.openCommandPalette();" title="Menu Pintasan & Pencarian Cepat (Ctrl+K)">
+                    <button type="button" class="hud-cmd-trigger d-none-mobile nav-hide-mobile" onclick="window.openCommandPalette && window.openCommandPalette();" title="Menu Pintasan & Pencarian Cepat (Ctrl+K)">
                         <i class="fas fa-search"></i>
                         <kbd class="font-mono d-none d-md-inline ms-1 cmd-shortcut-kbd">Ctrl+K</kbd>
                     </button>
 
                     <!-- Sound Toggle -->
-                    <button type="button" class="btn-sound-toggle hud-btn-icon d-none-mobile" aria-label="Nyalakan atau matikan suara" title="Audio">
+                    <button type="button" class="btn-sound-toggle hud-btn-icon d-none-mobile nav-hide-mobile" aria-label="Nyalakan atau matikan suara" title="Audio">
                         <i class="fas fa-volume-up"></i>
                     </button>
 
                     <!-- Profile Avatar -->
-                    <a href="profile.php" class="hud-profile-btn <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" title="Profil" aria-label="Profil Pengguna">
+                    <a href="profile.php" class="hud-profile-btn nav-hide-mobile <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" title="Profil" aria-label="Profil Pengguna">
                         <i class="fas fa-user-circle"></i>
                     </a>
 
@@ -277,33 +290,33 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                 </a>
 
                 <!-- 5. Menu Extra Drawer Trigger (Mobile Only <= 768px) -->
-                <button type="button" class="dock-item dock-more-trigger dock-mobile-only <?php echo $isMoreActive ? 'active' : ''; ?>" id="btnMobileMoreDrawer" data-tooltip="Menu" aria-label="Menu Tambahan">
+                <button type="button" class="dock-item dock-more-trigger dock-more-btn dock-mobile-only <?php echo $isMoreActive ? 'active' : ''; ?>" id="btnMobileMoreDrawer" data-tooltip="Menu" aria-label="Menu Tambahan">
                     <i class="fas fa-th-large"></i>
                     <span class="dock-label">Menu</span>
                 </button>
 
                 <!-- Desktop-Only Items (6 s/d 11) -->
-                <a href="dungeon.php" class="dock-item dock-desktop-only <?php echo $currentPage == 'dungeon.php' ? 'active' : ''; ?>" data-tooltip="Dungeon">
+                <a href="dungeon.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'dungeon.php' ? 'active' : ''; ?>" data-tooltip="Dungeon">
                     <i class="fas fa-dungeon"></i>
                     <span class="dock-label">Dungeon</span>
                 </a>
-                <a href="journal.php" class="dock-item dock-desktop-only <?php echo $currentPage == 'journal.php' ? 'active' : ''; ?>" data-tooltip="Jurnal">
+                <a href="journal.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'journal.php' ? 'active' : ''; ?>" data-tooltip="Jurnal">
                     <i class="fas fa-feather-pointed"></i>
                     <span class="dock-label">Jurnal</span>
                 </a>
-                <a href="skills.php" class="dock-item dock-desktop-only <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" data-tooltip="Keahlian">
+                <a href="skills.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>" data-tooltip="Keahlian">
                     <i class="fas fa-book-open"></i>
                     <span class="dock-label">Keahlian</span>
                 </a>
-                <a href="shop.php" class="dock-item dock-desktop-only <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" data-tooltip="Toko">
+                <a href="shop.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>" data-tooltip="Toko">
                     <i class="fas fa-store"></i>
                     <span class="dock-label">Toko</span>
                 </a>
-                <a href="history.php" class="dock-item dock-desktop-only <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" data-tooltip="Riwayat">
+                <a href="history.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>" data-tooltip="Riwayat">
                     <i class="fas fa-history"></i>
                     <span class="dock-label">Riwayat</span>
                 </a>
-                <a href="profile.php" class="dock-item dock-desktop-only <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" data-tooltip="Profil">
+                <a href="profile.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>" data-tooltip="Profil">
                     <i class="fas fa-user-circle"></i>
                     <span class="dock-label">Profil</span>
                 </a>
