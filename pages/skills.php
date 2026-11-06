@@ -150,12 +150,13 @@ arsort($sorted_stats);
 <div class="page-header">
     <div>
         <h1 class="page-title">Matriks Keahlian & Atribut</h1>
-        <p class="page-subtitle">Visualisasi multidimensi perkembangan lima pilar karakter hidupmu.</p>
+        <p class="page-subtitle">Status atribut karakter dan alokasi Skill Point (SP).</p>
     </div>
 </div>
 
 <!-- Main Radar Console Panel -->
-<div class="bento-panel spotlight-card holo-card mx-auto mb-4" style="max-width: 980px;">
+<div class="bento-panel tactical-frame mx-auto mb-4" style="max-width: 980px;">
+    <div class="sys-micro-tag"><span class="text-accent">SYS.MATRIX // ATTRIBUTE_RADAR</span> &bull; 5-AXIS TELEMETRY</div>
     <div class="row align-items-center g-4">
         <div class="col-md-5">
             <div class="panel-header mb-3">
@@ -198,10 +199,13 @@ arsort($sorted_stats);
 
 <!-- Section: 5 Breakdown Attribute Cards (Bento Glass Grid) -->
 <div class="panel-header mt-4 mb-3" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem;">
-    <h3 class="panel-title" style="font-size: 0.95rem; font-weight: 600;">
-        <i class="fas fa-th-large text-accent me-1"></i> Rincian Lima Pilar Kehidupan
-    </h3>
-    <span class="text-muted font-mono" style="font-size: 0.75rem;">Progres menuju kenaikan tingkat atribut</span>
+    <div>
+        <div class="sys-micro-tag">SYS.ATTRIBUTES // TELEMETRY</div>
+        <h3 class="panel-title" style="font-size: 0.95rem; font-weight: 600;">
+            <i class="fas fa-th-large text-accent me-1"></i> Parameter Lima Atribut Karakter
+        </h3>
+    </div>
+    <span class="text-muted font-mono" style="font-size: 0.75rem;">Status alokasi dan progres per tingkat</span>
 </div>
 
 <div class="row g-3 mb-4">
@@ -286,7 +290,8 @@ unset($_SESSION['skill_toast']);
 <?php endif; ?>
 
 <!-- Panel Pohon Bakat Karakter (Skill Tree) -->
-<div class="bento-panel spotlight-card holo-card mx-auto mb-4" style="max-width: 980px;">
+<div class="bento-panel tactical-frame mx-auto mb-4" style="max-width: 980px;">
+    <div class="sys-micro-tag"><span class="text-accent">SYS.SKILL_TREE // SPECIALIZATION_BRANCHES</span></div>
     <div class="panel-header mb-3">
         <h3 class="panel-title"><i class="fas fa-sitemap text-accent"></i> Pohon Bakat Karakter</h3>
         <span class="badge-status accent font-mono">SP tersedia: <?php echo $availableSP; ?> &nbsp;•&nbsp; Level <?php echo (int) $me['level']; ?></span>
@@ -379,7 +384,8 @@ unset($_SESSION['skill_toast']);
 </div>
 
 <!-- Panel Astral Companion Sanctum -->
-<div class="bento-panel spotlight-card holo-card mx-auto mb-4" style="max-width: 980px;">
+<div class="bento-panel tactical-frame mx-auto mb-4" style="max-width: 980px;">
+    <div class="sys-micro-tag"><span class="text-accent">ASTRAL.SANCTUM // FAMILIAR_BOND</span> &bull; ACTIVE LINK</div>
     <div class="panel-header mb-3">
         <h3 class="panel-title"><i class="fas fa-paw text-accent"></i> Astral Companion Sanctum</h3>
         <span class="badge-status font-mono"><?php echo count($companionsCatalog); ?> Familiar terdaftar</span>
@@ -390,22 +396,29 @@ unset($_SESSION['skill_toast']);
             $stageScale = ['Hatchling' => 90, 'Awakened' => 110, 'Sovereign' => 130];
             $svgSize = $stageScale[$bond['stage']] ?? 90;
             $aura = $bond['stage'] === 'Sovereign' ? 0.55 : ($bond['stage'] === 'Awakened' ? 0.35 : 0.18);
+            $hasActiveImg = !empty($activeCompanion['image']) && file_exists(__DIR__ . '/../' . $activeCompanion['image']);
             ?>
-            <svg width="<?php echo $svgSize; ?>" height="<?php echo $svgSize; ?>" viewBox="0 0 140 140" style="overflow: visible;">
-                <circle cx="70" cy="70" r="<?php echo $svgSize / 2 - 6; ?>" fill="none" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-opacity="<?php echo $aura; ?>" stroke-width="3" stroke-dasharray="6 5">
-                    <animateTransform attributeName="transform" type="rotate" from="0 70 70" to="360 70 70" dur="14s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="70" cy="74" r="34" fill="<?php echo $activeCompanion['accent']; ?>" fill-opacity="0.25" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="2"/>
-                <circle cx="59" cy="66" r="5" fill="#fafafa"/>
-                <circle cx="81" cy="66" r="5" fill="#fafafa"/>
-                <path d="M 62 84 Q 70 92 78 84" stroke="#fafafa" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                <?php if ($bond['stage'] !== 'Hatchling'): ?>
-                    <path d="M 40 48 L 52 58 M 100 48 L 88 58" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="3" stroke-linecap="round"/>
-                <?php endif; ?>
-                <?php if ($bond['stage'] === 'Sovereign'): ?>
-                    <path d="M 54 34 L 62 26 L 70 34 L 78 26 L 86 34" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linejoin="round"/>
-                <?php endif; ?>
-            </svg>
+            <?php if ($hasActiveImg): ?>
+                <div class="mb-2 position-relative d-inline-block">
+                    <img src="../<?php echo htmlspecialchars($activeCompanion['image']); ?>" alt="<?php echo htmlspecialchars($activeCompanion['name']); ?>" style="width: <?php echo $svgSize; ?>px; height: <?php echo $svgSize; ?>px; object-fit: contain; filter: drop-shadow(0 0 16px <?php echo $activeCompanion['accent']; ?>66);">
+                </div>
+            <?php else: ?>
+                <svg width="<?php echo $svgSize; ?>" height="<?php echo $svgSize; ?>" viewBox="0 0 140 140" style="overflow: visible;">
+                    <circle cx="70" cy="70" r="<?php echo $svgSize / 2 - 6; ?>" fill="none" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-opacity="<?php echo $aura; ?>" stroke-width="3" stroke-dasharray="6 5">
+                        <animateTransform attributeName="transform" type="rotate" from="0 70 70" to="360 70 70" dur="14s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="70" cy="74" r="34" fill="<?php echo $activeCompanion['accent']; ?>" fill-opacity="0.25" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="2"/>
+                    <circle cx="59" cy="66" r="5" fill="#fafafa"/>
+                    <circle cx="81" cy="66" r="5" fill="#fafafa"/>
+                    <path d="M 62 84 Q 70 92 78 84" stroke="#fafafa" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <?php if ($bond['stage'] !== 'Hatchling'): ?>
+                        <path d="M 40 48 L 52 58 M 100 48 L 88 58" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="3" stroke-linecap="round"/>
+                    <?php endif; ?>
+                    <?php if ($bond['stage'] === 'Sovereign'): ?>
+                        <path d="M 54 34 L 62 26 L 70 34 L 78 26 L 86 34" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linejoin="round"/>
+                    <?php endif; ?>
+                </svg>
+            <?php endif; ?>
             <div class="mt-2" style="font-size: 0.92rem; font-weight: 600; color: <?php echo $activeCompanion['accent']; ?>;">
                 <?php echo htmlspecialchars($activeCompanion['name']); ?>
             </div>
@@ -419,12 +432,19 @@ unset($_SESSION['skill_toast']);
             <div class="text-muted mt-2" style="font-size: 0.72rem;"><i class="fas fa-star me-1" style="color: <?php echo $activeCompanion['accent']; ?>;"></i> <?php echo htmlspecialchars($activeCompanion['bonus']); ?></div>
         </div>
         <div class="col-md-7">
-            <div class="text-muted mb-2" style="font-size: 0.78rem;">Ganti Familiar aktif — bonus mengikuti bond level masing-masing familiar:</div>
+            <div class="text-muted mb-2 font-mono" style="font-size: 0.74rem;">UNIT FAMILIAR // DAFTAR AKTIF:</div>
             <div class="d-flex flex-column gap-2">
-                <?php foreach ($companionsCatalog as $key => $comp): $isActive = $key === $activeCompanionKey; ?>
-                    <div class="p-2 d-flex justify-content-between align-items-center" style="border: 1px solid <?php echo $isActive ? $comp['accent'] : 'var(--border-hairline)'; ?>; border-radius: 10px; background: rgba(255,255,255,0.02);">
+                <?php foreach ($companionsCatalog as $key => $comp): 
+                    $isActive = $key === $activeCompanionKey; 
+                    $hasCompImg = !empty($comp['image']) && file_exists(__DIR__ . '/../' . $comp['image']);
+                ?>
+                    <div class="p-2 d-flex justify-content-between align-items-center" style="border: 1px solid <?php echo $isActive ? $comp['accent'] : 'var(--border-hairline)'; ?>; border-radius: 8px; background: rgba(255,255,255,0.02);">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="fas <?php echo $comp['icon']; ?>" style="color: <?php echo $comp['accent']; ?>;"></i>
+                            <?php if ($hasCompImg): ?>
+                                <img src="../<?php echo htmlspecialchars($comp['image']); ?>" alt="" style="width: 24px; height: 24px; object-fit: contain;">
+                            <?php else: ?>
+                                <i class="fas <?php echo $comp['icon']; ?>" style="color: <?php echo $comp['accent']; ?>;"></i>
+                            <?php endif; ?>
                             <div>
                                 <div style="font-size: 0.82rem; font-weight: 600;"><?php echo htmlspecialchars($comp['name']); ?><?php echo $isActive ? ' <span class="badge-status accent font-mono" style="font-size: 0.6rem;">Aktif</span>' : ''; ?></div>
                                 <div class="text-muted" style="font-size: 0.7rem;"><?php echo htmlspecialchars($comp['bonus']); ?></div>

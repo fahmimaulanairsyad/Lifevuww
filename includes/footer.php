@@ -551,13 +551,16 @@
 
         /* ============ Mobile More Drawer Controller ============ */
         (function() {
-            const trigger = document.getElementById('btnMobileMoreDrawer');
-            const drawer = document.getElementById('mobileMoreDrawer');
-            const backdrop = document.getElementById('mobileMoreBackdrop');
-            const closeBtn = document.getElementById('btnMobileMoreClose');
-            if (!trigger || !drawer) return;
+            function getEls() {
+                return {
+                    drawer: document.getElementById('mobileMoreDrawer'),
+                    backdrop: document.getElementById('mobileMoreBackdrop')
+                };
+            }
 
             function openDrawer() {
+                const { drawer, backdrop } = getEls();
+                if (!drawer) return;
                 drawer.classList.add('show');
                 if (backdrop) backdrop.classList.add('show');
                 drawer.setAttribute('aria-hidden', 'false');
@@ -570,7 +573,8 @@
             }
 
             function closeDrawer(fromPopState) {
-                if (!drawer.classList.contains('show')) return;
+                const { drawer, backdrop } = getEls();
+                if (!drawer || !drawer.classList.contains('show')) return;
                 drawer.classList.remove('show');
                 if (backdrop) backdrop.classList.remove('show');
                 drawer.setAttribute('aria-hidden', 'true');
@@ -583,39 +587,47 @@
                 }
             }
 
-            trigger.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (drawer.classList.contains('show')) {
+            // Delegated click handling: guarantees opening/closing even if re-rendered
+            document.addEventListener('click', function(e) {
+                const btnOpen = e.target.closest('#btnMobileMoreDrawer, .dock-more-btn, .dock-more-trigger');
+                if (btnOpen) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const { drawer } = getEls();
+                    if (drawer && drawer.classList.contains('show')) {
+                        closeDrawer(false);
+                    } else {
+                        openDrawer();
+                    }
+                    return;
+                }
+
+                if (e.target.closest('#btnMobileMoreClose')) {
+                    e.preventDefault();
                     closeDrawer(false);
-                } else {
-                    openDrawer();
+                    return;
+                }
+
+                if (e.target.matches('#mobileMoreBackdrop')) {
+                    e.preventDefault();
+                    closeDrawer(false);
+                    return;
                 }
             });
 
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    closeDrawer(false);
-                });
-            }
-
-            if (backdrop) {
-                backdrop.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    closeDrawer(false);
-                });
-            }
-
-            window.addEventListener('popstate', function(e) {
-                if (drawer.classList.contains('show')) {
+            window.addEventListener('popstate', function() {
+                const { drawer } = getEls();
+                if (drawer && drawer.classList.contains('show')) {
                     closeDrawer(true);
                 }
             });
 
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && drawer.classList.contains('show')) {
-                    closeDrawer(false);
+                if (e.key === 'Escape') {
+                    const { drawer } = getEls();
+                    if (drawer && drawer.classList.contains('show')) {
+                        closeDrawer(false);
+                    }
                 }
             });
         })();

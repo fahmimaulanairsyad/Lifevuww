@@ -807,14 +807,89 @@ body.drawer-open {
     margin-bottom: 0;
 }
 
-/* Structural Panels (Monochrome Obsidian with Top Specular Highlight) */
+/* Structural Panels (Tactical System Frame Arknights / NieR Style) */
 .bento-panel {
-    background-color: #111114;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background-color: #0e0e12;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-top: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    padding: 1.35rem;
+    box-shadow: 0 4px 18px -4px rgba(0, 0, 0, 0.55);
+    position: relative;
+}
+
+/* Tactical Corner Brackets (Arknights / NieR / Tactical Sci-Fi UI) */
+.tactical-frame {
+    position: relative;
+    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.tactical-frame::before,
+.tactical-frame::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    z-index: 5;
+    transition: border-color 0.2s ease;
+}
+
+.tactical-frame::before {
+    top: -1px;
+    left: -1px;
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+}
+
+.tactical-frame::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+}
+
+.tactical-frame.frame-warning::before {
+    border-top-color: var(--status-warning);
+    border-left-color: var(--status-warning);
+}
+.tactical-frame.frame-warning::after {
+    border-bottom-color: var(--status-warning);
+    border-right-color: var(--status-warning);
+}
+
+.tactical-frame.frame-danger::before {
+    border-top-color: var(--status-danger);
+    border-left-color: var(--status-danger);
+}
+.tactical-frame.frame-danger::after {
+    border-bottom-color: var(--status-danger);
+    border-right-color: var(--status-danger);
+}
+
+/* Micro Telemetry Header */
+.sys-micro-tag {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    opacity: 0.65;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 0.45rem;
+    line-height: 1;
+}
+
+.sys-micro-tag::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 1px;
 }
 
 .panel-header {

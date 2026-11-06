@@ -1,5 +1,5 @@
 <?php
-// pages/dungeon.php — Dungeon Raid & Weekly Boss Rush (Sovereign Expansion v3.0)
+// pages/dungeon.php: Dungeon Raid & Weekly Boss Rush (Sovereign Expansion v3.0)
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
@@ -110,24 +110,32 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
 <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
         <h1 class="page-title"><i class="fas fa-dungeon text-danger me-1"></i> Dungeon Raid</h1>
-        <p class="page-subtitle">Boss mingguan berganti setiap minggu — serang lewat Habit, Misi, Focus Rift, dan Jurnal.</p>
+        <p class="page-subtitle">Target mingguan berskala server. Serang target via penyelesaian Habit, Misi, Focus Rift, dan Jurnal.</p>
     </div>
     <span class="badge-status font-mono">Minggu <?php echo htmlspecialchars($weekKey); ?> • <?php echo htmlspecialchars($boss['gate']); ?></span>
 </div>
 
-<div class="bento-panel spotlight-card holo-card mb-4">
+<div class="bento-panel tactical-frame frame-danger mb-4">
+    <div class="sys-micro-tag mb-2"><span class="text-danger">RAID.GATE // <?php echo htmlspecialchars($boss['gate']); ?></span> &bull; TARGET ELIMINATION</div>
     <div class="row g-4 align-items-center">
         <div class="col-md-5 text-center">
-            <svg width="170" height="170" viewBox="0 0 170 170" style="overflow: visible;">
-                <circle cx="85" cy="85" r="70" fill="none" stroke="<?php echo $boss['color']; ?>" stroke-opacity="<?php echo $defeated ? 0.15 : 0.5; ?>" stroke-width="4" stroke-dasharray="10 6">
-                    <animateTransform attributeName="transform" type="rotate" from="0 85 85" to="360 85 85" dur="18s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="85" cy="85" r="52" fill="<?php echo $defeated ? 'rgba(16,185,129,0.10)' : $boss['color']; ?>" fill-opacity="<?php echo $defeated ? 0.4 : 0.18; ?>" stroke="<?php echo $defeated ? 'var(--accent)' : $boss['color']; ?>" stroke-width="2.5"/>
-                <circle cx="70" cy="80" r="5" fill="#fafafa"/>
-                <circle cx="100" cy="80" r="5" fill="#fafafa"/>
-                <path d="M 74 100 Q 85 110 96 100" stroke="<?php echo $defeated ? '#10b981' : '#fafafa'; ?>" stroke-width="3" fill="none" stroke-linecap="round"/>
-                <path d="M 62 58 L 74 66 M 108 58 L 96 66" stroke="<?php echo $boss['color']; ?>" stroke-width="3.5" stroke-linecap="round"/>
-            </svg>
+            <?php $hasBossImg = !empty($boss['image']) && file_exists(__DIR__ . '/../' . $boss['image']); ?>
+            <?php if ($hasBossImg): ?>
+                <div class="mb-2 position-relative d-inline-block">
+                    <img src="../<?php echo htmlspecialchars($boss['image']); ?>" alt="<?php echo htmlspecialchars($boss['name']); ?>" style="width: 170px; height: 170px; object-fit: contain; filter: drop-shadow(0 0 16px <?php echo $boss['color']; ?>88); <?php echo $defeated ? 'opacity: 0.35; filter: grayscale(1);' : ''; ?>">
+                </div>
+            <?php else: ?>
+                <svg width="170" height="170" viewBox="0 0 170 170" style="overflow: visible;">
+                    <circle cx="85" cy="85" r="70" fill="none" stroke="<?php echo $boss['color']; ?>" stroke-opacity="<?php echo $defeated ? 0.15 : 0.5; ?>" stroke-width="4" stroke-dasharray="10 6">
+                        <animateTransform attributeName="transform" type="rotate" from="0 85 85" to="360 85 85" dur="18s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="85" cy="85" r="52" fill="<?php echo $defeated ? 'rgba(16,185,129,0.10)' : $boss['color']; ?>" fill-opacity="<?php echo $defeated ? 0.4 : 0.18; ?>" stroke="<?php echo $defeated ? 'var(--accent)' : $boss['color']; ?>" stroke-width="2.5"/>
+                    <circle cx="70" cy="80" r="5" fill="#fafafa"/>
+                    <circle cx="100" cy="80" r="5" fill="#fafafa"/>
+                    <path d="M 74 100 Q 85 110 96 100" stroke="<?php echo $defeated ? '#10b981' : '#fafafa'; ?>" stroke-width="3" fill="none" stroke-linecap="round"/>
+                    <path d="M 62 58 L 74 66 M 108 58 L 96 66" stroke="<?php echo $boss['color']; ?>" stroke-width="3.5" stroke-linecap="round"/>
+                </svg>
+            <?php endif; ?>
             <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0.5rem 0 0.1rem;"><?php echo htmlspecialchars($boss['name']); ?></h2>
             <span class="badge-status danger font-mono mb-2"><i class="fas fa-skull me-1"></i> <?php echo htmlspecialchars($boss['gate']); ?> BOSS</span>
             <?php if ($defeated): ?>
@@ -174,9 +182,12 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
     </div>
 </div>
 
-<div class="bento-panel mb-4">
+<div class="bento-panel tactical-frame mb-4">
     <div class="panel-header">
-        <h3 class="panel-title"><i class="fas fa-scroll text-accent"></i> Battle Log (15 serangan terakhir)</h3>
+        <div>
+            <div class="sys-micro-tag">SYS.LOG // ENCOUNTER_HISTORY</div>
+            <h3 class="panel-title"><i class="fas fa-scroll text-accent"></i> Battle Log (15 serangan terakhir)</h3>
+        </div>
     </div>
     <?php if (empty($battleLog)): ?>
         <div class="text-center py-4 text-muted">

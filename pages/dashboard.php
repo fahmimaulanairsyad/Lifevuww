@@ -316,7 +316,7 @@ try {
 <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
         <h1 class="page-title">Dasbor</h1>
-        <p class="page-subtitle">Status real-time progres karakter, disiplin harian, dan statistik vital.</p>
+        <p class="page-subtitle">Telemetri vital karakter, status direktif harian, dan ringkasan raid.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <button type="button" class="btn-core btn-outline font-mono" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="Buka Focus Rift Pomodoro Battle Timer">
@@ -339,7 +339,7 @@ $dashComp = $dashCompanions[$dashCompKey];
 $dashBond = game_companion_level((int) ($user['companion_exp'] ?? 0));
 $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['overdrive_until']) > time();
 ?>
-<div class="bento-panel mb-4 p-2 px-3 d-flex flex-wrap align-items-center gap-3" style="font-size: 0.76rem;">
+<div class="bento-panel tactical-frame mb-4 p-2 px-3 d-flex flex-wrap align-items-center gap-3" style="font-size: 0.76rem;">
     <span title="Astral Companion aktif"><i class="fas <?php echo $dashComp['icon']; ?> me-1" style="color: <?php echo $dashComp['accent']; ?>;"></i> <?php echo htmlspecialchars($dashComp['name']); ?> <span class="font-mono text-muted">(<?php echo $dashBond['stage']; ?> Lv.<?php echo $dashBond['bond_level']; ?>)</span></span>
     <span title="Skill Points tersedia" class="font-mono"><i class="fas fa-sitemap text-accent me-1"></i> SP: <?php echo game_available_skill_points((int) ($user['level'] ?? 1), (int) ($user['spent_skill_points'] ?? 0)); ?></span>
     <?php if ($dashOverdrive): ?>
@@ -371,15 +371,16 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 
 <?php if ($isEmergency && !$isHealedToday): ?>
     <!-- Emergency Recovery Zone (Zona Darurat) -->
-    <div class="alert alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between p-3" role="alert" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: var(--radius);">
+    <div class="alert alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between p-3 tactical-frame frame-danger" role="alert" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: var(--radius);">
         <div class="d-flex align-items-center gap-3">
             <div style="width: 38px; height: 38px; border-radius: 50%; background-color: var(--status-danger-dim); border: 1px solid var(--status-danger); color: var(--status-danger); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
                 <i class="fas fa-heart-crack"></i>
             </div>
             <div>
-                <strong style="font-size: 0.9rem; color: #fca5a5; display: block;"><i class="fas fa-triangle-exclamation me-1"></i> ZONA DARURAT: Vital Karakter Kritis!</strong>
+                <div class="sys-micro-tag text-danger"><span class="text-danger">SYS.ALERT // CRITICAL_VITAL</span></div>
+                <strong style="font-size: 0.9rem; color: #fca5a5; display: block;">PROTOKOL DARURAT: Vital Karakter Kritis!</strong>
                 <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                    Poin kesehatanmu saat ini tersisa <span class="text-danger font-mono fw-bold"><?php echo (int)($user['hp'] ?? 0); ?> HP</span>. Tuntaskan minimal 1 rutinitas atau misi hari ini untuk mengaktifkan pemulihan darurat (+30 HP).
+                    Poin kesehatan tersisa <span class="text-danger font-mono fw-bold"><?php echo (int)($user['hp'] ?? 0); ?> HP</span>. Tuntaskan minimal 1 rutinitas atau misi hari ini untuk memicu pemulihan darurat (+30 HP).
                 </div>
             </div>
         </div>
@@ -388,12 +389,12 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
                 <form method="POST" action="dashboard.php" class="m-0">
                     <?php echo csrf_field(); ?>
                     <button type="submit" name="emergency_heal" value="1" class="btn-core btn-accent font-mono" style="background-color: var(--status-danger) !important; border-color: var(--status-danger) !important; color: #fff !important; font-size: 0.78rem;">
-                        <i class="fas fa-heart me-1"></i> Pemulihan Darurat (+30 HP)
+                        <i class="fas fa-heart me-1"></i> Pulihkan Darurat (+30 HP)
                     </button>
                 </form>
             <?php else: ?>
                 <button type="button" class="btn-core btn-outline font-mono text-muted" disabled style="opacity: 0.6; cursor: not-allowed; font-size: 0.76rem;" title="Selesaikan minimal 1 habit atau quest hari ini">
-                    <i class="fas fa-lock me-1"></i> Pemulihan Terkunci (0/1)
+                    <i class="fas fa-lock me-1"></i> Terkunci (0/1 Tugas)
                 </button>
             <?php endif; ?>
         </div>
@@ -446,8 +447,9 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 <div class="row g-3 mb-4">
     <!-- Character Core Status -->
     <div class="col-md-8">
-        <div class="bento-panel spotlight-card holo-card h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.16) 0%, transparent 48%), radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 40%), #111114; border-top: 1px solid rgba(255, 255, 255, 0.18);">
+        <div class="bento-panel tactical-frame h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.16) 0%, transparent 48%), radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 40%), #111114; border-top: 1px solid rgba(255, 255, 255, 0.18);">
             <div>
+                <div class="sys-micro-tag"><span class="text-accent">OPERATOR.STATUS // ACTIVE</span> &bull; CORE HUD</div>
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
                         <span class="badge-status accent font-mono mb-2" style="font-size: 0.74rem; padding: 0.25rem 0.7rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.14); box-shadow: 0 0 14px rgba(16, 185, 129, 0.18);">
@@ -545,11 +547,12 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 </div>
 
 <!-- Daily System Directive (Supply Crate Harian) -->
-<div class="bento-panel spotlight-card mb-4" style="border-top: 1px solid rgba(245, 158, 11, 0.4); background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(17, 17, 20, 0.95) 45%);">
+<div class="bento-panel tactical-frame frame-warning mb-4" style="border-top: 1px solid rgba(245, 158, 11, 0.4); background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(17, 17, 20, 0.95) 45%);">
+    <div class="sys-micro-tag mb-2"><span class="text-warning">SYS.DIRECTIVE // 01</span> &bull; DAILY SUPPLY ALLOCATION</div>
     <div class="panel-header mb-3">
         <div>
             <h3 class="panel-title"><i class="fas fa-box text-warning"></i> Daily System Directive</h3>
-            <p class="text-muted mb-0" style="font-size: 0.78rem;">Selesaikan dua arahan taktis harian untuk membuka Supply Crate perbekalan.</p>
+            <p class="text-muted mb-0" style="font-size: 0.78rem;">Penuhi 2 parameter target harian untuk membuka alokasi perbekalan (+20 EXP, +25 Gold).</p>
         </div>
         <div>
             <?php if ($isCrateClaimedToday): ?>
@@ -575,7 +578,7 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
                 <div class="d-flex align-items-center justify-content-between p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
                     <div class="d-flex align-items-center gap-2">
                         <i class="fas <?php echo $target1Met ? 'fa-check-circle text-accent' : 'fa-circle text-muted'; ?>" style="font-size: 0.85rem;"></i>
-                        <span style="font-size: 0.82rem; color: var(--text-primary);">Arahan 1: Tuntaskan minimal 2 Rutinitas hari ini</span>
+                        <span style="font-size: 0.82rem; color: var(--text-primary);">Direktif 1: Tuntaskan minimal 2 Rutinitas hari ini</span>
                     </div>
                     <span class="badge-status font-mono <?php echo $target1Met ? 'accent' : ''; ?>" style="font-size: 0.72rem;">
                         <?php echo min(2, $doneHabitsToday); ?> / 2
@@ -585,7 +588,7 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
                 <div class="d-flex align-items-center justify-content-between p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
                     <div class="d-flex align-items-center gap-2">
                         <i class="fas <?php echo $target2Met ? 'fa-check-circle text-accent' : 'fa-circle text-muted'; ?>" style="font-size: 0.85rem;"></i>
-                        <span style="font-size: 0.82rem; color: var(--text-primary);">Arahan 2: Tuntaskan minimal 1 Misi atau 1 Agenda Time-Block</span>
+                        <span style="font-size: 0.82rem; color: var(--text-primary);">Direktif 2: Tuntaskan minimal 1 Misi atau 1 Agenda Time-Block</span>
                     </div>
                     <span class="badge-status font-mono <?php echo $target2Met ? 'accent' : ''; ?>" style="font-size: 0.72rem;">
                         <?php echo min(1, ($doneQuestsToday + $doneTbHabits + $doneTbQuests)); ?> / 1
@@ -598,8 +601,8 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
             <?php if ($isCrateClaimedToday): ?>
                 <div class="p-3" style="background: rgba(16, 185, 129, 0.08); border: 1px solid var(--accent-border); border-radius: var(--radius);">
                     <i class="fas fa-box-open text-accent fa-2x mb-2"></i>
-                    <div class="font-mono text-accent" style="font-size: 0.85rem; font-weight: 600;">Supply Crate Hari Ini Sudah Diklaim</div>
-                    <div class="text-muted mt-1" style="font-size: 0.72rem;">Kembali lagi besok untuk arahan sistem selanjutnya!</div>
+                    <div class="font-mono text-accent" style="font-size: 0.85rem; font-weight: 600;">SUPPLY CRATE // TUNTAS</div>
+                    <div class="text-muted mt-1" style="font-size: 0.72rem;">Alokasi perbekalan harian telah diterima. Reset pukul 00:00 WIB.</div>
                 </div>
             <?php elseif ($target1Met && $target2Met): ?>
                 <form method="POST" action="dashboard.php" class="m-0">
@@ -612,8 +615,8 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
             <?php else: ?>
                 <div class="p-3" style="background: var(--bg-surface-hover); border: 1px dashed var(--border-hairline); border-radius: var(--radius);">
                     <i class="fas fa-lock text-muted fa-2x mb-2"></i>
-                    <div class="font-mono text-muted" style="font-size: 0.82rem;">Supply Crate Tersegel</div>
-                    <div class="text-muted mt-1" style="font-size: 0.72rem;">Selesaikan kedua arahan di samping untuk membuka segel crate (+20 EXP &amp; +25 Gold).</div>
+                    <div class="font-mono text-muted" style="font-size: 0.82rem;">SUPPLY CRATE // TERKUNCI</div>
+                    <div class="text-muted mt-1" style="font-size: 0.72rem;">Penuhi kuota 2 direktif di samping untuk membuka kunci transfer perbekalan.</div>
                 </div>
             <?php endif; ?>
         </div>

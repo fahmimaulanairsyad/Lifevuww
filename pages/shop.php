@@ -319,7 +319,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
 <div class="page-header d-flex justify-content-between align-items-end">
     <div>
         <h1 class="page-title">Toko Hadiah</h1>
-        <p class="page-subtitle">Tukarkan gold untuk pemulihan vital, perisai streak, dan hadiah pribadi.</p>
+        <p class="page-subtitle">Katalog konsumsi vital, perisai streak, dan artefak pasif permanen.</p>
     </div>
     <div class="text-end">
         <div class="text-muted" style="font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;">Saldo Gold</div>
@@ -448,10 +448,11 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
 <div class="mb-5">
     <div class="panel-header" style="border-bottom: 1px solid var(--border-hairline); padding-bottom: 0.6rem; margin-bottom: 1rem;">
         <div>
+            <div class="sys-micro-tag">SYS.ARMORY // PASSIVE_RELICS</div>
             <h3 class="panel-title" style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">
                 <i class="fas fa-shield-halved text-accent"></i> Relik & Artefak Permanen
             </h3>
-            <p class="text-muted mb-0" style="font-size: 0.74rem;">Peralatan abadi penempa kedisiplinan dan penguat status karakter.</p>
+            <p class="text-muted mb-0" style="font-size: 0.74rem;">Modul perlengkapan pasif dengan efek pengali permanen.</p>
         </div>
     </div>
 
@@ -474,14 +475,19 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
     <div class="row g-3">
         <?php foreach ($relicsList as $rKey => $relic): 
             $isOwned = isset($userRelics[$rKey]);
+            $hasRelicImg = !empty($relic['image']) && file_exists(__DIR__ . '/../' . $relic['image']);
         ?>
             <div class="col-md-4 relic-card-col" data-relic-key="<?php echo $rKey; ?>" data-cost="<?php echo (int)$relic['cost']; ?>">
-                <div class="bento-panel spotlight-card holo-card d-flex flex-column justify-content-between p-3 h-100 position-relative" style="<?php echo $isOwned ? 'border-color: var(--accent-border); background: rgba(16, 185, 129, 0.04);' : ($userGold < $relic['cost'] ? 'opacity: 0.75;' : ''); ?>">
+                <div class="bento-panel tactical-frame d-flex flex-column justify-content-between p-3 h-100 position-relative" style="<?php echo $isOwned ? 'border-color: var(--accent-border); background: rgba(16, 185, 129, 0.04);' : ($userGold < $relic['cost'] ? 'opacity: 0.75;' : ''); ?>">
                     <div>
                         <div class="d-flex align-items-start justify-content-between mb-2">
-                            <div style="width: 38px; height: 38px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
-                                <i class="fas <?php echo htmlspecialchars($relic['icon']); ?>"></i>
-                            </div>
+                            <?php if ($hasRelicImg): ?>
+                                <img src="../<?php echo htmlspecialchars($relic['image']); ?>" alt="<?php echo htmlspecialchars($relic['name']); ?>" style="width: 38px; height: 38px; object-fit: contain; border-radius: 6px; border: 1px solid var(--accent-border);">
+                            <?php else: ?>
+                                <div style="width: 38px; height: 38px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                                    <i class="fas <?php echo htmlspecialchars($relic['icon']); ?>"></i>
+                                </div>
+                            <?php endif; ?>
                             <span class="badge-status <?php echo $isOwned ? 'accent' : 'font-mono'; ?>" style="font-size: 0.68rem;">
                                 <?php echo htmlspecialchars($relic['badge']); ?>
                             </span>

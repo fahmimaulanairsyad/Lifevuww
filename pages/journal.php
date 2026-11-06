@@ -1,5 +1,5 @@
 <?php
-// pages/journal.php — Jurnal Taktis & Mood/Energy Tracker (Sovereign Expansion v3.0)
+// pages/journal.php: Jurnal Taktis & Mood/Energy Tracker (Sovereign Expansion v3.0)
 require_once __DIR__ . '/../config/database.php';
 enforce_login();
 
@@ -174,7 +174,7 @@ unset($_SESSION['journal_toast']);
 <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
         <h1 class="page-title"><i class="fas fa-book text-accent me-1"></i> Jurnal Taktis</h1>
-        <p class="page-subtitle">Refleksi harian mood & energi — entri pertama tiap hari memberi Wisdom Bonus +10 EXP & +5 Gold.</p>
+        <p class="page-subtitle">Refleksi harian mood dan energi. Entri pertama tiap hari memberi Wisdom Bonus +10 EXP &amp; +5 Gold.</p>
     </div>
     <a href="dungeon.php" class="btn-core btn-outline font-mono" style="font-size: 0.76rem;"><i class="fas fa-dungeon text-danger me-1"></i> Boss Mingguan</a>
 </div>
@@ -186,7 +186,8 @@ unset($_SESSION['journal_toast']);
 <?php endif; ?>
 
 <!-- Analitik 14 Hari -->
-<div class="bento-panel mb-4">
+<div class="bento-panel tactical-frame mb-4">
+    <div class="sys-micro-tag">SYS.ANALYTICS // MOOD_ENERGY_CORRELATION</div>
     <div class="panel-header">
         <h3 class="panel-title"><i class="fas fa-chart-line text-accent"></i> Analitik 14 Hari Terakhir</h3>
         <div class="d-flex flex-wrap gap-2 font-mono" style="font-size: 0.72rem;">

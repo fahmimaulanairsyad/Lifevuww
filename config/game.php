@@ -427,8 +427,9 @@ function game_relics(): array {
             'icon' => 'fa-khanda',
             'slot' => 'Weapon',
             'badge' => 'Senjata',
-            'effect' => 'Ketajaman fokus eksekusi tugas & disiplin waktu',
-            'desc' => 'Pedang obsidian legendaris yang ditempa dari kristal waktu murni.'
+            'effect' => '+20% EXP & Gold untuk sesi Focus Rift.',
+            'desc' => 'Artefak akselerasi fokus waktu.',
+            'image' => 'assets/images/relics/chrono_blade.png',
         ],
         'archon_signet' => [
             'key' => 'archon_signet',
@@ -437,8 +438,9 @@ function game_relics(): array {
             'icon' => 'fa-ring',
             'slot' => 'Ring',
             'badge' => 'Cincin',
-            'effect' => 'Penguat stabilitas finansial & kejernihan intelektual',
-            'desc' => 'Cincin meterai kuno para arsitek disiplin.'
+            'effect' => '+25% perolehan Gold dari semua aktivitas.',
+            'desc' => 'Cincin meterai pelipat ganda saldo Gold.',
+            'image' => 'assets/images/relics/archon_signet.png',
         ],
         'sovereign_mantle' => [
             'key' => 'sovereign_mantle',
@@ -447,8 +449,9 @@ function game_relics(): array {
             'icon' => 'fa-shield-halved',
             'slot' => 'Armor',
             'badge' => 'Armor',
-            'effect' => 'Jubah pelindung kasta tertinggi penakluk konsistensi',
-            'desc' => 'Mantle pelindung yang memancarkan aura wibawa bagi mereka yang berdisiplin tanpa henti.'
+            'effect' => '-30% penalti HP dan +25 Max HP permanen.',
+            'desc' => 'Armor pertahanan pasif dan ketahanan vital.',
+            'image' => 'assets/images/relics/sovereign_mantle.png',
         ],
     ];
 }
@@ -477,8 +480,8 @@ function game_specializations(): array {
             'aura' => 'emerald',
             'aura_name' => 'Emerald Core',
             'color' => '#10b981',
-            'focus' => 'Disiplin Seimbang (All-Rounder)',
-            'desc' => 'Garda terdepan yang teguh menjaga keseimbangan seluruh aspek produktivitas tanpa kompromi.',
+            'focus' => 'Disiplin Umum (All-Rounder)',
+            'desc' => '+10% EXP semua tugas dan -20% penalti HP.',
             'icon' => 'fa-shield-alt'
         ],
         'Arcane Scholar' => [
@@ -488,7 +491,7 @@ function game_specializations(): array {
             'aura_name' => 'Cyan Pulse',
             'color' => '#06b6d4',
             'focus' => 'Fokus Intelligence & Deep Work',
-            'desc' => 'Cendekiawan taktis pemecah masalah rumit yang mendedikasikan waktu untuk eksplorasi pengetahuan murni.',
+            'desc' => '+20% EXP & Gold untuk misi kategori Intelligence.',
             'icon' => 'fa-brain'
         ],
         'Crimson Striker' => [
@@ -498,7 +501,7 @@ function game_specializations(): array {
             'aura_name' => 'Crimson Blaze',
             'color' => '#f43f5e',
             'focus' => 'Fokus Physical & Health',
-            'desc' => 'Petarung gigih berkekuatan fisik prima yang mengubah keringat dan vitalitas menjadi kemenangan disiplin.',
+            'desc' => '+20% EXP & Gold untuk misi kategori Physical dan Health.',
             'icon' => 'fa-dumbbell'
         ],
         'Solar Sovereign' => [
@@ -508,7 +511,7 @@ function game_specializations(): array {
             'aura_name' => 'Amber Gold',
             'color' => '#f59e0b',
             'focus' => 'Fokus Wealth & Social',
-            'desc' => 'Pemimpin visioner penguasa kemakmuran finansial dan jejaring relasi sosial yang berpengaruh luas.',
+            'desc' => '+20% EXP & Gold untuk misi kategori Wealth dan Social.',
             'icon' => 'fa-coins'
         ],
         'Abyssal Archon' => [
@@ -518,7 +521,7 @@ function game_specializations(): array {
             'aura_name' => 'Phantom Violet',
             'color' => '#8b5cf6',
             'focus' => 'Spesialisasi Elit & Eksplorasi Ekstrem',
-            'desc' => 'Arsitek misterius penjelajah zona terdalam produktivitas yang mampu menaklukkan Boss tersulit dengan tenang.',
+            'desc' => '+25% EXP untuk misi Hard dan Crimson Focus Rift.',
             'icon' => 'fa-wand-magic-sparkles'
         ]
     ];
@@ -824,6 +827,8 @@ function game_companions(): array {
             'icon' => 'fa-paw',
             'accent' => '#10b981',
             'bonus' => '+8% EXP semua Habit & +5 DMG ke Dungeon Boss',
+            'desc' => '+8% EXP Habit dan +5 flat damage ke Boss Dungeon.',
+            'image' => 'assets/images/companions/obsidian_wolf.png',
             'exp_bonus_habit' => 0.08,
             'dmg_bonus' => 5,
         ],
@@ -832,6 +837,8 @@ function game_companions(): array {
             'icon' => 'fa-feather-alt',
             'accent' => '#06b6d4',
             'bonus' => '+12% EXP dari Focus Rift & item ber-Time-Block',
+            'desc' => '+12% EXP untuk sesi Focus Rift dan tugas terjadwal.',
+            'image' => 'assets/images/companions/chrono_owl.png',
             'exp_bonus_timed' => 0.12,
         ],
         'crimson_drake' => [
@@ -839,6 +846,8 @@ function game_companions(): array {
             'icon' => 'fa-dragon',
             'accent' => '#f43f5e',
             'bonus' => '+15% Damage ke Dungeon Boss & +10% EXP Quest',
+            'desc' => '+15% multiplier damage Boss dan +10% EXP Quest.',
+            'image' => 'assets/images/companions/crimson_drake.png',
             'dmg_multiplier' => 0.15,
             'exp_bonus_quest' => 0.10,
         ],
@@ -847,6 +856,8 @@ function game_companions(): array {
             'icon' => 'fa-crown',
             'accent' => '#f59e0b',
             'bonus' => '+15% perolehan Gold dari semua sumber',
+            'desc' => '+15% multiplier saldo Gold dari seluruh aktivitas.',
+            'image' => 'assets/images/companions/auric_griffin.png',
             'gold_multiplier' => 0.15,
         ],
         'aegis_tortoise' => [
@@ -854,6 +865,8 @@ function game_companions(): array {
             'icon' => 'fa-shield-alt',
             'accent' => '#6366f1',
             'bonus' => 'Pengurangan penalti HP gagal sebesar 15%',
+            'desc' => '-15% mitigasi penalti pengurangan Health Points (HP).',
+            'image' => 'assets/images/companions/aegis_tortoise.png',
             'penalty_reduction' => 0.15,
         ],
     ];
@@ -949,11 +962,11 @@ function game_available_skill_points(int $userLevel, int $spentPoints): int {
 // halaman dungeon setelah boss_hp <= 0.
 function game_dungeon_bosses(): array {
     return [
-        'gate_e_crawler' => ['name' => 'Ironhide Crawler', 'gate' => 'E-Rank', 'hp' => 300, 'reward_exp' => 50, 'reward_gold' => 40, 'reward_freeze' => 0, 'color' => '#a1a1aa', 'icon' => 'fa-bug'],
-        'gate_c_lich' => ['name' => 'Frostveil Archmage', 'gate' => 'C-Rank', 'hp' => 600, 'reward_exp' => 100, 'reward_gold' => 80, 'reward_freeze' => 0, 'color' => '#06b6d4', 'icon' => 'fa-hat-wizard'],
-        'gate_b_colossus' => ['name' => 'Obsidian Colossus', 'gate' => 'B-Rank', 'hp' => 1000, 'reward_exp' => 160, 'reward_gold' => 130, 'reward_freeze' => 1, 'color' => '#8b5cf6', 'icon' => 'fa-mountain'],
-        'gate_a_valkyrie' => ['name' => 'Crimson Valkyrie', 'gate' => 'A-Rank', 'hp' => 1500, 'reward_exp' => 250, 'reward_gold' => 200, 'reward_freeze' => 1, 'color' => '#f43f5e', 'icon' => 'fa-feather-pointed'],
-        'gate_s_monarch' => ['name' => 'Sovereign of the Abyss', 'gate' => 'S-Rank', 'hp' => 2500, 'reward_exp' => 400, 'reward_gold' => 350, 'reward_freeze' => 2, 'color' => '#f59e0b', 'icon' => 'fa-skull'],
+        'gate_e_crawler' => ['name' => 'Ironhide Crawler', 'gate' => 'E-Rank', 'hp' => 300, 'reward_exp' => 50, 'reward_gold' => 40, 'reward_freeze' => 0, 'color' => '#a1a1aa', 'icon' => 'fa-bug', 'image' => 'assets/images/bosses/gate_e_crawler.png'],
+        'gate_c_lich' => ['name' => 'Frostveil Archmage', 'gate' => 'C-Rank', 'hp' => 600, 'reward_exp' => 100, 'reward_gold' => 80, 'reward_freeze' => 0, 'color' => '#06b6d4', 'icon' => 'fa-hat-wizard', 'image' => 'assets/images/bosses/gate_c_lich.png'],
+        'gate_b_colossus' => ['name' => 'Obsidian Colossus', 'gate' => 'B-Rank', 'hp' => 1000, 'reward_exp' => 160, 'reward_gold' => 130, 'reward_freeze' => 1, 'color' => '#8b5cf6', 'icon' => 'fa-mountain', 'image' => 'assets/images/bosses/gate_b_colossus.png'],
+        'gate_a_valkyrie' => ['name' => 'Crimson Valkyrie', 'gate' => 'A-Rank', 'hp' => 1500, 'reward_exp' => 250, 'reward_gold' => 200, 'reward_freeze' => 1, 'color' => '#f43f5e', 'icon' => 'fa-feather-pointed', 'image' => 'assets/images/bosses/gate_a_valkyrie.png'],
+        'gate_s_monarch' => ['name' => 'Sovereign of the Abyss', 'gate' => 'S-Rank', 'hp' => 2500, 'reward_exp' => 400, 'reward_gold' => 350, 'reward_freeze' => 2, 'color' => '#f59e0b', 'icon' => 'fa-skull', 'image' => 'assets/images/bosses/gate_s_monarch.png'],
     ];
 }
 
