@@ -478,7 +478,7 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
             $hasRelicImg = !empty($relic['image']) && file_exists(__DIR__ . '/../' . $relic['image']);
         ?>
             <div class="col-md-4 relic-card-col" data-relic-key="<?php echo $rKey; ?>" data-cost="<?php echo (int)$relic['cost']; ?>">
-                <div class="bento-panel tactical-frame d-flex flex-column justify-content-between p-3 h-100 position-relative" style="<?php echo $isOwned ? 'border-color: var(--accent-border); background: rgba(16, 185, 129, 0.04);' : ($userGold < $relic['cost'] ? 'opacity: 0.75;' : ''); ?>">
+                <div class="bento-panel d-flex flex-column justify-content-between p-3 h-100 position-relative" style="<?php echo $isOwned ? 'border-color: var(--accent-border); background: var(--accent-dim);' : ($userGold < $relic['cost'] ? 'opacity: 0.75;' : ''); ?>">
                     <div>
                         <div class="d-flex align-items-start justify-content-between mb-2">
                             <?php if ($hasRelicImg): ?>

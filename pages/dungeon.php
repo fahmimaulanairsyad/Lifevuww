@@ -115,74 +115,95 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
     <span class="badge-status font-mono">Minggu <?php echo htmlspecialchars($weekKey); ?> • <?php echo htmlspecialchars($boss['gate']); ?></span>
 </div>
 
-<div class="bento-panel tactical-frame frame-danger mb-4">
-    <div class="sys-micro-tag mb-2"><span class="text-danger">RAID.GATE // <?php echo htmlspecialchars($boss['gate']); ?></span> &bull; TARGET ELIMINATION</div>
-    <div class="row g-4 align-items-center">
-        <div class="col-md-5 text-center">
-            <?php $hasBossImg = !empty($boss['image']) && file_exists(__DIR__ . '/../' . $boss['image']); ?>
-            <?php if ($hasBossImg): ?>
-                <div class="mb-2 position-relative d-inline-block">
-                    <img src="../<?php echo htmlspecialchars($boss['image']); ?>" alt="<?php echo htmlspecialchars($boss['name']); ?>" style="width: 170px; height: 170px; object-fit: contain; filter: drop-shadow(0 0 16px <?php echo $boss['color']; ?>88); <?php echo $defeated ? 'opacity: 0.35; filter: grayscale(1);' : ''; ?>">
-                </div>
-            <?php else: ?>
-                <svg width="170" height="170" viewBox="0 0 170 170" style="overflow: visible;">
-                    <circle cx="85" cy="85" r="70" fill="none" stroke="<?php echo $boss['color']; ?>" stroke-opacity="<?php echo $defeated ? 0.15 : 0.5; ?>" stroke-width="4" stroke-dasharray="10 6">
-                        <animateTransform attributeName="transform" type="rotate" from="0 85 85" to="360 85 85" dur="18s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="85" cy="85" r="52" fill="<?php echo $defeated ? 'rgba(16,185,129,0.10)' : $boss['color']; ?>" fill-opacity="<?php echo $defeated ? 0.4 : 0.18; ?>" stroke="<?php echo $defeated ? 'var(--accent)' : $boss['color']; ?>" stroke-width="2.5"/>
-                    <circle cx="70" cy="80" r="5" fill="#fafafa"/>
-                    <circle cx="100" cy="80" r="5" fill="#fafafa"/>
-                    <path d="M 74 100 Q 85 110 96 100" stroke="<?php echo $defeated ? '#10b981' : '#fafafa'; ?>" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <path d="M 62 58 L 74 66 M 108 58 L 96 66" stroke="<?php echo $boss['color']; ?>" stroke-width="3.5" stroke-linecap="round"/>
-                </svg>
-            <?php endif; ?>
-            <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0.5rem 0 0.1rem;"><?php echo htmlspecialchars($boss['name']); ?></h2>
-            <span class="badge-status danger font-mono mb-2"><i class="fas fa-skull me-1"></i> <?php echo htmlspecialchars($boss['gate']); ?> BOSS</span>
+<div class="bento-panel mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 pb-2" style="border-bottom: 1px solid var(--border-hairline);">
+        <div>
+            <div class="font-mono text-muted" style="font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                RAID TARGET &bull; <?php echo htmlspecialchars($boss['gate']); ?>
+            </div>
+            <h2 style="font-size: 1.35rem; font-weight: 700; margin: 4px 0 0 0;"><?php echo htmlspecialchars($boss['name']); ?></h2>
+        </div>
+        <div>
             <?php if ($defeated): ?>
-                <div class="badge-status accent font-mono d-block mt-1"><i class="fas fa-trophy me-1"></i> TUMBANG!</div>
+                <span class="badge-status accent font-mono"><i class="fas fa-check-circle me-1"></i> TUMBANG</span>
+            <?php else: ?>
+                <span class="badge-status danger font-mono"><i class="fas fa-crosshairs me-1"></i> TARGET AKTIF</span>
             <?php endif; ?>
         </div>
-        <div class="col-md-7">
-            <div class="d-flex justify-content-between font-mono mb-1" style="font-size: 0.8rem;">
-                <span class="text-danger"><i class="fas fa-heart me-1"></i> BOSS HP</span>
-                <span><?php echo number_format($bossHp); ?> / <?php echo number_format($bossMax); ?> (<?php echo $hpPct; ?>%)</span>
-            </div>
-            <div class="vitals-track" style="height: 16px; border-radius: 999px; background: rgba(255,255,255,0.06);">
-                <div class="vitals-fill" style="width: <?php echo $hpPct; ?>%; background: linear-gradient(90deg, var(--status-danger), #fb7185); border-radius: 999px;"></div>
-            </div>
-            <div class="d-flex flex-wrap gap-3 mt-3 font-mono" style="font-size: 0.76rem;">
-                <span class="text-accent"><i class="fas fa-gavel me-1"></i> Total damage: <?php echo number_format($totalDmg); ?></span>
-                <span><i class="fas <?php echo $comp['icon']; ?> me-1" style="color: <?php echo $comp['accent']; ?>;"></i> <?php echo htmlspecialchars($comp['name']); ?> (<?php echo $bond['stage']; ?> Lv.<?php echo $bond['bond_level']; ?> ×<?php echo number_format($bond['bonus_scale'], 2); ?>)</span>
-            </div>
+    </div>
 
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <?php if ($defeated && !$rewardClaimed): ?>
-                    <form method="POST" action="dungeon.php" style="margin: 0;">
-                        <?php echo csrf_field(); ?>
-                        <input type="hidden" name="claim_raid_reward" value="1">
-                        <button type="submit" class="btn-core btn-accent" style="padding: 0.6rem 1.2rem;">
-                            <i class="fas fa-box-open me-1"></i> Klaim Loot Kemenangan (+<?php echo (int) $boss['reward_exp']; ?> EXP, +<?php echo (int) $boss['reward_gold']; ?> Gold<?php echo $boss['reward_freeze'] > 0 ? ', +' . (int) $boss['reward_freeze'] . ' Streak Freeze' : ''; ?>)
-                        </button>
-                    </form>
-                <?php elseif ($defeated && $rewardClaimed): ?>
-                    <form method="POST" action="dungeon.php" style="margin: 0;">
-                        <?php echo csrf_field(); ?>
-                        <input type="hidden" name="next_gate" value="1">
-                        <button type="submit" class="btn-core btn-primary" style="padding: 0.6rem 1.2rem;">
-                            <i class="fas fa-door-open me-1"></i> Buka Gate Tingkat Berikutnya (Overlord Challenge)
-                        </button>
-                    </form>
-                <?php else: ?>
-                    <div class="text-muted" style="font-size: 0.78rem;">
-                        <i class="fas fa-circle-info me-1"></i> Serang Boss lewat menyelesaikan <strong>Habit</strong> (+20..35 DMG), <strong>Misi</strong> (+60..120 DMG), <strong>Focus Rift</strong> (+40..90 DMG), dan <strong>Jurnal</strong> (+25 DMG). Bonus <?php echo htmlspecialchars($comp['name']); ?> ikut dihitung.
-                    </div>
-                <?php endif; ?>
+    <!-- Big Typographic HP & Progress -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-baseline mb-1">
+            <span class="text-muted font-mono" style="font-size: 0.72rem; text-transform: uppercase;">Integritas Vital Boss</span>
+            <div class="font-mono text-end">
+                <span style="font-size: 1.75rem; font-weight: 700; color: <?php echo $defeated ? 'var(--accent)' : 'var(--status-danger)'; ?>;">
+                    <?php echo number_format($bossHp); ?>
+                </span>
+                <span class="text-muted" style="font-size: 0.95rem;"> / <?php echo number_format($bossMax); ?> HP</span>
+                <span class="text-muted ms-2" style="font-size: 0.85rem;">(<?php echo $hpPct; ?>%)</span>
+            </div>
+        </div>
+        <div class="vitals-track" style="height: 8px; border-radius: 4px; background: var(--bg-surface-hover);">
+            <div class="vitals-fill" style="width: <?php echo $hpPct; ?>%; background-color: <?php echo $defeated ? 'var(--accent)' : 'var(--status-danger)'; ?>; border-radius: 4px;"></div>
+        </div>
+    </div>
+
+    <!-- System Status Table (4 Telemetry Cells) -->
+    <div class="row g-2 mb-3">
+        <div class="col-sm-3 col-6">
+            <div class="p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
+                <div class="text-muted font-mono" style="font-size: 0.68rem; text-transform: uppercase;">Total Kerusakan</div>
+                <div class="font-mono" style="font-size: 0.95rem; font-weight: 600; color: var(--accent);"><?php echo number_format($totalDmg); ?> DMG</div>
+            </div>
+        </div>
+        <div class="col-sm-3 col-6">
+            <div class="p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
+                <div class="text-muted font-mono" style="font-size: 0.68rem; text-transform: uppercase;">Familiar Aktif</div>
+                <div class="font-mono text-truncate" style="font-size: 0.85rem; font-weight: 600;" title="<?php echo htmlspecialchars($comp['name']); ?>"><?php echo htmlspecialchars($comp['name']); ?></div>
+            </div>
+        </div>
+        <div class="col-sm-3 col-6">
+            <div class="p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
+                <div class="text-muted font-mono" style="font-size: 0.68rem; text-transform: uppercase;">Efektivitas Serangan</div>
+                <div class="font-mono" style="font-size: 0.95rem; font-weight: 600;">&times;<?php echo number_format($bond['bonus_scale'], 2); ?></div>
+            </div>
+        </div>
+        <div class="col-sm-3 col-6">
+            <div class="p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
+                <div class="text-muted font-mono" style="font-size: 0.68rem; text-transform: uppercase;">Hadiah Kemenangan</div>
+                <div class="font-mono text-warning" style="font-size: 0.85rem; font-weight: 600;">+<?php echo (int) $boss['reward_exp']; ?> EXP &bull; +<?php echo (int) $boss['reward_gold']; ?> G</div>
             </div>
         </div>
     </div>
+
+    <!-- Actions / Instructions -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-2" style="border-top: 1px solid var(--border-hairline);">
+        <?php if ($defeated && !$rewardClaimed): ?>
+            <form method="POST" action="dungeon.php" style="margin: 0;" class="w-100">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="claim_raid_reward" value="1">
+                <button type="submit" class="btn-core btn-accent w-100 font-mono" style="padding: 0.55rem 1rem;">
+                    <i class="fas fa-gift me-1"></i> Klaim Loot Kemenangan (+<?php echo (int) $boss['reward_exp']; ?> EXP, +<?php echo (int) $boss['reward_gold']; ?> Gold<?php echo $boss['reward_freeze'] > 0 ? ', +' . (int) $boss['reward_freeze'] . ' Streak Freeze' : ''; ?>)
+                </button>
+            </form>
+        <?php elseif ($defeated && $rewardClaimed): ?>
+            <form method="POST" action="dungeon.php" style="margin: 0;" class="w-100">
+                <?php echo csrf_field(); ?>
+                <input type="hidden" name="next_gate" value="1">
+                <button type="submit" class="btn-core btn-outline w-100 font-mono" style="padding: 0.55rem 1rem;">
+                    <i class="fas fa-door-open me-1"></i> Buka Gate Tingkat Berikutnya (Overlord Challenge)
+                </button>
+            </form>
+        <?php else: ?>
+            <div class="text-muted font-sans" style="font-size: 0.76rem;">
+                <i class="fas fa-info-circle me-1 text-accent"></i> Serang Boss via penyelesaian Habit (+20..35 DMG), Misi (+60..120 DMG), Focus Rift (+40..90 DMG), dan Jurnal (+25 DMG).
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
-<div class="bento-panel tactical-frame mb-4">
+<div class="bento-panel mb-4">
     <div class="panel-header">
         <div>
             <div class="sys-micro-tag">SYS.LOG // ENCOUNTER_HISTORY</div>

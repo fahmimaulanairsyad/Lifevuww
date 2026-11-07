@@ -772,55 +772,6 @@ require_once '../includes/header.php';
                         <button type="button" class="drag-handle" title="Tahan &amp; geser untuk mengatur urutan prioritas" aria-label="Geser urutan <?php echo htmlspecialchars($habit['habit_name']); ?>">
                             <i class="fas fa-grip-vertical"></i>
                         </button>
-                        <div class="habit-icon-status" style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isHabitDone ? 'var(--accent)' : 'var(--text-muted)'; ?>; font-size: 0.8rem; flex-shrink: 0;">
-                            <i class="fas <?php echo $isHabitDone ? 'fa-check' : 'fa-circle'; ?>"></i>
-                        </div>
-                        <div>
-                            <div class="data-title d-flex align-items-center flex-wrap gap-2">
-                                <span><?php echo htmlspecialchars($habit['habit_name']); ?></span>
-                                <span class="badge-status pin-badge font-mono <?php echo $isPinned ? '' : 'd-none'; ?>">
-                                    <i class="fas fa-thumbtack"></i> Prioritas
-                                </span>
-                                <?php 
-                                    $streak = $habit['streak'] ?? 0;
-                                    if ($streak > 0): 
-                                        $boostText = '';
-                                        if ($streak >= 7) {
-                                            $boostText = ' • 1.5x';
-                                        } elseif ($streak >= 3) {
-                                            $boostText = ' • 1.2x';
-                                        }
-                                ?>
-                                    <span class="badge-status warning font-mono" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.22); color: #f59e0b;">
-                                        <i class="fas fa-fire"></i> <?php echo $streak; ?> hari<?php echo $boostText; ?>
-                                    </span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="data-meta">
-                                <span class="badge-status"><?php echo htmlspecialchars($habit['category']); ?></span>
-                                <span class="badge-status font-mono"><?php echo htmlspecialchars($habit['difficulty']); ?></span>
-                                <span class="badge-status font-mono" title="Pola jadwal rutinitas"><i class="fas fa-calendar-alt me-1"></i><?php echo htmlspecialchars($schedBadge); ?></span>
-                                <?php if (!$isDue): ?>
-                                    <span class="badge-status warning font-mono" style="opacity: 0.85;" title="Tidak wajib hari ini"><i class="fas fa-hourglass-half me-1"></i>Jadwal Opsional Hari Ini</span>
-                                <?php endif; ?>
-                                <?php if (!empty($habit['start_time']) && !empty($habit['end_time'])): 
-                                    $isLive = is_time_block_active($habit['start_time'], $habit['end_time']);
-                                ?>
-                                    <span class="badge-status font-mono <?php echo $isLive ? 'accent' : ''; ?>" title="Time Block">
-                                        <i class="fas fa-clock me-1"></i><?php echo htmlspecialchars(format_time_block($habit['start_time'], $habit['end_time'])); ?>
-                                    </span>
-                                    <?php if ($isLive): ?>
-                                        <span class="badge-status accent font-mono pulse-live"><i class="fas fa-circle me-1" style="font-size: 0.45rem;"></i>LIVE NOW</span>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="data-actions">
-                        <div class="font-mono text-accent me-2" style="font-size: 0.82rem; font-weight: 500;">
-                            +<?php echo $habit['exp_reward']; ?> EXP
-                        </div>
                         
                         <?php if ($hTarget > 1): ?>
                             <!-- Stepper Control -->
@@ -829,13 +780,7 @@ require_once '../includes/header.php';
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <div class="stepper-display font-mono <?php echo $isHabitDone ? 'completed' : ''; ?>">
-                                    <span class="stepper-text">
-                                        <?php if ($isHabitDone): ?>
-                                            <i class="fas fa-check text-accent me-1"></i><?php echo "{$hCur}/{$hTarget}"; ?>
-                                        <?php else: ?>
-                                            <?php echo "{$hCur}/{$hTarget}"; ?>
-                                        <?php endif; ?>
-                                    </span>
+                                    <span class="stepper-text"><?php echo "{$hCur}/{$hTarget}"; ?></span>
                                     <div class="stepper-progress-track">
                                         <div class="stepper-progress-fill" style="width: <?php echo min(100, round(($hCur / $hTarget) * 100)); ?>%;"></div>
                                     </div>
@@ -845,45 +790,107 @@ require_once '../includes/header.php';
                                 </button>
                             </div>
                         <?php else: ?>
-                            <!-- Single Action Button (Target = 1) -->
+                            <!-- Single Target Checkbox / Completion Button -->
                             <?php if ($isHabitDone): ?>
-                                <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
                                 <form method="POST" action="habits.php" style="margin: 0; display: inline;">
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="undo_habit" value="1">
                                     <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                                    <button type="submit" class="btn-core btn-ghost text-muted" style="padding: 0.35rem 0.55rem;" title="Batalkan penyelesaian hari ini" aria-label="Batalkan penyelesaian <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Batalkan penyelesaian kebiasaan ini? EXP dan Gold akan ditarik kembali." data-confirm-title="Batalkan Kebiasaan" data-confirm-variant="warning" data-confirm-btn="Ya, Batalkan">
-                                        <i class="fas fa-undo"></i>
+                                    <button type="submit" class="btn-check-habit is-done" title="Batalkan penyelesaian hari ini" aria-label="Batalkan penyelesaian <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Batalkan penyelesaian kebiasaan ini? EXP dan Gold akan ditarik kembali." data-confirm-title="Batalkan Kebiasaan" data-confirm-variant="warning" data-confirm-btn="Ya, Batalkan">
+                                        <i class="fas fa-check"></i>
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <form method="POST" style="margin: 0;" class="form-action-primary">
+                                <form method="POST" style="margin: 0; display: inline;" class="form-action-primary">
                                     <?php echo csrf_field(); ?>
                                     <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                                    <button type="submit" name="complete_habit" class="btn-core btn-accent btn-action-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
-                                        Selesaikan
+                                    <button type="submit" name="complete_habit" class="btn-check-habit" title="Tandai selesai hari ini" aria-label="Selesaikan <?php echo htmlspecialchars($habit['habit_name']); ?>">
+                                        <i class="fas fa-check"></i>
                                     </button>
                                 </form>
                             <?php endif; ?>
                         <?php endif; ?>
-                        
-                        <!-- Pin Button -->
-                        <button type="button" class="btn-core btn-ghost btn-action-secondary btn-pin-item <?php echo $isPinned ? 'active' : ''; ?>" data-endpoint="habits.php" data-id-field="habit_id" data-id="<?php echo (int)$habit['habit_id']; ?>" style="padding: 0.35rem 0.55rem;" title="<?php echo $isPinned ? 'Lepas sematan prioritas' : 'Sematkan ke urutan teratas'; ?>" aria-label="Pin kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>">
-                            <i class="fas fa-thumbtack"></i>
-                        </button>
 
-                        <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="data-title">
+                                <span style="<?php echo $isHabitDone ? 'text-decoration: line-through; opacity: 0.55;' : ''; ?>"><?php echo htmlspecialchars($habit['habit_name']); ?></span>
+                                <span class="pin-badge <?php echo $isPinned ? '' : 'd-none'; ?>" title="Prioritas"><i class="fas fa-thumbtack text-accent ms-1" style="font-size: 0.68rem;"></i></span>
+                            </div>
+                            <?php
+                                $metaParts = [];
+                                $metaParts[] = htmlspecialchars($schedBadge);
+                                if (!empty($habit['start_time']) && !empty($habit['end_time'])) {
+                                    $metaParts[] = htmlspecialchars(format_time_block($habit['start_time'], $habit['end_time']));
+                                }
+                                $metaParts[] = htmlspecialchars($habit['category']);
+                                $metaText = implode(' &bull; ', $metaParts);
+                            ?>
+                            <div class="data-meta-text font-sans">
+                                <?php echo $metaText; ?><?php if (!$isDue): ?> <span style="color: var(--status-warning);">&bull; Opsional</span><?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="data-actions">
+                        <?php 
+                            $streak = $habit['streak'] ?? 0;
+                            if ($streak > 0): 
+                                $boostText = '';
+                                if ($streak >= 7) {
+                                    $boostText = ' &bull; 1.5x';
+                                } elseif ($streak >= 3) {
+                                    $boostText = ' &bull; 1.2x';
+                                }
+                        ?>
+                            <span class="font-mono text-warning me-2" style="font-size: 0.75rem;" title="<?php echo $streak; ?> hari berturut-turut">
+                                <i class="fas fa-fire me-1"></i><?php echo $streak; ?>d<?php echo $boostText; ?>
+                            </span>
+                        <?php endif; ?>
 
-                        <form method="POST" style="margin: 0;">
-                            <?php echo csrf_field(); ?>
-                            <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
-                            <button type="submit" name="delete_habit" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus kebiasaan <?php echo htmlspecialchars($habit['habit_name']); ?>" data-confirm="Hapus kebiasaan ini secara permanen?" data-confirm-title="Hapus Kebiasaan" data-confirm-variant="danger" data-confirm-btn="Hapus">
-                                <i class="fas fa-trash-alt"></i>
+                        <div class="font-mono text-accent me-2" style="font-size: 0.8rem; font-weight: 600;">
+                            +<?php echo $habit['exp_reward']; ?> EXP
+                        </div>
+
+                        <!-- Dropdown Aksi Sekunder (⋯) -->
+                        <div class="dropdown">
+                            <button type="button" class="btn-row-more" data-bs-toggle="dropdown" aria-expanded="false" title="Menu Opsi">
+                                <i class="fas fa-ellipsis-v"></i>
                             </button>
-                        </form>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <button type="button" class="dropdown-item btn-pin-item <?php echo $isPinned ? 'active' : ''; ?>" data-endpoint="habits.php" data-id-field="habit_id" data-id="<?php echo (int)$habit['habit_id']; ?>">
+                                        <i class="fas fa-thumbtack me-2 text-muted"></i> <span class="pin-label"><?php echo $isPinned ? 'Lepas Pin' : 'Sematkan Pin'; ?></span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editHabitModal<?php echo $habit['habit_id']; ?>">
+                                        <i class="fas fa-pencil-alt me-2 text-muted"></i> Edit
+                                    </button>
+                                </li>
+                                <?php if ($isHabitDone && $hTarget === 1): ?>
+                                    <li>
+                                        <form method="POST" action="habits.php" style="margin: 0;">
+                                            <?php echo csrf_field(); ?>
+                                            <input type="hidden" name="undo_habit" value="1">
+                                            <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
+                                            <button type="submit" class="dropdown-item" data-confirm="Batalkan penyelesaian kebiasaan ini? EXP dan Gold akan ditarik kembali." data-confirm-title="Batalkan Kebiasaan" data-confirm-variant="warning" data-confirm-btn="Ya, Batalkan">
+                                                <i class="fas fa-undo me-2 text-warning"></i> Batalkan Selesai
+                                            </button>
+                                        </form>
+                                    </li>
+                                <?php endif; ?>
+                                <li><hr class="dropdown-divider my-1" style="border-color: var(--border-hairline);"></li>
+                                <li>
+                                    <form method="POST" action="habits.php" style="margin: 0;">
+                                        <?php echo csrf_field(); ?>
+                                        <input type="hidden" name="habit_id" value="<?php echo $habit['habit_id']; ?>">
+                                        <button type="submit" name="delete_habit" class="dropdown-item text-danger" data-confirm="Hapus kebiasaan ini secara permanen?" data-confirm-title="Hapus Kebiasaan" data-confirm-variant="danger" data-confirm-btn="Hapus">
+                                            <i class="fas fa-trash-alt me-2"></i> Hapus
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 

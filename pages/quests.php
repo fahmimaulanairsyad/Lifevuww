@@ -651,48 +651,55 @@ require_once __DIR__ . '/../includes/header.php';
                         <button type="button" class="drag-handle" title="Tahan &amp; geser untuk mengatur urutan prioritas" aria-label="Geser urutan <?php echo htmlspecialchars($quest['quest_name']); ?>">
                             <i class="fas fa-grip-vertical"></i>
                         </button>
-                        <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isBoss ? 'var(--status-danger)' : ($quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'); ?>; font-size: 0.8rem; flex-shrink: 0;">
-                            <i class="fas <?php echo $isBoss ? 'fa-dragon' : ($quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'); ?>"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div class="data-title d-flex align-items-center flex-wrap gap-2">
-                                <span><?php echo htmlspecialchars($quest['quest_name']); ?></span>
-                                <span class="badge-status pin-badge font-mono <?php echo $isPinned ? '' : 'd-none'; ?>">
-                                    <i class="fas fa-thumbtack"></i> Prioritas
-                                </span>
-                                <?php if ($isBoss): ?>
-                                    <span class="badge-status danger font-mono" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">
-                                        <i class="fas fa-skull me-1"></i> BOSS QUEST
-                                    </span>
-                                <?php endif; ?>
+                        
+                        <!-- Checkbox / Complete Button -->
+                        <?php if ($quest['status'] === 'Completed'): ?>
+                            <div class="btn-check-quest is-done" title="Misi Selesai">
+                                <i class="fas fa-check"></i>
                             </div>
-                            <div class="data-meta">
-                                <span class="badge-status"><?php echo htmlspecialchars($quest['category']); ?></span>
-                                <span class="badge-status font-mono"><?php echo htmlspecialchars($quest['difficulty']); ?></span>
-                                <span class="badge-status font-mono <?php echo $daysLeft <= 1 ? 'danger' : ($daysLeft <= 3 ? 'warning' : ''); ?>">
-                                    <i class="fas fa-hourglass-half"></i> <?php echo $daysLeft < 0 ? 'Telat' : ($daysLeft === 0 ? 'Hari Terakhir!' : "Sisa {$daysLeft} hari"); ?>
-                                </span>
-                                <span class="text-danger font-mono" title="Penalti jika gagal"><i class="fas fa-heart text-danger"></i> -<?php echo $hpPenalty; ?> HP</span>
-                                <?php if (!empty($quest['start_time']) && !empty($quest['end_time'])): 
-                                    $isLive = is_time_block_active($quest['start_time'], $quest['end_time']);
-                                ?>
-                                    <span class="badge-status font-mono <?php echo $isLive ? 'accent' : ''; ?>" title="Time Block">
-                                        <i class="fas fa-clock me-1"></i><?php echo htmlspecialchars(format_time_block($quest['start_time'], $quest['end_time'])); ?>
-                                    </span>
-                                    <?php if ($isLive): ?>
-                                        <span class="badge-status accent font-mono pulse-live"><i class="fas fa-circle me-1" style="font-size: 0.45rem;"></i>LIVE NOW</span>
-                                    <?php endif; ?>
+                        <?php elseif ($isBoss && $totalSub > 0 && $doneSub < $totalSub): ?>
+                            <div class="btn-check-quest is-locked" title="Kalahkan semua fase subtask terlebih dahulu">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                        <?php else: ?>
+                            <form method="POST" action="quests.php" style="margin: 0; display: inline;" class="form-action-primary boss-action-form">
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
+                                <button type="submit" name="complete_quest" class="btn-check-quest" title="Tandai selesai" aria-label="Selesaikan misi <?php echo htmlspecialchars($quest['quest_name']); ?>">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                        <?php endif; ?>
+
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="data-title">
+                                <span style="<?php echo $quest['status'] === 'Completed' ? 'text-decoration: line-through; opacity: 0.55;' : ''; ?>"><?php echo htmlspecialchars($quest['quest_name']); ?></span>
+                                <?php if ($isBoss): ?>
+                                    <span class="font-mono text-danger ms-1" style="font-size: 0.7rem; font-weight: 600;">[BOSS]</span>
                                 <?php endif; ?>
+                                <span class="pin-badge <?php echo $isPinned ? '' : 'd-none'; ?>" title="Prioritas"><i class="fas fa-thumbtack text-accent ms-1" style="font-size: 0.68rem;"></i></span>
+                            </div>
+                            <?php
+                                $qMeta = [];
+                                $qMeta[] = htmlspecialchars($quest['category']);
+                                $qMeta[] = ($daysLeft < 0 ? 'Telat' : ($daysLeft === 0 ? 'Hari Terakhir' : "Sisa {$daysLeft} hari"));
+                                if (!empty($quest['start_time']) && !empty($quest['end_time'])) {
+                                    $qMeta[] = htmlspecialchars(format_time_block($quest['start_time'], $quest['end_time']));
+                                }
+                                $qMetaText = implode(' &bull; ', $qMeta);
+                            ?>
+                            <div class="data-meta-text font-sans">
+                                <?php echo $qMetaText; ?> &bull; <span class="text-danger">-<?php echo $hpPenalty; ?> HP</span>
                             </div>
 
                             <!-- Boss Quest HP Bar & Subtask Checklist -->
                             <?php if ($totalSub > 0): ?>
-                                <div class="boss-card-container spotlight-card holo-card mt-2 p-3" style="max-width: 520px;">
+                                <div class="boss-card-container mt-2 p-2" style="max-width: 520px; background: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
                                     <div class="d-flex justify-content-between align-items-center font-mono text-danger mb-1" style="font-size: 0.72rem;">
                                         <span><i class="fas fa-shield-virus me-1"></i> Sisa HP Boss</span>
                                         <span class="boss-hp-label"><?php echo $bossHpPct; ?>% (<?php echo ($totalSub - $doneSub); ?>/<?php echo $totalSub; ?> Fase)</span>
                                     </div>
-                                    <div class="vitals-track boss-hp-track" style="height: 6px; background-color: rgba(255,255,255,0.06); margin-bottom: 10px;">
+                                    <div class="vitals-track boss-hp-track" style="height: 5px; background-color: var(--bg-surface-hover); margin-bottom: 6px;">
                                         <div class="vitals-fill boss-hp-fill" style="width: <?php echo $bossHpPct; ?>%; background-color: var(--status-danger); transition: width 0.3s ease;"></div>
                                     </div>
                                     <div class="d-flex flex-column gap-1">
@@ -702,9 +709,9 @@ require_once __DIR__ . '/../includes/header.php';
                                                 <input type="hidden" name="toggle_subtask" value="1">
                                                 <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
                                                 <input type="hidden" name="subtask_index" value="<?php echo $idx; ?>">
-                                                <label class="subtask-row w-100 d-flex align-items-center gap-2 p-2 m-0" style="cursor: pointer; border-radius: var(--radius);">
-                                                    <input type="checkbox" class="subtask-checkbox" <?php echo !empty($st['done']) ? 'checked' : ''; ?> style="accent-color: var(--accent); cursor: pointer; width: 15px; height: 15px; flex-shrink: 0;">
-                                                    <span class="subtask-text" style="font-size: 0.8rem; line-height: 1.35; <?php echo !empty($st['done']) ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-primary);'; ?>">
+                                                <label class="subtask-row w-100 d-flex align-items-center gap-2 p-1 m-0" style="cursor: pointer; border-radius: var(--radius);">
+                                                    <input type="checkbox" class="subtask-checkbox" <?php echo !empty($st['done']) ? 'checked' : ''; ?> style="accent-color: var(--accent); cursor: pointer; width: 14px; height: 14px; flex-shrink: 0;">
+                                                    <span class="subtask-text" style="font-size: 0.78rem; line-height: 1.3; <?php echo !empty($st['done']) ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-primary);'; ?>">
                                                         <?php echo htmlspecialchars($st['title'] ?? ''); ?>
                                                     </span>
                                                 </label>
@@ -717,42 +724,38 @@ require_once __DIR__ . '/../includes/header.php';
                     </div>
                     
                     <div class="data-actions">
-                        <div class="font-mono text-accent me-2" style="font-size: 0.82rem; font-weight: 500;">
-                            +<?php echo $finalExp; ?> EXP<?php echo $isBoss ? ' <span class="badge-status accent font-mono" style="font-size: 0.6rem;">1.5x</span>' : ''; ?>
+                        <div class="font-mono text-accent me-2" style="font-size: 0.8rem; font-weight: 600;">
+                            +<?php echo $finalExp; ?> EXP
                         </div>
-                        
-                        <?php if ($quest['status'] === 'Completed'): ?>
-                            <span class="badge-status accent"><i class="fas fa-check"></i> Tuntas</span>
-                        <?php else: ?>
-                            <button type="button" class="btn-core btn-outline font-mono text-danger btn-action-primary boss-action-locked <?php echo ($totalSub > 0 && $doneSub < $totalSub) ? '' : 'd-none'; ?>" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; opacity: 0.65; cursor: not-allowed;" title="Kalahkan semua fase Boss Quest terlebih dahulu">
-                                <i class="fas fa-lock me-1"></i> Lawan Boss
-                            </button>
-                            <form method="POST" action="quests.php" style="margin: 0;" class="form-action-primary boss-action-form <?php echo ($totalSub > 0 && $doneSub < $totalSub) ? 'd-none' : ''; ?>">
-                                <?php echo csrf_field(); ?>
-                                <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
-                                <button type="submit" name="complete_quest" class="btn-core btn-accent btn-action-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
-                                    Selesaikan
-                                </button>
-                            </form>
-                        <?php endif; ?>
-                        
-                        <!-- Pin Button -->
-                        <button type="button" class="btn-core btn-ghost btn-action-secondary btn-pin-item <?php echo $isPinned ? 'active' : ''; ?>" data-endpoint="quests.php" data-id-field="quest_id" data-id="<?php echo (int)$quest['quest_id']; ?>" style="padding: 0.35rem 0.55rem;" title="<?php echo $isPinned ? 'Lepas sematan prioritas' : 'Sematkan ke urutan teratas'; ?>" aria-label="Pin misi <?php echo htmlspecialchars($quest['quest_name']); ?>">
-                            <i class="fas fa-thumbtack"></i>
-                        </button>
 
-                        <!-- Edit Button -->
-                        <button type="button" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Ubah" aria-label="Ubah misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
-                            <i class="fas fa-pencil-alt"></i>
-                        </button>
-
-                        <form method="POST" action="quests.php" style="margin: 0;">
-                            <?php echo csrf_field(); ?>
-                            <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
-                            <button type="submit" name="delete_quest" class="btn-core btn-ghost btn-action-secondary" style="padding: 0.35rem 0.55rem;" title="Hapus" aria-label="Hapus misi <?php echo htmlspecialchars($quest['quest_name']); ?>" data-confirm="Hapus misi ini secara permanen?" data-confirm-title="Hapus Misi" data-confirm-variant="danger" data-confirm-btn="Hapus">
-                                <i class="fas fa-trash-alt"></i>
+                        <!-- Dropdown Aksi Sekunder (⋯) -->
+                        <div class="dropdown">
+                            <button type="button" class="btn-row-more" data-bs-toggle="dropdown" aria-expanded="false" title="Menu Opsi">
+                                <i class="fas fa-ellipsis-v"></i>
                             </button>
-                        </form>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <button type="button" class="dropdown-item btn-pin-item <?php echo $isPinned ? 'active' : ''; ?>" data-endpoint="quests.php" data-id-field="quest_id" data-id="<?php echo (int)$quest['quest_id']; ?>">
+                                        <i class="fas fa-thumbtack me-2 text-muted"></i> <span class="pin-label"><?php echo $isPinned ? 'Lepas Pin' : 'Sematkan Pin'; ?></span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#editQuestModal<?php echo $quest['quest_id']; ?>">
+                                        <i class="fas fa-pencil-alt me-2 text-muted"></i> Edit
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider my-1" style="border-color: var(--border-hairline);"></li>
+                                <li>
+                                    <form method="POST" action="quests.php" style="margin: 0;">
+                                        <?php echo csrf_field(); ?>
+                                        <input type="hidden" name="quest_id" value="<?php echo $quest['quest_id']; ?>">
+                                        <button type="submit" name="delete_quest" class="dropdown-item text-danger" data-confirm="Hapus misi ini secara permanen?" data-confirm-title="Hapus Misi" data-confirm-variant="danger" data-confirm-btn="Hapus">
+                                            <i class="fas fa-trash-alt me-2"></i> Hapus
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
 

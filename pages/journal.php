@@ -186,7 +186,7 @@ unset($_SESSION['journal_toast']);
 <?php endif; ?>
 
 <!-- Analitik 14 Hari -->
-<div class="bento-panel tactical-frame mb-4">
+<div class="bento-panel mb-4">
     <div class="sys-micro-tag">SYS.ANALYTICS // MOOD_ENERGY_CORRELATION</div>
     <div class="panel-header">
         <h3 class="panel-title"><i class="fas fa-chart-line text-accent"></i> Analitik 14 Hari Terakhir</h3>

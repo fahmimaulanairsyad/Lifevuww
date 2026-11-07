@@ -339,7 +339,7 @@ $dashComp = $dashCompanions[$dashCompKey];
 $dashBond = game_companion_level((int) ($user['companion_exp'] ?? 0));
 $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['overdrive_until']) > time();
 ?>
-<div class="bento-panel tactical-frame mb-4 p-2 px-3 d-flex flex-wrap align-items-center gap-3" style="font-size: 0.76rem;">
+<div class="bento-panel mb-4 p-2 px-3 d-flex flex-wrap align-items-center gap-3" style="font-size: 0.76rem;">
     <span title="Astral Companion aktif"><i class="fas <?php echo $dashComp['icon']; ?> me-1" style="color: <?php echo $dashComp['accent']; ?>;"></i> <?php echo htmlspecialchars($dashComp['name']); ?> <span class="font-mono text-muted">(<?php echo $dashBond['stage']; ?> Lv.<?php echo $dashBond['bond_level']; ?>)</span></span>
     <span title="Skill Points tersedia" class="font-mono"><i class="fas fa-sitemap text-accent me-1"></i> SP: <?php echo game_available_skill_points((int) ($user['level'] ?? 1), (int) ($user['spent_skill_points'] ?? 0)); ?></span>
     <?php if ($dashOverdrive): ?>
@@ -371,7 +371,7 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 
 <?php if ($isEmergency && !$isHealedToday): ?>
     <!-- Emergency Recovery Zone (Zona Darurat) -->
-    <div class="alert alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between p-3 tactical-frame frame-danger" role="alert" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: var(--radius);">
+    <div class="alert alert-dismissible fade show mb-3 d-flex align-items-center justify-content-between p-3" role="alert" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: var(--radius);">
         <div class="d-flex align-items-center gap-3">
             <div style="width: 38px; height: 38px; border-radius: 50%; background-color: var(--status-danger-dim); border: 1px solid var(--status-danger); color: var(--status-danger); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
                 <i class="fas fa-heart-crack"></i>
@@ -447,12 +447,12 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 <div class="row g-3 mb-4">
     <!-- Character Core Status -->
     <div class="col-md-8">
-        <div class="bento-panel tactical-frame h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.16) 0%, transparent 48%), radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 40%), #111114; border-top: 1px solid rgba(255, 255, 255, 0.18);">
+        <div class="bento-panel h-100 d-flex flex-column justify-content-between position-relative overflow-hidden">
             <div>
                 <div class="sys-micro-tag"><span class="text-accent">OPERATOR.STATUS // ACTIVE</span> &bull; CORE HUD</div>
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div>
-                        <span class="badge-status accent font-mono mb-2" style="font-size: 0.74rem; padding: 0.25rem 0.7rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.14); box-shadow: 0 0 14px rgba(16, 185, 129, 0.18);">
+                        <span class="badge-status accent font-mono mb-2" style="font-size: 0.74rem; padding: 0.25rem 0.7rem;">
                             <i class="fas fa-crown me-1 text-warning"></i> <?php echo htmlspecialchars($rank); ?>
                         </span>
                         <h2 style="font-size: 1.65rem; margin: 0; font-weight: 600;"><?php echo htmlspecialchars($user['username']); ?></h2>
@@ -502,7 +502,7 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 
     <!-- Gold & Shop Quick Access -->
     <div class="col-md-4">
-        <div class="bento-panel spotlight-card h-100 d-flex flex-column justify-content-between text-center py-4">
+        <div class="bento-panel h-100 d-flex flex-column justify-content-between text-center py-4">
             <div>
                 <div class="text-muted mb-2" style="font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Saldo Gold</div>
                 <div style="font-family: var(--font-mono); font-size: 2.25rem; font-weight: 600; color: var(--status-warning); line-height: 1.1;">
@@ -547,7 +547,7 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 </div>
 
 <!-- Daily System Directive (Supply Crate Harian) -->
-<div class="bento-panel tactical-frame frame-warning mb-4" style="border-top: 1px solid rgba(245, 158, 11, 0.4); background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(17, 17, 20, 0.95) 45%);">
+<div class="bento-panel mb-4">
     <div class="sys-micro-tag mb-2"><span class="text-warning">SYS.DIRECTIVE // 01</span> &bull; DAILY SUPPLY ALLOCATION</div>
     <div class="panel-header mb-3">
         <div>

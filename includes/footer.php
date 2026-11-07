@@ -277,9 +277,9 @@
     <?php endif; ?>
 
     <!-- Linear Command Palette Modal (Ctrl+K / Cmd+K) -->
-    <div class="modal fade" id="lvCommandPalette" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);">
+    <div class="modal fade" id="lvCommandPalette" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.75);">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
-            <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: calc(var(--radius) * 1.5); overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.85);">
+            <div class="modal-content" style="background-color: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius); overflow: hidden; box-shadow: 0 12px 32px rgba(0,0,0,0.6);">
                 <div class="p-3 d-flex align-items-center gap-2" style="border-bottom: 1px solid var(--border-hairline);">
                     <i class="fas fa-search text-muted"></i>
                     <input type="text" id="cpSearchInput" class="form-control border-0 p-0 shadow-none font-sans" placeholder="Ketik perintah atau nama modul..." autocomplete="off" style="background: transparent !important; color: var(--text-primary); font-size: 0.92rem; outline: none !important;">
@@ -297,9 +297,9 @@
     </div>
 
     <!-- Focus Rift (Pomodoro RPG Deep Work Raid) Modal -->
-    <div class="modal fade" id="focusRiftModal" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+    <div class="modal fade" id="focusRiftModal" tabindex="-1" aria-hidden="true" style="background: rgba(0,0,0,0.75);">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
-            <div class="modal-content p-4" style="background-color: var(--bg-surface); border: 1px solid var(--accent-border); border-radius: var(--radius); box-shadow: 0 25px 60px rgba(0,0,0,0.85);">
+            <div class="modal-content p-4" style="background-color: var(--bg-surface); border: 1px solid var(--border-hairline); border-radius: var(--radius); box-shadow: 0 12px 32px rgba(0,0,0,0.6);">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="d-flex align-items-center gap-2">
                         <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center;">
