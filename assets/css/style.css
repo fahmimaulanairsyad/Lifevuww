@@ -6,7 +6,7 @@
    Android APK          : .is-apk native enhancements
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================================
    CSS VIEW TRANSITIONS API (Seamless Cross-Page Navigation)
@@ -52,41 +52,45 @@
 :root {
     color-scheme: dark;
 
-    /* Base Layers (Flat Matte Monochrome) */
-    --bg-base: #0d0e11;
-    --bg-surface: #141519;
-    --bg-surface-hover: #1b1d22;
-    --bg-elevated: #22242a;
-    --bg-input: #101115;
+    /* Base Layers (Warm Dark Guild / Grimoire) */
+    --bg-base: #101012;
+    --bg-surface: #17171a;
+    --bg-surface-hover: #1f1f24;
+    --bg-elevated: #26262d;
+    --bg-input: #131316;
 
     /* Hairline Borders */
-    --border-hairline: #24262d;
-    --border-subtle: #2f323a;
-    --border-focus: #3b82f6;
+    --border-hairline: #2a2a30;
+    --border-subtle: #383842;
+    --border-focus: #e09f3e;
 
-    /* Typography */
-    --text-primary: #f4f4f5;
-    --text-secondary: #a1a1aa;
-    --text-muted: #71717a;
+    /* Typography (Warm Ivory & Neutral Tones) */
+    --text-primary: #f0ede6;
+    --text-secondary: #b8b4aa;
+    --text-muted: #7d7a73;
 
-    /* Primary Accent (System Clean Blue) */
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-dim: rgba(59, 130, 246, 0.12);
-    --accent-border: rgba(59, 130, 246, 0.3);
+    /* Primary Accent (Burnished Amber Gold - Guild & Relics) */
+    --accent: #e09f3e;
+    --accent-hover: #d97706;
+    --accent-dim: rgba(224, 159, 62, 0.12);
+    --accent-border: rgba(224, 159, 62, 0.35);
 
     /* Semantic Status Accents */
-    --status-danger: #ef4444;
-    --status-danger-dim: rgba(239, 68, 68, 0.12);
-    --status-warning: #f59e0b;
-    --status-warning-dim: rgba(245, 158, 11, 0.12);
-    --status-info: #06b6d4;
-    --status-info-dim: rgba(6, 182, 212, 0.12);
+    --status-danger: #dc2626;
+    --status-danger-dim: rgba(220, 38, 38, 0.14);
+    --status-warning: #e09f3e;
+    --status-warning-dim: rgba(224, 159, 62, 0.14);
+    --status-info: #0284c7;
+    --status-info-dim: rgba(2, 132, 199, 0.14);
+    --status-success: #16a34a;
+    --status-success-dim: rgba(22, 163, 74, 0.14);
+    --danger: #dc2626;
+    --success: #16a34a;
 
-    /* Fonts */
-    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-mono: 'Geist Mono', 'JetBrains Mono', monospace;
-    --font-display: 'Space Grotesk', 'Geist', sans-serif;
+    /* Fonts (Unified: Plus Jakarta Sans + JetBrains Mono) */
+    --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-display: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
     /* Geometry */
     --radius: 6px;
@@ -206,65 +210,16 @@ a:hover {
 /* Decorative overlays: never block pointer/touch events */
 .top-vignette-shield,
 .bottom-dock-vignette,
-.dock-backdrop-fade,
-#antigravity-canvas,
-#hero-3d-canvas,
-.noise-overlay,
-.spotlight-overlay,
-.film-grain,
-.antigravity-canvas,
-.lp-hero-stage {
+.dock-backdrop-fade {
     pointer-events: none !important;
 }
 
-/* Antigravity Canvas Background */
-.antigravity-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 0;
+/* Native OS Cursor Defaults */
+* {
+    cursor: auto;
 }
-
-/* Film Grain Overlay Disabled (Flat Matte Zero-Glow) */
-.film-grain {
-    display: none !important;
-}
-
-/* Custom Magnetic Cursor Follower */
-.cursor-dot, .cursor-ring {
-    position: fixed;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    border-radius: 50%;
-    z-index: 99999;
-    transform: translate(-50%, -50%);
-    display: none;
-}
-@media (hover: hover) and (pointer: fine) {
-    .cursor-dot {
-        display: block;
-        width: 6px;
-        height: 6px;
-        background-color: var(--accent);
-        transition: width 0.15s ease, height 0.15s ease, background-color 0.15s ease;
-    }
-    .cursor-ring {
-        display: block;
-        width: 28px;
-        height: 28px;
-        border: 1px solid var(--accent-border);
-        transition: width 0.15s ease, height 0.15s ease, border-color 0.15s ease, transform 0.06s ease;
-    }
-    .cursor-ring.magnetic {
-        width: 44px;
-        height: 44px;
-        border-color: var(--accent);
-        background-color: var(--accent-dim);
-    }
+a, button, input[type="submit"], input[type="button"], select, .btn-core, .lp-tab-btn, [role="button"] {
+    cursor: pointer;
 }
 
 /* 1. Top Telemetry Cockpit HUD */
@@ -2553,16 +2508,6 @@ html.is-apk #btn-install-app {
     mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
 }
 
-#hero-3d-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    opacity: 0.7;
-    z-index: 0;
-}
-
 .lp-hero-content {
     position: relative;
     z-index: 2;
@@ -3301,40 +3246,21 @@ html.is-apk #btn-install-app {
     width: calc(100% + 4px);
 }
 
-/* 5. Google Antigravity: Staggered Character/Word Reveal */
-@keyframes charFadeIn {
-    0% {
-        opacity: 0;
-        filter: blur(8px);
-        transform: translateY(14px) scale(0.96);
-    }
-    100% {
-        opacity: 1;
-        /* "none" (bukan blur(0)) agar Chrome Android tidak memotong
-           descender huruf 'g' pada batas kotak em selama animasi berjalan */
-        filter: none;
-        transform: none;
-    }
-}
-
+/* Clean Display Text */
 .char-reveal {
     display: inline-block;
-    opacity: 0;
-    line-height: 1.28 !important;
-    padding-bottom: 0.24em !important;
-    margin-bottom: -0.18em !important;
-    overflow: visible !important;
-    animation: charFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    animation-delay: calc(var(--char-i, 0) * 0.04s);
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
 }
 
-/* Judul hero: ruang descender ekstra agar huruf 'g' pada "Petualangan"
-   tidak terpotong oleh clipping box animasi di Chrome Android */
 .lp-hero-title .char-reveal {
-    line-height: 1.28 !important;
-    padding-bottom: 0.24em !important;
-    margin-bottom: -0.18em !important;
-    overflow: visible !important;
+    display: inline-block;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    animation: none !important;
 }
 
 /* Asymmetric Bento Grid Enhancement */
@@ -3421,49 +3347,8 @@ html.is-apk #btn-install-app {
 }
 
 /* ==========================================================
-   RPG EXPANSION V2: AURA THEME ENGINE & SPECIALIZATIONS
+   RPG EXPANSION V2: SPECIALIZATIONS & CARDS
    ========================================================== */
-html[data-aura="emerald"],
-html:not([data-aura]) {
-    --accent: #3b82f6;
-    --accent-hover: #2563eb;
-    --accent-dim: rgba(59, 130, 246, 0.12);
-    --accent-border: rgba(59, 130, 246, 0.3);
-    --aura-glow: transparent;
-}
-
-html[data-aura="cyan"] {
-    --accent: #0ea5e9;
-    --accent-hover: #0284c7;
-    --accent-dim: rgba(14, 165, 233, 0.12);
-    --accent-border: rgba(14, 165, 233, 0.3);
-    --aura-glow: transparent;
-}
-
-html[data-aura="crimson"] {
-    --accent: #f43f5e;
-    --accent-hover: #e11d48;
-    --accent-dim: rgba(244, 63, 94, 0.12);
-    --accent-border: rgba(244, 63, 94, 0.3);
-    --aura-glow: transparent;
-}
-
-html[data-aura="amber"] {
-    --accent: #f59e0b;
-    --accent-hover: #d97706;
-    --accent-dim: rgba(245, 158, 11, 0.12);
-    --accent-border: rgba(245, 158, 11, 0.3);
-    --aura-glow: transparent;
-}
-
-html[data-aura="violet"] {
-    --accent: #6366f1;
-    --accent-hover: #4f46e5;
-    --accent-dim: rgba(99, 102, 241, 0.12);
-    --accent-border: rgba(99, 102, 241, 0.3);
-    --aura-glow: transparent;
-}
-
 .spec-card {
     background-color: var(--bg-surface-hover);
     border: 1px solid var(--border-hairline);

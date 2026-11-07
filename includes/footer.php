@@ -2704,59 +2704,11 @@
             });
         });
 
-        /* ============ UI Maxing: Antigravity Spotlight, Sunderland Ticks, & A24 Holographic Tilt ============ */
+        /* ============ UI Interactions: Mechanical Ticks & Instant Tab Switching ============ */
         (function() {
             const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-            const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-            // 1. Google Antigravity: Cursor Spotlight coordinates (Desktop only)
-            if (canHover) {
-                let spotlightScheduled = false;
-                document.addEventListener('mousemove', (e) => {
-                    if (spotlightScheduled) return;
-                    spotlightScheduled = true;
-                    requestAnimationFrame(() => {
-                        const cards = document.querySelectorAll('.spotlight-card');
-                        cards.forEach(card => {
-                            const rect = card.getBoundingClientRect();
-                            card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
-                            card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
-                        });
-                        spotlightScheduled = false;
-                    });
-                }, { passive: true });
-            }
-
-            // 2. A24: 3D Holographic Card Tilt with Specular Glare (Desktop only & respects motion preference)
-            if (canHover && !reduceMotion) {
-                document.querySelectorAll('.holo-card').forEach(card => {
-                    if (!card.querySelector('.holo-glare')) {
-                        const glare = document.createElement('div');
-                        glare.className = 'holo-glare';
-                        card.appendChild(glare);
-                    }
-
-                    card.addEventListener('mousemove', (e) => {
-                        const rect = card.getBoundingClientRect();
-                        const x = e.clientX - rect.left;
-                        const y = e.clientY - rect.top;
-                        const centerX = rect.width / 2;
-                        const centerY = rect.height / 2;
-                        const rotateX = ((y - centerY) / centerY) * -8;
-                        const rotateY = ((x - centerX) / centerX) * 8;
-
-                        card.style.transform = `perspective(850px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
-                        card.style.setProperty('--glare-x', `${(x / rect.width) * 100}%`);
-                        card.style.setProperty('--glare-y', `${(y / rect.height) * 100}%`);
-                    });
-
-                    card.addEventListener('mouseleave', () => {
-                        card.style.transform = 'perspective(850px) rotateX(0deg) rotateY(0deg) translateY(0px)';
-                    });
-                });
-            }
-
-            // 3. Gray Sunderland: Tactile Mechanical Audio Ticks on Interaction (Throttled 50ms)
+            // 1. Tactile Mechanical Audio Ticks on Interaction (Throttled 50ms)
             let lastTickTime = 0;
             document.addEventListener('pointerenter', (e) => {
                 const el = e.target.closest('.btn-filter-pill, .nav-item, .dock-item, .cp-item, .btn-command-palette-trigger, .hud-cmd-trigger');
@@ -2768,48 +2720,7 @@
                 }
             }, true);
 
-            // 4. Custom Magnetic Cursor Follower (Desktop only)
-            (function initMagneticCursor() {
-                if (!canHover || reduceMotion) return;
-                const dot = document.getElementById('cursorDot');
-                const ring = document.getElementById('cursorRing');
-                if (!dot || !ring) return;
-
-                let mouseX = window.innerWidth / 2;
-                let mouseY = window.innerHeight / 2;
-                let ringX = mouseX;
-                let ringY = mouseY;
-
-                window.addEventListener('mousemove', (e) => {
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
-                    dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
-                }, { passive: true });
-
-                function renderRing() {
-                    ringX += (mouseX - ringX) * 0.18;
-                    ringY += (mouseY - ringY) * 0.18;
-                    ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
-                    requestAnimationFrame(renderRing);
-                }
-                requestAnimationFrame(renderRing);
-
-                document.addEventListener('pointerenter', (e) => {
-                    const target = e.target.closest('.dock-item, .btn-core, .btn-filter-pill, .hud-cmd-trigger, .hud-btn-icon, .hud-profile-btn');
-                    if (target) {
-                        ring.classList.add('magnetic');
-                    }
-                }, true);
-
-                document.addEventListener('pointerleave', (e) => {
-                    const target = e.target.closest('.dock-item, .btn-core, .btn-filter-pill, .hud-cmd-trigger, .hud-btn-icon, .hud-profile-btn');
-                    if (target) {
-                        ring.classList.remove('magnetic');
-                    }
-                }, true);
-            })();
-
-            // 5. Perpindahan tab instan di HP: class .active dipindahkan saat pointerdown (0ms latency)
+            // 2. Perpindahan tab instan di HP: class .active dipindahkan saat pointerdown (0ms latency)
             //    + prefetch halaman tujuan begitu disentuh agar navigasi antar tab terasa instan
             (function initInstantTabSwitch() {
                 const prefetched = new Set();

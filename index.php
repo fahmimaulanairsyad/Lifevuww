@@ -35,7 +35,9 @@ if (isset($_SESSION['user_id'])) {
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <link href="assets/css/style.css?v=20261107_01" rel="stylesheet">
@@ -66,13 +68,6 @@ if (isset($_SESSION['user_id'])) {
 </head>
 <body class="landing-body">
 
-    <!-- Interactive Antigravity Canvas -->
-    <canvas id="antigravity-canvas" class="antigravity-canvas"></canvas>
-
-    <!-- Custom Magnetic Cursor Follower (Desktop only) -->
-    <div class="cursor-dot" id="cursorDot"></div>
-    <div class="cursor-ring" id="cursorRing"></div>
-
     <!-- Top Vignette Blur Shield (prevents content collision when scrolling behind navbar) -->
     <div class="top-vignette-shield"></div>
 
@@ -102,24 +97,15 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </nav>
 
-    <!-- 2. Hero Section with Atmospheric 3D Stage & Perspective Grid -->
+    <!-- 2. Hero Section -->
     <section class="lp-hero">
-        <div class="lp-hero-stage">
-            <canvas id="hero-3d-canvas"></canvas>
-        </div>
-
         <div class="lp-hero-content">
             <span class="badge-status accent font-mono mb-3" style="font-size: 0.74rem; padding: 0.32rem 0.8rem; border-radius: 999px;">
                 <i class="fas fa-gamepad me-1"></i> GAMIFIED PRODUCTIVITY PLATFORM
             </span>
 
             <h1 class="lp-hero-title" style="line-height: 1.18; overflow: visible !important;">
-                <span class="char-reveal" style="--char-i: 1; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Disiplin</span>
-                <span class="char-reveal" style="--char-i: 2; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Nyata</span>
-                <span class="char-reveal" style="--char-i: 3; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">dalam</span>
-                <span class="char-reveal" style="--char-i: 4; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Format</span>
-                <span class="char-reveal" style="--char-i: 5; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Petualangan</span>
-                <span class="char-reveal text-accent" style="--char-i: 6; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">RPG</span>
+                Disiplin Nyata dalam Format Petualangan <span class="text-accent">RPG</span>
             </h1>
 
             <p class="lp-hero-subtitle">
@@ -982,100 +968,6 @@ if (isset($_SESSION['user_id'])) {
             }, 1400);
         })();
 
-        // 7. Atmospheric 3D Canvas Stage Renderer behind Hero
-        (function initHero3DStage() {
-            const canvas = document.getElementById('hero-3d-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let w = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
-            let h = canvas.height = canvas.parentElement.offsetHeight || 600;
-
-            window.addEventListener('resize', () => {
-                w = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
-                h = canvas.height = canvas.parentElement.offsetHeight || 600;
-            }, { passive: true });
-
-            // 3D Polyhedral Octahedron Geometry
-            const vertices = [
-                { x: 0, y: -90, z: 0 },
-                { x: 75, y: 0, z: -75 },
-                { x: -75, y: 0, z: -75 },
-                { x: -75, y: 0, z: 75 },
-                { x: 75, y: 0, z: 75 },
-                { x: 0, y: 90, z: 0 }
-            ];
-
-            const faces = [
-                [0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1],
-                [5, 2, 1], [5, 3, 2], [5, 4, 3], [5, 1, 4]
-            ];
-
-            let rotX = 0.2, rotY = 0.3;
-            let targetRotX = 0.2, targetRotY = 0.3;
-
-            window.addEventListener('mousemove', (e) => {
-                const normX = (e.clientX / window.innerWidth) - 0.5;
-                const normY = (e.clientY / window.innerHeight) - 0.5;
-                targetRotY = normX * 1.4;
-                targetRotX = normY * 0.9;
-            }, { passive: true });
-
-            function project(p, rx, ry) {
-                const cosY = Math.cos(ry), sinY = Math.sin(ry);
-                const x1 = p.x * cosY + p.z * sinY;
-                const z1 = -p.x * sinY + p.z * cosY;
-
-                const cosX = Math.cos(rx), sinX = Math.sin(rx);
-                const y2 = p.y * cosX - z1 * sinX;
-                const z2 = p.y * sinX + z1 * cosX;
-
-                const fov = 380;
-                const scale = fov / (fov + z2 + 180);
-                return {
-                    x: (w / 2) + x1 * scale,
-                    y: (h * 0.42) + y2 * scale,
-                    z: z2
-                };
-            }
-
-            function draw() {
-                ctx.clearRect(0, 0, w, h);
-                rotY += 0.007; // Continuous subtle rotation
-                rotX += (targetRotX - rotX) * 0.05;
-                rotY += (targetRotY - rotY) * 0.03;
-
-                const projected = vertices.map(v => project(v, rotX, rotY));
-
-                const sortedFaces = faces.map(f => {
-                    const avgZ = (projected[f[0]].z + projected[f[1]].z + projected[f[2]].z) / 3;
-                    return { face: f, z: avgZ };
-                }).sort((a, b) => b.z - a.z);
-
-                sortedFaces.forEach(sf => {
-                    const f = sf.face;
-                    const p0 = projected[f[0]];
-                    const p1 = projected[f[1]];
-                    const p2 = projected[f[2]];
-
-                    ctx.beginPath();
-                    ctx.moveTo(p0.x, p0.y);
-                    ctx.lineTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.closePath();
-
-                    ctx.fillStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(99, 102, 241, 0.16)';
-                    ctx.fill();
-
-                    ctx.strokeStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.45)' : 'rgba(99, 102, 241, 0.65)';
-                    ctx.lineWidth = 1.6;
-                    ctx.stroke();
-                });
-
-                requestAnimationFrame(draw);
-            }
-            requestAnimationFrame(draw);
-        })();
-
         // 8. GSAP 3D Scroll Scrub on App Mockup (Native Scroll Friendly)
         (function initGsapScrub() {
             const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -1359,92 +1251,6 @@ if (isset($_SESSION['user_id'])) {
                 }, { threshold: 0.15 });
                 observer.observe(reelSection);
             }
-        })();
-
-        // 9. Antigravity Stardust Canvas
-        (function initAntigravity() {
-            const canvas = document.getElementById('antigravity-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
-
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            }, { passive: true });
-
-            const particles = Array.from({ length: 36 }, () => ({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                vx: (Math.random() - 0.5) * 0.3,
-                vy: (Math.random() - 0.5) * 0.3,
-                radius: Math.random() * 1.3 + 0.6,
-                alpha: Math.random() * 0.2 + 0.08,
-                color: Math.random() > 0.5 ? '245, 245, 247' : '161, 161, 170'
-            }));
-
-            let mouseX = -9999, mouseY = -9999;
-            window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; }, { passive: true });
-
-            function loop() {
-                ctx.clearRect(0, 0, width, height);
-                particles.forEach(p => {
-                    p.x += p.vx; p.y += p.vy;
-                    if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
-                    if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
-                    const dx = p.x - mouseX, dy = p.y - mouseY, dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 130 && dist > 0) {
-                        const f = (1 - dist / 130) * 3;
-                        p.x += (dx / dist) * f;
-                        p.y += (dy / dist) * f;
-                    }
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
-                    ctx.fill();
-                });
-                requestAnimationFrame(loop);
-            }
-            requestAnimationFrame(loop);
-        })();
-
-        // 10. Magnetic Cursor Follower
-        (function initMagneticCursor() {
-            const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-            if (!canHover) return;
-            const dot = document.getElementById('cursorDot');
-            const ring = document.getElementById('cursorRing');
-            if (!dot || !ring) return;
-
-            let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
-            let ringX = mouseX, ringY = mouseY;
-
-            window.addEventListener('mousemove', e => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
-            }, { passive: true });
-
-            function anim() {
-                ringX += (mouseX - ringX) * 0.18;
-                ringY += (mouseY - ringY) * 0.18;
-                ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
-                requestAnimationFrame(anim);
-            }
-            requestAnimationFrame(anim);
-
-            document.addEventListener('pointerenter', e => {
-                if (e.target.closest('.btn-core, a, button, input, .lp-tab-btn, .lp-btn-capsule, .spotlight-card')) {
-                    ring.classList.add('magnetic');
-                }
-            }, true);
-
-            document.addEventListener('pointerleave', e => {
-                if (e.target.closest('.btn-core, a, button, input, .lp-tab-btn, .lp-btn-capsule, .spotlight-card')) {
-                    ring.classList.remove('magnetic');
-                }
-            }, true);
         })();
     </script>
 </body>

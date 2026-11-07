@@ -84,7 +84,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <link href="assets/css/style.css?v=20261107_01" rel="stylesheet">
@@ -115,11 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body style="background-color: var(--bg-base); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; position: relative;">
     
-    <!-- Interactive Antigravity Canvas -->
-    <canvas id="antigravity-canvas" class="antigravity-canvas"></canvas>
-    <div class="cursor-dot" id="cursorDot"></div>
-    <div class="cursor-ring" id="cursorRing"></div>
-
     <!-- Kembali ke Beranda: fixed di pojok kiri atas, di luar kartu form tengah -->
     <a href="index.php" class="auth-back-top-left">
         <i class="fas fa-arrow-left"></i> Kembali ke Beranda
@@ -134,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <p style="color: var(--text-secondary); font-size: 0.85rem;">Daftarkan profilmu di sistem progres Lifevuww</p>
         </div>
 
-        <div class="bento-panel spotlight-card holo-card p-4">
+        <div class="bento-panel p-4">
             <?php if (isset($_GET['account_deleted'])): ?>
                 <div class="p-2 mb-3 text-center" role="status" style="background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); border-radius: var(--radius); font-size: 0.8rem;">
                     <i class="fas fa-check-circle me-1"></i> Akun dan seluruh datamu telah dihapus secara permanen.
@@ -209,62 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Memproses...';
         });
-
-        // Antigravity particles & cursor for register page
-        (function() {
-            const canvas = document.getElementById('antigravity-canvas');
-            if (canvas && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                const ctx = canvas.getContext('2d');
-                let width = canvas.width = window.innerWidth, height = canvas.height = window.innerHeight;
-                window.addEventListener('resize', () => { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }, { passive: true });
-                const particles = Array.from({ length: 30 }, () => ({
-                    x: Math.random() * width, y: Math.random() * height,
-                    vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.35,
-                    radius: Math.random() * 1.4 + 0.6, alpha: Math.random() * 0.22 + 0.08,
-                    color: Math.random() > 0.5 ? '245, 245, 247' : '161, 161, 170'
-                }));
-                let mx = -9999, my = -9999;
-                window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
-                function loop() {
-                    ctx.clearRect(0, 0, width, height);
-                    particles.forEach(p => {
-                        p.x += p.vx; p.y += p.vy;
-                        if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
-                        if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
-                        const dx = p.x - mx, dy = p.y - my, dist = Math.sqrt(dx*dx + dy*dy);
-                        if (dist < 120 && dist > 0) { const f = (1 - dist / 120) * 3; p.x += (dx / dist) * f; p.y += (dy / dist) * f; }
-                        ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`; ctx.fill();
-                    });
-                    requestAnimationFrame(loop);
-                }
-                requestAnimationFrame(loop);
-            }
-
-            const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-            if (canHover) {
-                const dot = document.getElementById('cursorDot'), ring = document.getElementById('cursorRing');
-                if (dot && ring) {
-                    let rx = window.innerWidth / 2, ry = window.innerHeight / 2, mx = rx, my = ry;
-                    window.addEventListener('mousemove', e => {
-                        mx = e.clientX; my = e.clientY;
-                        dot.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
-                        const card = document.querySelector('.spotlight-card');
-                        if (card) {
-                            const r = card.getBoundingClientRect();
-                            card.style.setProperty('--mouse-x', `${mx - r.left}px`);
-                            card.style.setProperty('--mouse-y', `${my - r.top}px`);
-                        }
-                    }, { passive: true });
-                    function animRing() {
-                        rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18;
-                        ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
-                        requestAnimationFrame(animRing);
-                    }
-                    requestAnimationFrame(animRing);
-                }
-            }
-        })();
     </script>
 </body>
 </html>

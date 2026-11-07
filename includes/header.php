@@ -45,6 +45,9 @@ $activeHtmlAura = $serverAura ?: 'emerald';
     <meta name="apple-mobile-web-app-title" content="Lifevuww">
     <link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon.png">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
@@ -182,10 +185,6 @@ $activeHtmlAura = $serverAura ?: 'emerald';
             $navExpPct = min(100, max(0, (($navExp - $navCurBase) / max(1, ($navNextExp - $navCurBase))) * 100));
             $userRankTitle = calculateRank($navLevel);
         ?>
-        <!-- Custom Magnetic Cursor Follower (Desktop only) -->
-        <div class="cursor-dot" id="cursorDot"></div>
-        <div class="cursor-ring" id="cursorRing"></div>
-
         <!-- Top Telemetry Cockpit HUD -->
         <header class="telemetry-hud top-navbar">
             <div class="hud-inner">
