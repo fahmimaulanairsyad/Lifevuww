@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow_monarch" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#361a22"/>
+      <stop offset="60%" stop-color="#1e141a"/>
+      <stop offset="100%" stop-color="#141417"/>
+    </radialGradient>
+    <linearGradient id="amberGold_s" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fcd34d"/>
+      <stop offset="50%" stop-color="#e09f3e"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="crimsonRed_s" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="60%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base Shield -->
+  <rect width="256" height="256" rx="28" fill="url(#bgGlow_monarch)"/>
+  <rect x="6" y="6" width="244" height="244" rx="22" fill="none" stroke="#2a2a30" stroke-width="2"/>
+  <rect x="12" y="12" width="232" height="232" rx="18" fill="none" stroke="url(#amberGold_s)" stroke-width="1.6" opacity="0.6"/>
+
+  <!-- Gate S Rank Header -->
+  <path d="M80 20 L176 20 L166 38 L90 38 Z" fill="#241b22" stroke="url(#crimsonRed_s)" stroke-width="1.2"/>
+  <text x="128" y="34" fill="#fcd34d" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="800" text-anchor="middle" letter-spacing="2">GATE-S // MONARCH</text>
+
+  <!-- Occult Demonic Halo -->
+  <circle cx="128" cy="116" r="68" fill="none" stroke="url(#crimsonRed_s)" stroke-width="2.2" stroke-dasharray="14 6" opacity="0.8"/>
+  <circle cx="128" cy="116" r="58" fill="none" stroke="url(#amberGold_s)" stroke-width="1.2" opacity="0.5"/>
+
+  <!-- Multi-Tiered Sovereign Horns -->
+  <!-- Outer Great Horns -->
+  <path d="M102 78 C80 50 48 38 28 44 C22 56 36 78 64 88 C82 94 94 98 100 106 Z" fill="url(#amberGold_s)"/>
+  <path d="M154 78 C176 50 208 38 228 44 C234 56 220 78 192 88 C174 94 162 98 156 106 Z" fill="url(#amberGold_s)"/>
+  <!-- Inner Spire Horns -->
+  <polygon points="112,74 96,34 110,48 122,68" fill="url(#crimsonRed_s)"/>
+  <polygon points="144,74 160,34 146,48 134,68" fill="url(#crimsonRed_s)"/>
+
+  <!-- Imperial Crown of the Abyss -->
+  <path d="M96 76 L110 52 L128 66 L146 52 L160 76 L154 92 L102 92 Z" fill="url(#amberGold_s)" stroke="#2a2a30" stroke-width="1.5"/>
+  <circle cx="128" cy="74" r="4" fill="#dc2626"/>
+
+  <!-- Monarch Visage / Draconic Skull -->
+  <path d="M106 94 L150 94 L158 130 L140 156 L128 162 L116 156 L98 130 Z" fill="#18181f" stroke="#2a2a30" stroke-width="1.5"/>
+
+  <!-- Burning Crimson Eyes -->
+  <polygon points="112,106 124,112 118,122 110,116" fill="#141417"/>
+  <polygon points="144,106 132,112 138,122 146,116" fill="#141417"/>
+  <polygon points="114,110 122,114 116,118" fill="url(#crimsonRed_s)"/>
+  <polygon points="142,110 134,114 140,118" fill="url(#crimsonRed_s)"/>
+  <circle cx="118" cy="114" r="2" fill="#fcd34d"/>
+  <circle cx="138" cy="114" r="2" fill="#fcd34d"/>
+
+  <!-- Piercing Fang Grill / Mandible -->
+  <polygon points="120,136 124,152 128,136 132,152 136,136" fill="url(#amberGold_s)"/>
+
+  <!-- Imperial Armored Mantle & Pauldrons -->
+  <polygon points="56,150 96,128 112,160 70,186" fill="url(#crimsonRed_s)" stroke="#2a2a30" stroke-width="1.5"/>
+  <polygon points="200,150 160,128 144,160 186,186" fill="url(#crimsonRed_s)" stroke="#2a2a30" stroke-width="1.5"/>
+
+  <!-- Central Abyssal Core Gorget -->
+  <polygon points="98,162 158,162 168,206 128,236 88,206" fill="#15151c" stroke="#2a2a30" stroke-width="2"/>
+  <polygon points="112,170 144,170 150,198 128,216 106,198" fill="url(#amberGold_s)"/>
+  
+  <!-- Abyssal Heart Crystal -->
+  <polygon points="128,178 138,194 128,208 118,194" fill="url(#crimsonRed_s)"/>
+  <circle cx="128" cy="194" r="3.5" fill="#fcd34d"/>
+</svg>

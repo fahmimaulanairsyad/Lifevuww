@@ -117,11 +117,22 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
 
 <div class="bento-panel mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2" style="border-bottom: 1px solid var(--border-hairline);">
-        <div>
-            <div class="font-mono text-muted" style="font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;">
-                RAID TARGET &bull; <?php echo htmlspecialchars($boss['gate']); ?>
+        <div class="d-flex align-items-center gap-3">
+            <?php 
+            $hasBossImg = !empty($boss['image']) && file_exists(__DIR__ . '/../' . $boss['image']);
+            if ($hasBossImg): ?>
+                <img src="../<?php echo htmlspecialchars($boss['image']); ?>" alt="<?php echo htmlspecialchars($boss['name']); ?>" style="width: 52px; height: 52px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover); flex-shrink: 0;">
+            <?php else: ?>
+                <div style="width: 44px; height: 44px; border-radius: var(--radius); background: var(--status-danger-dim); border: 1px solid rgba(220, 38, 38, 0.25); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--status-danger); flex-shrink: 0;">
+                    <i class="fas <?php echo htmlspecialchars($boss['icon']); ?>"></i>
+                </div>
+            <?php endif; ?>
+            <div>
+                <div class="font-mono text-muted" style="font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;">
+                    RAID TARGET &bull; <?php echo htmlspecialchars($boss['gate']); ?>
+                </div>
+                <h2 style="font-size: 1.35rem; font-weight: 700; margin: 2px 0 0 0;"><?php echo htmlspecialchars($boss['name']); ?></h2>
             </div>
-            <h2 style="font-size: 1.35rem; font-weight: 700; margin: 4px 0 0 0;"><?php echo htmlspecialchars($boss['name']); ?></h2>
         </div>
         <div>
             <?php if ($defeated): ?>
@@ -160,7 +171,16 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
         <div class="col-sm-3 col-6">
             <div class="p-2" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
                 <div class="text-muted font-mono" style="font-size: 0.68rem; text-transform: uppercase;">Familiar Aktif</div>
-                <div class="font-mono text-truncate" style="font-size: 0.85rem; font-weight: 600;" title="<?php echo htmlspecialchars($comp['name']); ?>"><?php echo htmlspecialchars($comp['name']); ?></div>
+                <div class="font-mono text-truncate d-flex align-items-center gap-1" style="font-size: 0.85rem; font-weight: 600;" title="<?php echo htmlspecialchars($comp['name']); ?>">
+                    <?php 
+                    $hasCompImg = !empty($comp['image']) && file_exists(__DIR__ . '/../' . $comp['image']);
+                    if ($hasCompImg): ?>
+                        <img src="../<?php echo htmlspecialchars($comp['image']); ?>" alt="" style="width: 18px; height: 18px; object-fit: contain; border-radius: 4px; flex-shrink: 0;">
+                    <?php else: ?>
+                        <i class="fas <?php echo $comp['icon']; ?> text-accent"></i>
+                    <?php endif; ?>
+                    <span class="text-truncate"><?php echo htmlspecialchars($comp['name']); ?></span>
+                </div>
             </div>
         </div>
         <div class="col-sm-3 col-6">

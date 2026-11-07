@@ -417,6 +417,20 @@ function getBossMasteryStats(PDO $pdo, int $userId): array {
     }
 }
 
+// Helper untuk resolusi gambar aset (mendukung .png dan .svg)
+function game_resolve_asset_image(string $type, string $key): string {
+    $png = "assets/images/{$type}/{$key}.png";
+    $svg = "assets/images/{$type}/{$key}.svg";
+    $baseDir = dirname(__DIR__);
+    if (file_exists($baseDir . '/' . $png)) {
+        return $png;
+    }
+    if (file_exists($baseDir . '/' . $svg)) {
+        return $svg;
+    }
+    return $svg;
+}
+
 // --- 10. Relik & Equipment Permanen Toko ---
 function game_relics(): array {
     return [
@@ -429,7 +443,7 @@ function game_relics(): array {
             'badge' => 'Senjata',
             'effect' => '+20% EXP & Gold untuk sesi Focus Rift.',
             'desc' => 'Artefak akselerasi fokus waktu.',
-            'image' => 'assets/images/relics/chrono_blade.png',
+            'image' => game_resolve_asset_image('relics', 'chrono_blade'),
         ],
         'archon_signet' => [
             'key' => 'archon_signet',
@@ -440,7 +454,7 @@ function game_relics(): array {
             'badge' => 'Cincin',
             'effect' => '+25% perolehan Gold dari semua aktivitas.',
             'desc' => 'Cincin meterai pelipat ganda saldo Gold.',
-            'image' => 'assets/images/relics/archon_signet.png',
+            'image' => game_resolve_asset_image('relics', 'archon_signet'),
         ],
         'sovereign_mantle' => [
             'key' => 'sovereign_mantle',
@@ -451,7 +465,7 @@ function game_relics(): array {
             'badge' => 'Armor',
             'effect' => '-30% penalti HP dan +25 Max HP permanen.',
             'desc' => 'Armor pertahanan pasif dan ketahanan vital.',
-            'image' => 'assets/images/relics/sovereign_mantle.png',
+            'image' => game_resolve_asset_image('relics', 'sovereign_mantle'),
         ],
     ];
 }
@@ -828,7 +842,7 @@ function game_companions(): array {
             'accent' => '#10b981',
             'bonus' => '+8% EXP semua Habit & +5 DMG ke Dungeon Boss',
             'desc' => '+8% EXP Habit dan +5 flat damage ke Boss Dungeon.',
-            'image' => 'assets/images/companions/obsidian_wolf.png',
+            'image' => game_resolve_asset_image('companions', 'obsidian_wolf'),
             'exp_bonus_habit' => 0.08,
             'dmg_bonus' => 5,
         ],
@@ -838,7 +852,7 @@ function game_companions(): array {
             'accent' => '#06b6d4',
             'bonus' => '+12% EXP dari Focus Rift & item ber-Time-Block',
             'desc' => '+12% EXP untuk sesi Focus Rift dan tugas terjadwal.',
-            'image' => 'assets/images/companions/chrono_owl.png',
+            'image' => game_resolve_asset_image('companions', 'chrono_owl'),
             'exp_bonus_timed' => 0.12,
         ],
         'crimson_drake' => [
@@ -847,7 +861,7 @@ function game_companions(): array {
             'accent' => '#f43f5e',
             'bonus' => '+15% Damage ke Dungeon Boss & +10% EXP Quest',
             'desc' => '+15% multiplier damage Boss dan +10% EXP Quest.',
-            'image' => 'assets/images/companions/crimson_drake.png',
+            'image' => game_resolve_asset_image('companions', 'crimson_drake'),
             'dmg_multiplier' => 0.15,
             'exp_bonus_quest' => 0.10,
         ],
@@ -857,7 +871,7 @@ function game_companions(): array {
             'accent' => '#f59e0b',
             'bonus' => '+15% perolehan Gold dari semua sumber',
             'desc' => '+15% multiplier saldo Gold dari seluruh aktivitas.',
-            'image' => 'assets/images/companions/auric_griffin.png',
+            'image' => game_resolve_asset_image('companions', 'auric_griffin'),
             'gold_multiplier' => 0.15,
         ],
         'aegis_tortoise' => [
@@ -866,7 +880,7 @@ function game_companions(): array {
             'accent' => '#6366f1',
             'bonus' => 'Pengurangan penalti HP gagal sebesar 15%',
             'desc' => '-15% mitigasi penalti pengurangan Health Points (HP).',
-            'image' => 'assets/images/companions/aegis_tortoise.png',
+            'image' => game_resolve_asset_image('companions', 'aegis_tortoise'),
             'penalty_reduction' => 0.15,
         ],
     ];
@@ -962,11 +976,11 @@ function game_available_skill_points(int $userLevel, int $spentPoints): int {
 // halaman dungeon setelah boss_hp <= 0.
 function game_dungeon_bosses(): array {
     return [
-        'gate_e_crawler' => ['name' => 'Ironhide Crawler', 'gate' => 'E-Rank', 'hp' => 300, 'reward_exp' => 50, 'reward_gold' => 40, 'reward_freeze' => 0, 'color' => '#a1a1aa', 'icon' => 'fa-bug', 'image' => 'assets/images/bosses/gate_e_crawler.png'],
-        'gate_c_lich' => ['name' => 'Frostveil Archmage', 'gate' => 'C-Rank', 'hp' => 600, 'reward_exp' => 100, 'reward_gold' => 80, 'reward_freeze' => 0, 'color' => '#06b6d4', 'icon' => 'fa-hat-wizard', 'image' => 'assets/images/bosses/gate_c_lich.png'],
-        'gate_b_colossus' => ['name' => 'Obsidian Colossus', 'gate' => 'B-Rank', 'hp' => 1000, 'reward_exp' => 160, 'reward_gold' => 130, 'reward_freeze' => 1, 'color' => '#8b5cf6', 'icon' => 'fa-mountain', 'image' => 'assets/images/bosses/gate_b_colossus.png'],
-        'gate_a_valkyrie' => ['name' => 'Crimson Valkyrie', 'gate' => 'A-Rank', 'hp' => 1500, 'reward_exp' => 250, 'reward_gold' => 200, 'reward_freeze' => 1, 'color' => '#f43f5e', 'icon' => 'fa-feather-pointed', 'image' => 'assets/images/bosses/gate_a_valkyrie.png'],
-        'gate_s_monarch' => ['name' => 'Sovereign of the Abyss', 'gate' => 'S-Rank', 'hp' => 2500, 'reward_exp' => 400, 'reward_gold' => 350, 'reward_freeze' => 2, 'color' => '#f59e0b', 'icon' => 'fa-skull', 'image' => 'assets/images/bosses/gate_s_monarch.png'],
+        'gate_e_crawler' => ['name' => 'Ironhide Crawler', 'gate' => 'E-Rank', 'hp' => 300, 'reward_exp' => 50, 'reward_gold' => 40, 'reward_freeze' => 0, 'color' => '#a1a1aa', 'icon' => 'fa-bug', 'image' => game_resolve_asset_image('bosses', 'gate_e_crawler')],
+        'gate_c_lich' => ['name' => 'Frostveil Archmage', 'gate' => 'C-Rank', 'hp' => 600, 'reward_exp' => 100, 'reward_gold' => 80, 'reward_freeze' => 0, 'color' => '#06b6d4', 'icon' => 'fa-hat-wizard', 'image' => game_resolve_asset_image('bosses', 'gate_c_lich')],
+        'gate_b_colossus' => ['name' => 'Obsidian Colossus', 'gate' => 'B-Rank', 'hp' => 1000, 'reward_exp' => 160, 'reward_gold' => 130, 'reward_freeze' => 1, 'color' => '#8b5cf6', 'icon' => 'fa-mountain', 'image' => game_resolve_asset_image('bosses', 'gate_b_colossus')],
+        'gate_a_valkyrie' => ['name' => 'Crimson Valkyrie', 'gate' => 'A-Rank', 'hp' => 1500, 'reward_exp' => 250, 'reward_gold' => 200, 'reward_freeze' => 1, 'color' => '#f43f5e', 'icon' => 'fa-feather-pointed', 'image' => game_resolve_asset_image('bosses', 'gate_a_valkyrie')],
+        'gate_s_monarch' => ['name' => 'Sovereign of the Abyss', 'gate' => 'S-Rank', 'hp' => 2500, 'reward_exp' => 400, 'reward_gold' => 350, 'reward_freeze' => 2, 'color' => '#f59e0b', 'icon' => 'fa-skull', 'image' => game_resolve_asset_image('bosses', 'gate_s_monarch')],
     ];
 }
 

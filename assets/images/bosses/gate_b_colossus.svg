@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow_colossus" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#2a2228"/>
+      <stop offset="100%" stop-color="#141417"/>
+    </radialGradient>
+    <linearGradient id="amberGold_b" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fcd34d"/>
+      <stop offset="50%" stop-color="#e09f3e"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="crimsonRed_b" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="60%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base Shield -->
+  <rect width="256" height="256" rx="28" fill="url(#bgGlow_colossus)"/>
+  <rect x="6" y="6" width="244" height="244" rx="22" fill="none" stroke="#2a2a30" stroke-width="2"/>
+  <rect x="12" y="12" width="232" height="232" rx="18" fill="none" stroke="url(#amberGold_b)" stroke-width="1.2" opacity="0.45"/>
+
+  <!-- Gate B Rank Header -->
+  <path d="M84 22 L172 22 L164 38 L92 38 Z" fill="#1f1f24" stroke="#2a2a30" stroke-width="1"/>
+  <text x="128" y="34" fill="url(#amberGold_b)" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="2">GATE-B // COLOSSUS</text>
+
+  <!-- Heavy Basalt Shoulders / Pauldrons -->
+  <polygon points="34,136 78,92 110,126 54,166" fill="url(#amberGold_b)" stroke="#2a2a30" stroke-width="1.5"/>
+  <polygon points="222,136 178,92 146,126 202,166" fill="url(#amberGold_b)" stroke="#2a2a30" stroke-width="1.5"/>
+
+  <!-- Colossus Head / Helm of Stone -->
+  <!-- Giant Horns of Rock -->
+  <polygon points="106,86 70,44 88,40 114,72" fill="url(#crimsonRed_b)"/>
+  <polygon points="150,86 186,44 168,40 142,72" fill="url(#crimsonRed_b)"/>
+
+  <!-- Crown Plate -->
+  <polygon points="128,52 148,68 142,88 114,88 108,68" fill="url(#amberGold_b)" stroke="#2a2a30" stroke-width="1.5"/>
+  <!-- Brow & Single Cyclops Rune Slit Eye -->
+  <polygon points="112,90 144,90 148,110 128,118 108,110" fill="#1c1c22" stroke="#2a2a30" stroke-width="1.5"/>
+  <!-- Glowing Eye Core -->
+  <rect x="116" y="98" width="24" height="4" rx="2" fill="#fcd34d"/>
+  <circle cx="128" cy="100" r="4" fill="#dc2626"/>
+
+  <!-- Stone Jaw -->
+  <polygon points="114,112 142,112 138,130 118,130" fill="url(#amberGold_b)"/>
+
+  <!-- Tectonic Torso Plates -->
+  <polygon points="84,136 172,136 164,188 128,210 92,188" fill="#18181f" stroke="#2a2a30" stroke-width="2"/>
+  
+  <!-- Outer Rib Spikes -->
+  <polygon points="76,146 94,142 90,166 66,174" fill="url(#crimsonRed_b)"/>
+  <polygon points="180,146 162,142 166,166 190,174" fill="url(#crimsonRed_b)"/>
+
+  <!-- Magma Core Fissure / Cracks in Chest -->
+  <polygon points="128,144 144,164 134,188 128,204 122,188 112,164" fill="url(#crimsonRed_b)"/>
+  <polygon points="128,154 136,168 128,186 120,168" fill="url(#amberGold_b)"/>
+  <circle cx="128" cy="170" r="5" fill="#fcd34d"/>
+
+  <!-- Lower Belt / Keystone -->
+  <polygon points="98,202 158,202 146,226 128,234 110,226" fill="url(#amberGold_b)" stroke="#2a2a30" stroke-width="1.5"/>
+  <rect x="124" y="212" width="8" height="12" fill="#dc2626"/>
+</svg>

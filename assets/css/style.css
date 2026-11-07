@@ -95,6 +95,7 @@
     /* Geometry */
     --radius: 6px;
     --header-height: 56px;
+    --sidebar-width: 232px;
 }
 
 *, *::before, *::after {
@@ -222,7 +223,136 @@ a, button, input[type="submit"], input[type="button"], select, .btn-core, .lp-ta
     cursor: pointer;
 }
 
-/* 1. Top Telemetry Cockpit HUD */
+/* ==========================================================
+   DESKTOP LEFT SIDEBAR (.app-sidebar, 232px)
+   ========================================================== */
+.app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width, 232px);
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-hairline);
+    z-index: 950;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 1.25rem 1rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-hairline);
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.sidebar-logo {
+    width: 24px;
+    height: 24px;
+}
+
+.sidebar-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.sidebar-rank {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.45rem;
+}
+
+.sidebar-vitals {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--border-hairline);
+    background: var(--bg-input);
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.84rem;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+
+.sidebar-nav-item i {
+    width: 18px;
+    font-size: 0.9rem;
+    text-align: center;
+    color: var(--text-muted);
+    transition: color 0.15s ease;
+}
+
+.sidebar-nav-item:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-surface-hover);
+}
+
+.sidebar-nav-item:hover i {
+    color: var(--text-primary);
+}
+
+.sidebar-nav-item.active {
+    color: var(--accent);
+    background-color: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    font-weight: 600;
+}
+
+.sidebar-nav-item.active i {
+    color: var(--accent);
+}
+
+.sidebar-footer {
+    padding: 0.9rem 1rem;
+    border-top: 1px solid var(--border-hairline);
+    background: var(--bg-surface);
+}
+
+/* Desktop Desktop layout rules */
+@media (min-width: 769px) {
+    #floatingDock {
+        display: none !important;
+    }
+    .dock-backdrop-fade {
+        display: none !important;
+    }
+    .telemetry-hud {
+        display: none !important;
+    }
+    .app-main {
+        margin-left: var(--sidebar-width, 232px) !important;
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+        min-height: 100vh;
+    }
+}
+
+/* 1. Top Telemetry Cockpit HUD (Mobile fallback) */
 .telemetry-hud {
     position: fixed;
     top: 0;
@@ -1325,6 +1455,38 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     margin: 0;
 }
 
+/* Clean Landing Showcase Helper Classes */
+.lp-bento-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-hairline);
+    border-radius: 12px;
+}
+.lp-badge-card {
+    background: var(--bg-input);
+    border: 1px solid var(--border-hairline);
+    border-radius: 10px;
+    padding: 0.85rem;
+}
+.lp-badge-card.unlocked {
+    border-color: var(--accent-border);
+}
+.lp-shop-mini-card {
+    background: var(--bg-input);
+    border: 1px solid var(--border-hairline);
+    border-radius: 10px;
+    padding: 0.75rem;
+}
+.lp-cta-primary-pill {
+    padding: 0.75rem 1.6rem;
+    font-size: 0.9rem;
+    border-radius: 999px;
+}
+.lp-cta-outline-pill {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    border-radius: 999px;
+}
+
 /* Modals System & High Z-Index Hierarchy */
 .top-vignette-shield,
 .bottom-dock-vignette,
@@ -1795,14 +1957,20 @@ body.nag-active .app-main {
         overflow-x: clip;
     }
 
-    /* Telemetry HUD / Top Navbar on Mobile (<= 768px) */
-    .d-none-mobile {
+    /* Hide Desktop Sidebar on Mobile */
+    .app-sidebar {
         display: none !important;
     }
 
+    /* Telemetry HUD / Top Navbar on Mobile (<= 768px) */
     .telemetry-hud {
+        display: block !important;
         height: calc(52px + env(safe-area-inset-top, 0px));
         padding-top: env(safe-area-inset-top, 0px);
+    }
+
+    .d-none-mobile {
+        display: none !important;
     }
 
     .hud-gauge {
@@ -1891,27 +2059,34 @@ body.nag-active .app-main {
     }
 
     .floating-magnetic-dock {
-        position: fixed;
-        bottom: max(10px, env(safe-area-inset-bottom, 10px));
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-        width: calc(100vw - 16px);
-        max-width: 440px;
-        z-index: 95;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        transform: none !important;
+        border-radius: 0 !important;
+        border-top: 1px solid var(--border-hairline) !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: none !important;
+        background: var(--bg-surface) !important;
+        padding: 4px 0 max(8px, env(safe-area-inset-bottom, 8px)) 0 !important;
+        z-index: 950 !important;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4) !important;
     }
 
     .dock-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 4px 6px;
-        border-radius: 9999px;
-        border: 1px solid var(--border-subtle);
-        background: var(--bg-surface);
-        border: 1px solid var(--border-hairline);
-        box-shadow: none;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-around !important;
+        width: 100% !important;
+        padding: 0 4px !important;
+        border-radius: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
     }
 
     .dock-item {

@@ -40,7 +40,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261107_01" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261107_02" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -100,16 +100,12 @@ if (isset($_SESSION['user_id'])) {
     <!-- 2. Hero Section -->
     <section class="lp-hero">
         <div class="lp-hero-content">
-            <span class="badge-status accent font-mono mb-3" style="font-size: 0.74rem; padding: 0.32rem 0.8rem; border-radius: 999px;">
-                <i class="fas fa-gamepad me-1"></i> GAMIFIED PRODUCTIVITY PLATFORM
-            </span>
-
-            <h1 class="lp-hero-title" style="line-height: 1.18; overflow: visible !important;">
-                Disiplin Nyata dalam Format Petualangan <span class="text-accent">RPG</span>
+            <h1 class="lp-hero-title">
+                Lewatkan tugas, HP berkurang. HP habis, EXP hilang setengah.
             </h1>
 
             <p class="lp-hero-subtitle">
-                Ubah rutinitas harianmu menjadi petualangan level-up. Kalahkan Boss Quest, jaga streak konsistensi, bangun radar 5 pilar karakter, dan tebus reward impianmu.
+                Pencatat kebiasaan, target harian, dan jadwal jam kerja dengan konsekuensi nyata. Bangun disiplin harianmu atau kehilangan level yang sudah kamu kumpulkan.
             </p>
 
             <div class="lp-cta-group">
@@ -127,14 +123,13 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
         <!-- 3. 3D Perspective App Window Showcase (Interactive 3-Tab Mockup) -->
-        <div class="lp-mockup-window spotlight-card" id="lp-showcase">
+        <div class="lp-mockup-window" id="lp-showcase">
             <!-- Window Topbar -->
             <div class="lp-window-topbar">
                 <div class="lp-window-dots">
                     <span class="lp-dot red"></span>
                     <span class="lp-dot yellow"></span>
                     <span class="lp-dot green"></span>
-                    <span class="text-muted ms-2 font-mono d-none d-sm-inline" style="font-size: 0.7rem;">lifevuww-os // v2.0</span>
                 </div>
 
                 <!-- 3 Interactive Tabs -->
@@ -330,17 +325,17 @@ if (isset($_SESSION['user_id'])) {
                     </div>
                 </div>
 
-                <!-- TAB 3: 3D Holographic Badges & Shop Simulation -->
+                <!-- TAB 3: Badges & Shop Simulation -->
                 <div class="lp-tab-pane" id="tab-badges-shop">
                     <div class="row g-3">
-                        <!-- Left: 4 3D Holographic Badges -->
+                        <!-- Left: Badges -->
                         <div class="col-md-7">
-                            <span class="text-muted font-mono" style="font-size: 0.7rem; text-transform: uppercase;">Pencapaian RPG (3D Holo Tilt)</span>
+                            <span class="text-muted font-mono" style="font-size: 0.7rem; text-transform: uppercase;">Pencapaian Karakter</span>
                             <h4 style="font-size: 0.95rem; font-weight: 600; margin: 4px 0 12px 0;">Koleksi Lencana Karakter</h4>
 
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <div class="p-3 holo-card spotlight-card h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px;">
+                                    <div class="lp-badge-card unlocked h-100">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <i class="fas fa-shoe-prints text-accent"></i>
                                             <span class="badge-status accent font-mono" style="font-size: 0.6rem;">Terbuka</span>
@@ -350,7 +345,7 @@ if (isset($_SESSION['user_id'])) {
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="p-3 holo-card spotlight-card h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px;">
+                                    <div class="lp-badge-card unlocked h-100">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <i class="fas fa-fire text-warning"></i>
                                             <span class="badge-status accent font-mono" style="font-size: 0.6rem;">Terbuka</span>
@@ -360,7 +355,7 @@ if (isset($_SESSION['user_id'])) {
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="p-3 holo-card spotlight-card h-100" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px;">
+                                    <div class="lp-badge-card unlocked h-100">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <i class="fas fa-bolt text-accent"></i>
                                             <span class="badge-status accent font-mono" style="font-size: 0.6rem;">Terbuka</span>
@@ -370,7 +365,7 @@ if (isset($_SESSION['user_id'])) {
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="p-3 holo-card spotlight-card h-100" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; opacity: 0.7;">
+                                    <div class="lp-badge-card h-100" style="opacity: 0.7;">
                                         <div class="d-flex justify-content-between align-items-center mb-1">
                                             <i class="fas fa-coins text-muted"></i>
                                             <span class="badge-status font-mono" style="font-size: 0.6rem;">125/200 G</span>
@@ -388,10 +383,10 @@ if (isset($_SESSION['user_id'])) {
                             <h4 style="font-size: 0.95rem; font-weight: 600; margin: 4px 0 12px 0;">Item Pemulih & Perisai</h4>
 
                             <div class="d-flex flex-column gap-2">
-                                <div class="p-3 holo-card spotlight-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px;">
+                                <div class="lp-shop-mini-card">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(244,63,94,0.12); color: var(--status-danger); display: flex; align-items: center; justify-content: center;">
+                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(220,38,38,0.12); color: var(--status-danger); display: flex; align-items: center; justify-content: center;">
                                                 <i class="fas fa-prescription-bottle"></i>
                                             </div>
                                             <div>
@@ -405,10 +400,10 @@ if (isset($_SESSION['user_id'])) {
                                     </div>
                                 </div>
 
-                                <div class="p-3 holo-card spotlight-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px;">
+                                <div class="lp-shop-mini-card">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center gap-2">
-                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(6,182,212,0.12); color: var(--status-info); display: flex; align-items: center; justify-content: center;">
+                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(2,132,199,0.12); color: var(--status-info); display: flex; align-items: center; justify-content: center;">
                                                 <i class="fas fa-snowflake"></i>
                                             </div>
                                             <div>
@@ -417,6 +412,11 @@ if (isset($_SESSION['user_id'])) {
                                             </div>
                                         </div>
                                         <button type="button" class="btn-core btn-outline font-mono text-warning" style="font-size: 0.75rem; padding: 0.3rem 0.7rem;" onclick="buyMockShopItem('freeze', 50)">
+                                            50 Gold
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                                             50 Gold
                                         </button>
                                     </div>
@@ -464,28 +464,28 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <!-- 3.5. 15-Second High-Octane Motion Reel Showcase -->
+    <!-- 3.5. Motion Reel Showcase -->
     <section class="lp-reel-section" id="lp-reel">
         <div class="text-center mb-4">
             <span class="badge-status accent font-mono mb-2" style="font-size: 0.72rem; padding: 0.28rem 0.75rem; border-radius: 999px;">
-                <i class="fas fa-play me-1"></i> 15-SECOND HIGH-OCTANE REEL
+                <i class="fas fa-play me-1"></i> Pratinjau Alur Permainan
             </span>
             <h2 class="landing-section-title" style="font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.4rem;">
                 Aksi Gamifikasi Produktivitas dalam 15 Detik
             </h2>
             <p class="text-muted" style="font-size: 0.88rem; max-width: 600px; margin: 0 auto;">
-                Dari rentetan streak habit, radar 5 pilar karakter, lorong misi 3D, hingga kenaikan gelar RPG.
+                Dari rentetan streak habit, radar 5 pilar karakter, lorong misi dungeon, hingga kenaikan gelar RPG.
             </p>
         </div>
 
-        <div class="lp-reel-window spotlight-card">
+        <div class="lp-reel-window">
             <!-- Window Topbar with Interactive Player Controls -->
             <div class="lp-window-topbar">
                 <div class="lp-window-dots">
                     <span class="lp-dot red"></span>
                     <span class="lp-dot yellow"></span>
                     <span class="lp-dot green"></span>
-                    <span class="text-muted ms-2 font-mono d-none d-sm-inline" style="font-size: 0.7rem;" id="lpReelTopbarLabel">lifevuww-reel-15s // 120-bpm</span>
+                    <span class="text-muted ms-2 font-mono d-none d-sm-inline" style="font-size: 0.7rem;" id="lpReelTopbarLabel">Pratinjau 15 Detik</span>
                 </div>
                 <div class="lp-reel-controls">
                     <button type="button" class="lp-reel-btn lp-reel-duration-btn active" id="btnReel15" onclick="switchReelDuration('15s', this)" title="Versi 15 detik">
@@ -514,7 +514,7 @@ if (isset($_SESSION['user_id'])) {
     <!-- 4. Re-Engineered Bento Grid with Living Micro-UI Illustrations -->
     <section class="landing-bento-grid" id="lp-bento">
         <!-- Bento Card 1: 7 Ranks (Span 7) -->
-        <div class="landing-bento-item span-7 spotlight-card holo-card">
+        <div class="landing-bento-item span-7">
             <div>
                 <!-- Micro-UI 1: Rank Cycle Badges -->
                 <div class="lp-micro-ui-wrap">
@@ -539,7 +539,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="landing-bento-icon text-accent">
                     <i class="fas fa-crown"></i>
                 </div>
-                <h3 class="landing-bento-title">7 Tingkatan Gelar & Level Up</h3>
+                <h3 class="landing-bento-title">Naikkan Peringkat Karakter dari Novice ke Sovereign</h3>
                 <p class="landing-bento-desc">
                     Mulai dari F-Rank Novice hingga S-Rank Sovereign. Setiap kebiasaan positif yang kamu selesaikan menambah akumulasi EXP, menaikkan tingkat karakter, dan membuka rank baru.
                 </p>
@@ -547,13 +547,13 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
         <!-- Bento Card 2: 5 Atribut Radar (Span 5) -->
-        <div class="landing-bento-item span-5 spotlight-card holo-card">
+        <div class="landing-bento-item span-5">
             <div>
                 <!-- Micro-UI 2: Pulsing Radar Chart -->
                 <div class="lp-micro-ui-wrap text-center py-2">
                     <svg width="120" height="90" viewBox="0 0 120 90" class="lp-radar-pulse" style="overflow: visible;">
                         <polygon points="60,10 100,35 85,80 35,80 20,35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-                        <polygon points="60,25 90,42 78,70 42,70 30,42" fill="rgba(16,185,129,0.25)" stroke="#10b981" stroke-width="1.5"/>
+                        <polygon points="60,25 90,42 78,70 42,70 30,42" fill="rgba(224,159,62,0.25)" stroke="#e09f3e" stroke-width="1.5"/>
                     </svg>
                     <div class="d-flex justify-content-center gap-1 mt-2">
                         <span class="badge-status font-mono" style="font-size: 0.62rem;">INT +15</span>
@@ -565,7 +565,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="landing-bento-icon text-accent">
                     <i class="fas fa-brain"></i>
                 </div>
-                <h3 class="landing-bento-title">5 Atribut Radar Kehidupan</h3>
+                <h3 class="landing-bento-title">Petakan Keseimbangan Hidup dalam 5 Atribut</h3>
                 <p class="landing-bento-desc">
                     Kebiasaanmu dipetakan ke 5 pilar karakter: Intelligence, Physical, Wealth, Health, dan Social yang divisualisasikan dalam bentuk poligon radar taktis.
                 </p>
@@ -573,13 +573,13 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
         <!-- Bento Card 3: Konsekuensi HP (Span 5) -->
-        <div class="landing-bento-item span-5 spotlight-card holo-card">
+        <div class="landing-bento-item span-5">
             <div>
                 <!-- Micro-UI 3: HP Shield Deflection -->
                 <div class="lp-micro-ui-wrap">
                     <div class="d-flex justify-content-between align-items-center font-mono text-danger mb-1" style="font-size: 0.7rem;">
                         <span><i class="fas fa-heart me-1"></i>HP Karakter: 100/100</span>
-                        <span class="text-info lp-shield-anim px-2 py-0 rounded" style="background: rgba(6,182,212,0.12);"><i class="fas fa-shield-alt me-1"></i>Freeze Shield</span>
+                        <span class="text-info lp-shield-anim px-2 py-0 rounded" style="background: rgba(2,132,199,0.12);"><i class="fas fa-shield-alt me-1"></i>Freeze Shield</span>
                     </div>
                     <div class="vitals-track mb-2" style="height: 5px;">
                         <div class="vitals-fill" style="width: 100%; background-color: var(--status-danger);"></div>
@@ -593,7 +593,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="landing-bento-icon text-danger">
                     <i class="fas fa-heartbeat"></i>
                 </div>
-                <h3 class="landing-bento-title">Konsekuensi Nyata & Sistem HP</h3>
+                <h3 class="landing-bento-title">Pertahankan HP Agar EXP Tidak Gugur</h3>
                 <p class="landing-bento-desc">
                     Melewatkan tugas harian akan mengurangi HP. Jika HP habis (Game Over), kamu kehilangan 50% EXP. Disiplin memiliki konsekuensi yang nyata.
                 </p>
@@ -601,7 +601,7 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
         <!-- Bento Card 4: Streak Multiplier (Span 7) -->
-        <div class="landing-bento-item span-7 spotlight-card holo-card">
+        <div class="landing-bento-item span-7">
             <div>
                 <!-- Micro-UI 4: Heatmap Sequential Light-up -->
                 <div class="lp-micro-ui-wrap">
@@ -630,7 +630,7 @@ if (isset($_SESSION['user_id'])) {
                 <div class="landing-bento-icon text-warning">
                     <i class="fas fa-fire"></i>
                 </div>
-                <h3 class="landing-bento-title">Streak Multiplier & Toko Hadiah</h3>
+                <h3 class="landing-bento-title">Lipatgandakan EXP Lewat Rantai Konsistensi Harian</h3>
                 <p class="landing-bento-desc">
                     Jaga konsistensi harianmu untuk membuka multiplier hingga 1.5x EXP & Gold. Tukarkan Gold di Toko untuk ramuan pemulih HP, perisai Streak Freeze, atau hadiah impianmu.
                 </p>
@@ -639,22 +639,22 @@ if (isset($_SESSION['user_id'])) {
     </section>
 
     <!-- 5. Closing CTA Section -->
-    <section class="lp-closing-cta spotlight-card holo-card" id="lp-cta">
+    <section class="lp-closing-cta" id="lp-cta">
         <span class="badge-status accent font-mono mb-3" style="font-size: 0.74rem;">MULAI PETUALANGAN</span>
         <h2 class="lp-closing-title">
             Siap Mengubah Hidupmu Menjadi Petualangan?
         </h2>
         <p class="lp-closing-desc">
-            Bangun karakter terkuatmu mulai hari ini. Gratis, tanpa kartu kredit, dan langsung bisa dicoba dalam mode demo tamu.
+            Bangun karakter terkuatmu mulai hari ini. Langsung coba lewat mode demo tamu tanpa registrasi.
         </p>
         <div class="d-flex justify-content-center gap-2 flex-wrap">
-            <a href="register.php" class="btn-core btn-primary" style="padding: 0.75rem 1.6rem; font-size: 0.9rem; border-radius: 999px;">
+            <a href="register.php" class="btn-core btn-primary lp-cta-primary-pill">
                 <i class="fas fa-user-plus me-1"></i> Buat Karakter Baru
             </a>
             <form action="login.php" method="POST" style="margin: 0;">
                 <?php echo csrf_field(); ?>
                 <input type="hidden" name="login_demo" value="1">
-                <button type="submit" class="btn-core btn-outline" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 999px;">
+                <button type="submit" class="btn-core btn-outline lp-cta-outline-pill">
                     <i class="fas fa-play text-accent me-1"></i> Langsung Coba Akun Demo
                 </button>
             </form>
@@ -1012,7 +1012,7 @@ if (isset($_SESSION['user_id'])) {
             }
 
             if (label) {
-                label.textContent = `lifevuww-reel-${duration} // 120-bpm`;
+                label.textContent = `Pratinjau ${duration}`;
             }
             if (navLink) {
                 navLink.textContent = `Teaser ${duration}`;

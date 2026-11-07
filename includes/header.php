@@ -51,7 +51,7 @@ $activeHtmlAura = $serverAura ?: 'emerald';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261107_01" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261107_02" rel="stylesheet">
     <!-- Cache-proof mobile v3 fix: inline di head agar tidak pernah tertahan
          cache CSS eksternal di WebView APK / browser HP -->
     <style id="lv-mobile-v3-fix">
@@ -184,8 +184,101 @@ $activeHtmlAura = $serverAura ?: 'emerald';
             $navCurBase = ($navLevel - 1) * 100;
             $navExpPct = min(100, max(0, (($navExp - $navCurBase) / max(1, ($navNextExp - $navCurBase))) * 100));
             $userRankTitle = calculateRank($navLevel);
+            $currentPage = basename($_SERVER['PHP_SELF']); 
+            $isMoreActive = in_array($currentPage, ['dungeon.php', 'journal.php', 'skills.php', 'shop.php', 'history.php', 'profile.php'], true);
         ?>
-        <!-- Top Telemetry Cockpit HUD -->
+
+        <!-- Desktop Left Sidebar (.app-sidebar, lebar 232px) -->
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="sidebar-header">
+                <a href="dashboard.php" class="sidebar-brand">
+                    <img src="../assets/images/logo.svg" alt="Logo" class="sidebar-logo">
+                    <span class="sidebar-title">Lifevuww</span>
+                </a>
+                <span class="badge-status accent font-mono sidebar-rank">
+                    <?php echo htmlspecialchars($userRankTitle); ?>
+                </span>
+            </div>
+
+            <!-- Vitals Summary -->
+            <div class="sidebar-vitals">
+                <div class="sidebar-vital-row">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted font-mono" style="font-size: 0.72rem;"><i class="fas fa-heart text-danger me-1"></i> HP</span>
+                        <span class="font-mono text-danger fw-bold" style="font-size: 0.74rem;"><?php echo $navUser['hp'] ?? 100; ?> / <?php echo $navUser['max_hp'] ?? 100; ?></span>
+                    </div>
+                    <div class="vitals-track" style="height: 5px;">
+                        <div class="vitals-fill" style="width: <?php echo min(100, round((($navUser['hp'] ?? 100) / max(1, $navUser['max_hp'] ?? 100)) * 100)); ?>%; background-color: var(--status-danger);"></div>
+                    </div>
+                </div>
+
+                <div class="sidebar-vital-row mt-2">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted font-mono" style="font-size: 0.72rem;"><i class="fas fa-bolt text-accent me-1"></i> Lv.<?php echo $navLevel; ?></span>
+                        <span class="font-mono text-accent" style="font-size: 0.72rem;"><?php echo $navExp; ?> / <?php echo $navNextExp; ?></span>
+                    </div>
+                    <div class="vitals-track" style="height: 5px;">
+                        <div class="vitals-fill" style="width: <?php echo $navExpPct; ?>%; background-color: var(--accent);"></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-2 pt-2" style="border-top: 1px solid var(--border-hairline);">
+                    <span class="text-muted font-mono" style="font-size: 0.72rem;"><i class="fas fa-coins text-warning me-1"></i> Saldo Gold</span>
+                    <span class="font-mono text-warning fw-bold" style="font-size: 0.84rem;"><?php echo number_format($navUser['gold'] ?? 0); ?></span>
+                </div>
+            </div>
+
+            <!-- Vertical Menu Items -->
+            <nav class="sidebar-nav">
+                <a href="dashboard.php" class="sidebar-nav-item <?php echo $currentPage == 'dashboard.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-home"></i> <span>Dasbor</span>
+                </a>
+                <a href="habits.php" class="sidebar-nav-item <?php echo $currentPage == 'habits.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-check-square"></i> <span>Kebiasaan</span>
+                </a>
+                <a href="quests.php" class="sidebar-nav-item <?php echo $currentPage == 'quests.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-map-signs"></i> <span>Misi</span>
+                </a>
+                <a href="calendar.php" class="sidebar-nav-item <?php echo $currentPage == 'calendar.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-calendar-alt"></i> <span>Kalender</span>
+                </a>
+                <a href="dungeon.php" class="sidebar-nav-item <?php echo $currentPage == 'dungeon.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-dungeon"></i> <span>Dungeon</span>
+                </a>
+                <a href="journal.php" class="sidebar-nav-item <?php echo $currentPage == 'journal.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-feather-pointed"></i> <span>Jurnal</span>
+                </a>
+                <a href="skills.php" class="sidebar-nav-item <?php echo $currentPage == 'skills.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-book-open"></i> <span>Keahlian</span>
+                </a>
+                <a href="shop.php" class="sidebar-nav-item <?php echo $currentPage == 'shop.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-store"></i> <span>Toko</span>
+                </a>
+                <a href="history.php" class="sidebar-nav-item <?php echo $currentPage == 'history.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-history"></i> <span>Riwayat</span>
+                </a>
+                <a href="profile.php" class="sidebar-nav-item <?php echo $currentPage == 'profile.php' ? 'active' : ''; ?>">
+                    <i class="fas fa-user-circle"></i> <span>Profil</span>
+                </a>
+            </nav>
+
+            <!-- Sidebar Footer Actions -->
+            <div class="sidebar-footer">
+                <button type="button" class="btn-core btn-outline w-100 mb-2 font-mono" style="font-size: 0.76rem;" onclick="window.openFocusRiftModal && window.openFocusRiftModal();">
+                    <i class="fas fa-hourglass-half text-accent me-1"></i> Focus Rift
+                </button>
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn-sound-toggle btn-core btn-ghost p-1 text-muted" aria-label="Audio" title="Audio">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    <a href="../logout.php" class="btn-core btn-ghost p-1 text-muted" title="Keluar" data-confirm="Yakin ingin keluar dari akun?" data-confirm-title="Keluar Akun" data-confirm-variant="danger" data-confirm-btn="Keluar">
+                        <i class="fas fa-sign-out-alt"></i> <span style="font-size: 0.76rem;">Keluar</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Top Telemetry Cockpit HUD (Mobile Only <= 768px) -->
         <header class="telemetry-hud top-navbar">
             <div class="hud-inner">
                 <!-- Brand & Rank Title -->
@@ -198,10 +291,6 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                 </a>
 
                 <!-- Telemetry Control Center (Right) -->
-                <?php 
-                $currentPage = basename($_SERVER['PHP_SELF']); 
-                $isMoreActive = in_array($currentPage, ['dungeon.php', 'journal.php', 'skills.php', 'shop.php', 'history.php', 'profile.php'], true);
-                ?>
                 <div class="hud-telemetry">
                     <!-- Unified Glass Status Capsule -->
                     <div class="hud-unified-capsule">

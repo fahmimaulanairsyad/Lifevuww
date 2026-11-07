@@ -396,11 +396,22 @@ unset($_SESSION['skill_toast']);
     <!-- Active Companion Typographic Overview -->
     <div class="p-3 mb-3" style="background: var(--bg-surface-hover); border: 1px solid var(--border-hairline); border-radius: var(--radius);">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
-            <div>
-                <span class="badge-status accent font-mono mb-1" style="font-size: 0.68rem;">UNIT AKTIF</span>
-                <h4 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--text-primary);"><?php echo htmlspecialchars($activeCompanion['name']); ?></h4>
-                <div class="text-muted font-mono" style="font-size: 0.74rem;">
-                    Stage: <?php echo $bond['stage']; ?> &bull; Bond Lv.<?php echo $bond['bond_level']; ?> &bull; Multiplier: &times;<?php echo number_format($bond['bonus_scale'], 2); ?>
+            <div class="d-flex align-items-center gap-3">
+                <?php 
+                $hasActiveImg = !empty($activeCompanion['image']) && file_exists(__DIR__ . '/../' . $activeCompanion['image']);
+                if ($hasActiveImg): ?>
+                    <img src="../<?php echo htmlspecialchars($activeCompanion['image']); ?>" alt="<?php echo htmlspecialchars($activeCompanion['name']); ?>" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-hairline); background: var(--bg-surface); flex-shrink: 0;">
+                <?php else: ?>
+                    <div style="width: 42px; height: 42px; border-radius: var(--radius); background: var(--accent-dim); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--accent); flex-shrink: 0;">
+                        <i class="fas <?php echo $activeCompanion['icon']; ?>"></i>
+                    </div>
+                <?php endif; ?>
+                <div>
+                    <span class="badge-status accent font-mono mb-1" style="font-size: 0.68rem;">UNIT AKTIF</span>
+                    <h4 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: var(--text-primary);"><?php echo htmlspecialchars($activeCompanion['name']); ?></h4>
+                    <div class="text-muted font-mono" style="font-size: 0.74rem;">
+                        Stage: <?php echo $bond['stage']; ?> &bull; Bond Lv.<?php echo $bond['bond_level']; ?> &bull; Multiplier: &times;<?php echo number_format($bond['bonus_scale'], 2); ?>
+                    </div>
                 </div>
             </div>
             <div class="text-end font-mono">
@@ -425,9 +436,15 @@ unset($_SESSION['skill_toast']);
             <div class="col-md-6">
                 <div class="p-2 d-flex justify-content-between align-items-center h-100" style="border: 1px solid <?php echo $isActive ? 'var(--accent-border)' : 'var(--border-hairline)'; ?>; border-radius: var(--radius); background: <?php echo $isActive ? 'var(--accent-dim)' : 'var(--bg-surface-hover)'; ?>;">
                     <div class="d-flex align-items-center gap-2 min-w-0">
-                        <div style="width: 28px; height: 28px; border-radius: var(--radius); background: var(--bg-surface); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--accent); flex-shrink: 0;">
-                            <i class="fas <?php echo $comp['icon']; ?>"></i>
-                        </div>
+                        <?php 
+                        $hasCompImg = !empty($comp['image']) && file_exists(__DIR__ . '/../' . $comp['image']);
+                        if ($hasCompImg): ?>
+                            <img src="../<?php echo htmlspecialchars($comp['image']); ?>" alt="<?php echo htmlspecialchars($comp['name']); ?>" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-hairline); background: var(--bg-surface); flex-shrink: 0;">
+                        <?php else: ?>
+                            <div style="width: 28px; height: 28px; border-radius: var(--radius); background: var(--bg-surface); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--accent); flex-shrink: 0;">
+                                <i class="fas <?php echo $comp['icon']; ?>"></i>
+                            </div>
+                        <?php endif; ?>
                         <div class="min-w-0">
                             <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><?php echo htmlspecialchars($comp['name']); ?></div>
                             <div class="text-muted font-sans" style="font-size: 0.7rem; line-height: 1.2;"><?php echo htmlspecialchars($comp['bonus']); ?></div>

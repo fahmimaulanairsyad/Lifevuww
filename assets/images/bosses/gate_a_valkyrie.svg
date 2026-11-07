@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgGlow_valk" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#2c1a1f"/>
+      <stop offset="100%" stop-color="#141417"/>
+    </radialGradient>
+    <linearGradient id="amberGold_a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fcd34d"/>
+      <stop offset="50%" stop-color="#e09f3e"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="crimsonRed_a" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f87171"/>
+      <stop offset="60%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base Shield -->
+  <rect width="256" height="256" rx="28" fill="url(#bgGlow_valk)"/>
+  <rect x="6" y="6" width="244" height="244" rx="22" fill="none" stroke="#2a2a30" stroke-width="2"/>
+  <rect x="12" y="12" width="232" height="232" rx="18" fill="none" stroke="url(#amberGold_a)" stroke-width="1.2" opacity="0.45"/>
+
+  <!-- Gate A Rank Header -->
+  <path d="M84 22 L172 22 L164 38 L92 38 Z" fill="#1f1f24" stroke="#2a2a30" stroke-width="1"/>
+  <text x="128" y="34" fill="url(#amberGold_a)" font-family="'JetBrains Mono', monospace" font-size="11" font-weight="700" text-anchor="middle" letter-spacing="2">GATE-A // VALKYRIE</text>
+
+  <!-- Bladed Feather Wings (Left Wing) -->
+  <g fill="url(#crimsonRed_a)" stroke="#2a2a30" stroke-width="1">
+    <path d="M120 100 C92 70 54 62 26 78 C44 94 70 106 106 114 Z"/>
+    <path d="M112 116 C80 94 44 98 22 118 C42 128 72 132 102 130 Z"/>
+    <path d="M106 132 C74 120 38 132 24 158 C46 158 74 152 98 144 Z"/>
+    <path d="M102 146 C74 144 48 164 36 196 C56 186 82 172 98 158 Z"/>
+  </g>
+
+  <!-- Bladed Feather Wings (Right Wing) -->
+  <g fill="url(#crimsonRed_a)" stroke="#2a2a30" stroke-width="1">
+    <path d="M136 100 C164 70 202 62 230 78 C212 94 186 106 150 114 Z"/>
+    <path d="M144 116 C176 94 212 98 234 118 C214 128 184 132 154 130 Z"/>
+    <path d="M150 132 C182 120 218 132 232 158 C210 158 182 152 158 144 Z"/>
+    <path d="M154 146 C182 144 208 164 220 196 C200 186 174 172 158 158 Z"/>
+  </g>
+
+  <!-- Valkyrie Winged Helm -->
+  <!-- Left Wing Fin -->
+  <polygon points="112,68 86,40 92,62 108,76" fill="url(#amberGold_a)"/>
+  <!-- Right Wing Fin -->
+  <polygon points="144,68 170,40 164,62 148,76" fill="url(#amberGold_a)"/>
+  
+  <!-- Crown / Forehead Plate -->
+  <polygon points="128,50 144,66 138,82 118,82 112,66" fill="url(#amberGold_a)" stroke="#2a2a30" stroke-width="1.2"/>
+  <circle cx="128" cy="66" r="3.5" fill="#dc2626"/>
+
+  <!-- Face Mask / Visor -->
+  <polygon points="120,84 136,84 140,108 128,118 116,108" fill="#1b1b22" stroke="#2a2a30" stroke-width="1.2"/>
+  <!-- Visor Eye Slit -->
+  <path d="M120 94 L136 94 L138 98 L128 102 L118 98 Z" fill="#fcd34d"/>
+
+  <!-- Greatsword / Spear Held Vertically -->
+  <polygon points="128,88 131,228 128,236 125,228" fill="url(#amberGold_a)"/>
+  <!-- Crossguard -->
+  <polygon points="108,138 148,138 146,144 110,144" fill="url(#amberGold_a)"/>
+
+  <!-- Cuirass / Body Armor -->
+  <path d="M106 120 L150 120 L156 160 L128 182 L100 160 Z" fill="#18181f" stroke="#2a2a30" stroke-width="1.5"/>
+  <polygon points="128,126 142,142 128,162 114,142" fill="url(#crimsonRed_a)"/>
+  <polygon points="128,134 136,144 128,156 120,144" fill="url(#amberGold_a)"/>
+
+  <!-- Armored Fauld / Waist Plates -->
+  <polygon points="110,180 146,180 152,216 128,230 104,216" fill="url(#amberGold_a)" stroke="#2a2a30" stroke-width="1.5"/>
+  <line x1="128" y1="180" x2="128" y2="230" stroke="#101014" stroke-width="1.5"/>
+</svg>
