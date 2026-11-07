@@ -482,9 +482,9 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                     <div>
                         <div class="d-flex align-items-start justify-content-between mb-2">
                             <?php if ($hasRelicImg): ?>
-                                <img src="../<?php echo htmlspecialchars($relic['image']); ?>" alt="<?php echo htmlspecialchars($relic['name']); ?>" style="width: 38px; height: 38px; object-fit: contain; border-radius: 6px; border: 1px solid var(--accent-border);">
+                                <img src="../<?php echo htmlspecialchars($relic['image']); ?>" alt="<?php echo htmlspecialchars($relic['name']); ?>" class="relic-card-img" style="width: 56px; height: 56px; max-width: 56px; max-height: 56px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-hairline); background: var(--bg-input);">
                             <?php else: ?>
-                                <div style="width: 38px; height: 38px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                                <div style="width: 56px; height: 56px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.35rem;">
                                     <i class="fas <?php echo htmlspecialchars($relic['icon']); ?>"></i>
                                 </div>
                             <?php endif; ?>

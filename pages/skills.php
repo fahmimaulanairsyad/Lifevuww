@@ -400,9 +400,9 @@ unset($_SESSION['skill_toast']);
                 <?php 
                 $hasActiveImg = !empty($activeCompanion['image']) && file_exists(__DIR__ . '/../' . $activeCompanion['image']);
                 if ($hasActiveImg): ?>
-                    <img src="../<?php echo htmlspecialchars($activeCompanion['image']); ?>" alt="<?php echo htmlspecialchars($activeCompanion['name']); ?>" style="width: 48px; height: 48px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-hairline); background: var(--bg-surface); flex-shrink: 0;">
+                    <img src="../<?php echo htmlspecialchars($activeCompanion['image']); ?>" alt="<?php echo htmlspecialchars($activeCompanion['name']); ?>" class="companion-hero-img" style="width: 110px; height: 110px; max-width: 110px; max-height: 110px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-hairline); background: var(--bg-surface); flex-shrink: 0;">
                 <?php else: ?>
-                    <div style="width: 42px; height: 42px; border-radius: var(--radius); background: var(--accent-dim); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--accent); flex-shrink: 0;">
+                    <div style="width: 110px; height: 110px; max-width: 110px; max-height: 110px; border-radius: var(--radius); background: var(--accent-dim); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; color: var(--accent); flex-shrink: 0;">
                         <i class="fas <?php echo $activeCompanion['icon']; ?>"></i>
                     </div>
                 <?php endif; ?>

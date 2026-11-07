@@ -117,21 +117,21 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
 
 <div class="bento-panel mb-4">
     <div class="d-flex justify-content-between align-items-center mb-3 pb-2" style="border-bottom: 1px solid var(--border-hairline);">
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
             <?php 
             $hasBossImg = !empty($boss['image']) && file_exists(__DIR__ . '/../' . $boss['image']);
             if ($hasBossImg): ?>
-                <img src="../<?php echo htmlspecialchars($boss['image']); ?>" alt="<?php echo htmlspecialchars($boss['name']); ?>" style="width: 52px; height: 52px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover); flex-shrink: 0;">
+                <img src="../<?php echo htmlspecialchars($boss['image']); ?>" alt="<?php echo htmlspecialchars($boss['name']); ?>" class="boss-img-display" style="width: 140px; height: 140px; max-width: 140px; max-height: 140px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover); flex-shrink: 0;">
             <?php else: ?>
-                <div style="width: 44px; height: 44px; border-radius: var(--radius); background: var(--status-danger-dim); border: 1px solid rgba(220, 38, 38, 0.25); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--status-danger); flex-shrink: 0;">
+                <div style="width: 140px; height: 140px; max-width: 140px; max-height: 140px; border-radius: var(--radius); background: var(--status-danger-dim); border: 1px solid rgba(220, 38, 38, 0.25); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--status-danger); flex-shrink: 0;">
                     <i class="fas <?php echo htmlspecialchars($boss['icon']); ?>"></i>
                 </div>
             <?php endif; ?>
-            <div>
+            <div style="flex: 1; min-width: 200px;">
                 <div class="font-mono text-muted" style="font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;">
                     RAID TARGET &bull; <?php echo htmlspecialchars($boss['gate']); ?>
                 </div>
-                <h2 style="font-size: 1.35rem; font-weight: 700; margin: 2px 0 0 0;"><?php echo htmlspecialchars($boss['name']); ?></h2>
+                <h2 style="font-size: 1.35rem; font-weight: 700; margin: 4px 0 0 0;"><?php echo htmlspecialchars($boss['name']); ?></h2>
             </div>
         </div>
         <div>

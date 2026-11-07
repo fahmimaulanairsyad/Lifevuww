@@ -95,7 +95,6 @@
     /* Geometry */
     --radius: 6px;
     --header-height: 56px;
-    --sidebar-width: 232px;
 }
 
 *, *::before, *::after {
@@ -104,6 +103,40 @@
 
 canvas {
     max-width: 100%;
+}
+
+/* RPG Asset Images Strict Sizing */
+img[src*="assets/images/bosses/"],
+img[src*="assets/images/companions/"],
+img[src*="assets/images/relics/"] {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.boss-img-display {
+    width: 140px !important;
+    height: 140px !important;
+    max-width: 140px !important;
+    max-height: 140px !important;
+    object-fit: contain !important;
+}
+
+.companion-hero-img {
+    width: 110px !important;
+    height: 110px !important;
+    max-width: 110px !important;
+    max-height: 110px !important;
+    object-fit: contain !important;
+}
+
+.relic-card-img {
+    width: 56px !important;
+    height: 56px !important;
+    max-width: 56px !important;
+    max-height: 56px !important;
+    object-fit: contain !important;
 }
 
 .bento-panel,
@@ -223,141 +256,14 @@ a, button, input[type="submit"], input[type="button"], select, .btn-core, .lp-ta
     cursor: pointer;
 }
 
-/* ==========================================================
-   DESKTOP LEFT SIDEBAR (.app-sidebar, 232px)
-   ========================================================== */
-.app-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: var(--sidebar-width, 232px);
-    background-color: var(--bg-surface);
-    border-right: 1px solid var(--border-hairline);
-    z-index: 950;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-}
-
-.sidebar-header {
-    padding: 1.25rem 1rem 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border-hairline);
-}
-
-.sidebar-brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-}
-
-.sidebar-logo {
-    width: 24px;
-    height: 24px;
-}
-
-.sidebar-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
-}
-
-.sidebar-rank {
-    font-size: 0.65rem;
-    padding: 0.15rem 0.45rem;
-}
-
-.sidebar-vitals {
-    padding: 0.9rem 1rem;
-    border-bottom: 1px solid var(--border-hairline);
-    background: var(--bg-input);
-}
-
-.sidebar-nav {
-    flex: 1;
-    padding: 0.75rem 0.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.sidebar-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0.55rem 0.75rem;
-    border-radius: var(--radius);
-    color: var(--text-secondary);
-    text-decoration: none;
-    font-size: 0.84rem;
-    font-weight: 500;
-    transition: all 0.15s ease;
-}
-
-.sidebar-nav-item i {
-    width: 18px;
-    font-size: 0.9rem;
-    text-align: center;
-    color: var(--text-muted);
-    transition: color 0.15s ease;
-}
-
-.sidebar-nav-item:hover {
-    color: var(--text-primary);
-    background-color: var(--bg-surface-hover);
-}
-
-.sidebar-nav-item:hover i {
-    color: var(--text-primary);
-}
-
-.sidebar-nav-item.active {
-    color: var(--accent);
-    background-color: var(--accent-dim);
-    border: 1px solid var(--accent-border);
-    font-weight: 600;
-}
-
-.sidebar-nav-item.active i {
-    color: var(--accent);
-}
-
-.sidebar-footer {
-    padding: 0.9rem 1rem;
-    border-top: 1px solid var(--border-hairline);
-    background: var(--bg-surface);
-}
-
-/* Desktop Desktop layout rules */
-@media (min-width: 769px) {
-    #floatingDock {
-        display: none !important;
-    }
-    .dock-backdrop-fade {
-        display: none !important;
-    }
-    .telemetry-hud {
-        display: none !important;
-    }
-    .app-main {
-        margin-left: var(--sidebar-width, 232px) !important;
-        padding-top: 2rem !important;
-        padding-bottom: 3rem !important;
-        min-height: 100vh;
-    }
-}
-
-/* 1. Top Telemetry Cockpit HUD (Mobile fallback) */
-.telemetry-hud {
-    position: fixed;
+/* 1. Top Telemetry Cockpit HUD & Navbar */
+.telemetry-hud,
+.top-navbar {
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
+    width: 100%;
     height: 56px;
     background-color: var(--bg-surface);
     border-bottom: 1px solid var(--border-hairline);
@@ -833,13 +739,10 @@ body.drawer-open {
 /* Spatial Full-Width Main Canvas */
 .app-main {
     flex: 1;
-    margin-left: 0 !important;
+    margin: 0 !important;
     width: 100%;
-    min-height: 100vh;
-    padding-top: 76px;
-    padding-bottom: 140px !important;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+    min-height: calc(100vh - 56px);
+    padding: 0 !important;
     background-color: transparent;
     position: relative;
     z-index: 10;
@@ -848,6 +751,9 @@ body.drawer-open {
 .main-container {
     max-width: 1080px;
     margin: 0 auto;
+    padding: 1.5rem 1.25rem 5.5rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Page Header */
@@ -1867,10 +1773,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 /* Streak Nag Banner (desktop position) */
 .nag-banner {
     position: fixed;
-    top: 0;
-    left: var(--sidebar-width);
+    top: 56px;
+    left: 0;
     right: 0;
-    z-index: 90;
+    z-index: 900;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -1957,19 +1863,24 @@ body.nag-active .app-main {
         overflow-x: clip;
     }
 
-    /* Hide Desktop Sidebar on Mobile */
-    .app-sidebar {
-        display: none !important;
-    }
-
     /* Telemetry HUD / Top Navbar on Mobile (<= 768px) */
-    .telemetry-hud {
+    .telemetry-hud,
+    .top-navbar {
         display: block !important;
-        height: calc(52px + env(safe-area-inset-top, 0px));
-        padding-top: env(safe-area-inset-top, 0px);
+        position: sticky !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        height: calc(52px + env(safe-area-inset-top, 0px)) !important;
+        padding-top: env(safe-area-inset-top, 0px) !important;
+        background: var(--bg-surface) !important;
+        border-bottom: 1px solid var(--border-hairline) !important;
+        z-index: 1000 !important;
     }
 
-    .d-none-mobile {
+    .d-none-mobile,
+    .nav-hide-mobile {
         display: none !important;
     }
 
@@ -2050,15 +1961,18 @@ body.nag-active .app-main {
     }
 
     /* Floating Dock - 5-Tab Mobile Nav (<= 768px) */
-    .dock-desktop-only {
+    .dock-desktop-only,
+    .dock-mobile-secondary {
         display: none !important;
     }
 
-    .dock-mobile-only {
+    .dock-mobile-only,
+    .dock-more-btn {
         display: flex !important;
     }
 
-    .floating-magnetic-dock {
+    .floating-magnetic-dock,
+    #floatingDock {
         position: fixed !important;
         bottom: 0 !important;
         left: 0 !important;
@@ -2072,9 +1986,9 @@ body.nag-active .app-main {
         border-right: none !important;
         border-bottom: none !important;
         background: var(--bg-surface) !important;
-        padding: 4px 0 max(8px, env(safe-area-inset-bottom, 8px)) 0 !important;
-        z-index: 950 !important;
-        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4) !important;
+        padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+        z-index: 1000 !important;
+        box-shadow: none !important;
     }
 
     .dock-container {
@@ -2082,7 +1996,7 @@ body.nag-active .app-main {
         align-items: center !important;
         justify-content: space-around !important;
         width: 100% !important;
-        padding: 0 4px !important;
+        padding: 0 !important;
         border-radius: 0 !important;
         border: none !important;
         background: transparent !important;
@@ -2101,7 +2015,7 @@ body.nag-active .app-main {
         width: auto !important;
         min-width: 0 !important;
         padding: 2px 0 !important;
-        border-radius: 12px !important;
+        border-radius: 8px !important;
         color: var(--text-muted);
         text-decoration: none;
         background: transparent !important;
@@ -2139,7 +2053,7 @@ body.nag-active .app-main {
 
     .dock-item.active i {
         color: var(--accent) !important;
-        transform: scale(1.08);
+        transform: scale(1.06);
     }
 
     .dock-item.active .dock-label {
@@ -2153,11 +2067,8 @@ body.nag-active .app-main {
 
     /* Main content clears both bars */
     .app-main {
-        margin-left: 0 !important;
-        padding-top: calc(64px + env(safe-area-inset-top, 0px));
-        padding-bottom: calc(88px + env(safe-area-inset-bottom, 12px));
-        padding-left: 1rem;
-        padding-right: 1rem;
+        margin: 0 !important;
+        padding: 0 !important;
         width: 100%;
         max-width: 100vw;
         overflow-x: clip;
@@ -2166,7 +2077,9 @@ body.nag-active .app-main {
     .main-container {
         width: 100%;
         max-width: 100%;
-        padding: 0;
+        margin: 0 auto;
+        padding: 1.25rem 1rem 5.5rem !important;
+        box-sizing: border-box;
         min-width: 0;
     }
 
@@ -2635,12 +2548,17 @@ html.is-apk #btn-install-app {
     color: #09090b !important;
 }
 
-/* 2. Hero Section with Atmospheric 3D Stage & Perspective Grid */
+/* 2. Hero Section */
 .lp-hero {
     position: relative;
-    padding: 130px 1.5rem 3.5rem 1.5rem;
-    max-width: 1180px;
-    margin: 0 auto;
+    padding-top: calc(96px + 2.5rem) !important;
+    padding-bottom: 3.5rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    max-width: 1080px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
     text-align: center;
     overflow: visible;
 }
@@ -2719,8 +2637,9 @@ html.is-apk #btn-install-app {
 
 /* 3. 3D Perspective App Window Showcase */
 .lp-mockup-window {
-    max-width: 1040px;
-    margin: 40px auto 0;
+    max-width: 1080px !important;
+    margin: 40px auto 0 !important;
+    box-sizing: border-box !important;
     border-radius: 20px;
     background: #0c0c10;
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2832,18 +2751,21 @@ html.is-apk #btn-install-app {
 
 /* 3.5. 30s High-Octane Motion Reel Player Section */
 .lp-reel-section {
-    max-width: 1040px;
-    margin: 0 auto 5rem auto;
+    max-width: 1080px !important;
+    margin: 0 auto 5rem auto !important;
     padding: 0 1.5rem;
     text-align: center;
+    box-sizing: border-box !important;
 }
 
 .lp-reel-window {
-    margin: 24px auto 0;
-    border-radius: 20px;
+    max-width: 1080px !important;
+    margin: 24px auto 0 !important;
+    box-sizing: border-box !important;
+    border-radius: var(--radius);
     background: #0c0c10;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: 0 32px 100px rgba(0, 0, 0, 0.8), 0 -1px 0 rgba(255, 255, 255, 0.18) inset, 0 0 80px rgba(16, 185, 129, 0.08);
+    box-shadow: none;
     overflow: hidden;
     text-align: left;
     position: relative;
@@ -2998,9 +2920,10 @@ html.is-apk #btn-install-app {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: 1.25rem;
-    max-width: 1040px;
-    margin: 0 auto 5rem auto;
+    max-width: 1080px !important;
+    margin: 0 auto 5rem auto !important;
     padding: 0 1.5rem;
+    box-sizing: border-box !important;
 }
 
 .landing-bento-item {
@@ -3103,8 +3026,8 @@ html.is-apk #btn-install-app {
 
 /* 5. Closing CTA */
 .lp-closing-cta {
-    max-width: 1040px;
-    margin: 0 auto 5rem auto;
+    max-width: 1080px !important;
+    margin: 0 auto 5rem auto !important;
     padding: 3.5rem 2rem;
     border-radius: var(--radius);
     background: var(--bg-surface);
@@ -3113,6 +3036,7 @@ html.is-apk #btn-install-app {
     text-align: center;
     position: relative;
     overflow: hidden;
+    box-sizing: border-box !important;
 }
 
 .lp-closing-title {
@@ -3133,9 +3057,12 @@ html.is-apk #btn-install-app {
 .landing-footer {
     border-top: 1px solid var(--border-hairline);
     padding: 2.5rem 1.5rem;
+    max-width: 1080px !important;
+    margin: 0 auto !important;
     text-align: center;
     color: var(--text-muted);
     font-size: 0.8rem;
+    box-sizing: border-box !important;
 }
 
 .landing-footer-links {
@@ -3173,7 +3100,10 @@ html.is-apk #btn-install-app {
         display: none !important;
     }
     .lp-hero {
-        padding: 90px 1rem 2rem 1rem;
+        padding-top: calc(80px + 1.5rem) !important;
+        padding-bottom: 2rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
     }
     .lp-hero-title {
         font-size: 2.2rem;
