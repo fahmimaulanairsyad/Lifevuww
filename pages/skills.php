@@ -390,22 +390,29 @@ unset($_SESSION['skill_toast']);
             $stageScale = ['Hatchling' => 90, 'Awakened' => 110, 'Sovereign' => 130];
             $svgSize = $stageScale[$bond['stage']] ?? 90;
             $aura = $bond['stage'] === 'Sovereign' ? 0.55 : ($bond['stage'] === 'Awakened' ? 0.35 : 0.18);
+            $hasActiveImg = !empty($activeCompanion['image']) && file_exists(__DIR__ . '/../' . $activeCompanion['image']);
             ?>
-            <svg width="<?php echo $svgSize; ?>" height="<?php echo $svgSize; ?>" viewBox="0 0 140 140" style="overflow: visible;">
-                <circle cx="70" cy="70" r="<?php echo $svgSize / 2 - 6; ?>" fill="none" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-opacity="<?php echo $aura; ?>" stroke-width="3" stroke-dasharray="6 5">
-                    <animateTransform attributeName="transform" type="rotate" from="0 70 70" to="360 70 70" dur="14s" repeatCount="indefinite"/>
-                </circle>
-                <circle cx="70" cy="74" r="34" fill="<?php echo $activeCompanion['accent']; ?>" fill-opacity="0.25" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="2"/>
-                <circle cx="59" cy="66" r="5" fill="#fafafa"/>
-                <circle cx="81" cy="66" r="5" fill="#fafafa"/>
-                <path d="M 62 84 Q 70 92 78 84" stroke="#fafafa" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                <?php if ($bond['stage'] !== 'Hatchling'): ?>
-                    <path d="M 40 48 L 52 58 M 100 48 L 88 58" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="3" stroke-linecap="round"/>
-                <?php endif; ?>
-                <?php if ($bond['stage'] === 'Sovereign'): ?>
-                    <path d="M 54 34 L 62 26 L 70 34 L 78 26 L 86 34" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linejoin="round"/>
-                <?php endif; ?>
-            </svg>
+            <?php if ($hasActiveImg): ?>
+                <div class="mb-2 d-inline-block position-relative">
+                    <img src="../<?php echo htmlspecialchars($activeCompanion['image']); ?>" alt="<?php echo htmlspecialchars($activeCompanion['name']); ?>" class="companion-hero-img" style="width: 110px; height: 110px; max-width: 110px; max-height: 110px; object-fit: contain; border-radius: 16px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover);">
+                </div>
+            <?php else: ?>
+                <svg width="<?php echo $svgSize; ?>" height="<?php echo $svgSize; ?>" viewBox="0 0 140 140" style="overflow: visible;">
+                    <circle cx="70" cy="70" r="<?php echo $svgSize / 2 - 6; ?>" fill="none" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-opacity="<?php echo $aura; ?>" stroke-width="3" stroke-dasharray="6 5">
+                        <animateTransform attributeName="transform" type="rotate" from="0 70 70" to="360 70 70" dur="14s" repeatCount="indefinite"/>
+                    </circle>
+                    <circle cx="70" cy="74" r="34" fill="<?php echo $activeCompanion['accent']; ?>" fill-opacity="0.25" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="2"/>
+                    <circle cx="59" cy="66" r="5" fill="#fafafa"/>
+                    <circle cx="81" cy="66" r="5" fill="#fafafa"/>
+                    <path d="M 62 84 Q 70 92 78 84" stroke="#fafafa" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <?php if ($bond['stage'] !== 'Hatchling'): ?>
+                        <path d="M 40 48 L 52 58 M 100 48 L 88 58" stroke="<?php echo $activeCompanion['accent']; ?>" stroke-width="3" stroke-linecap="round"/>
+                    <?php endif; ?>
+                    <?php if ($bond['stage'] === 'Sovereign'): ?>
+                        <path d="M 54 34 L 62 26 L 70 34 L 78 26 L 86 34" fill="none" stroke="#f59e0b" stroke-width="3" stroke-linejoin="round"/>
+                    <?php endif; ?>
+                </svg>
+            <?php endif; ?>
             <div class="mt-2" style="font-size: 0.92rem; font-weight: 600; color: <?php echo $activeCompanion['accent']; ?>;">
                 <?php echo htmlspecialchars($activeCompanion['name']); ?>
             </div>
@@ -421,10 +428,17 @@ unset($_SESSION['skill_toast']);
         <div class="col-md-7">
             <div class="text-muted mb-2" style="font-size: 0.78rem;">Ganti Familiar aktif — bonus mengikuti bond level masing-masing familiar:</div>
             <div class="d-flex flex-column gap-2">
-                <?php foreach ($companionsCatalog as $key => $comp): $isActive = $key === $activeCompanionKey; ?>
+                <?php foreach ($companionsCatalog as $key => $comp): 
+                    $isActive = $key === $activeCompanionKey; 
+                    $hasCompImg = !empty($comp['image']) && file_exists(__DIR__ . '/../' . $comp['image']);
+                ?>
                     <div class="p-2 d-flex justify-content-between align-items-center" style="border: 1px solid <?php echo $isActive ? $comp['accent'] : 'var(--border-hairline)'; ?>; border-radius: 10px; background: rgba(255,255,255,0.02);">
                         <div class="d-flex align-items-center gap-2">
-                            <i class="fas <?php echo $comp['icon']; ?>" style="color: <?php echo $comp['accent']; ?>;"></i>
+                            <?php if ($hasCompImg): ?>
+                                <img src="../<?php echo htmlspecialchars($comp['image']); ?>" alt="<?php echo htmlspecialchars($comp['name']); ?>" style="width: 32px; height: 32px; object-fit: contain; border-radius: 6px; border: 1px solid var(--border-hairline); background: var(--bg-surface); flex-shrink: 0;">
+                            <?php else: ?>
+                                <i class="fas <?php echo $comp['icon']; ?>" style="color: <?php echo $comp['accent']; ?>;"></i>
+                            <?php endif; ?>
                             <div>
                                 <div style="font-size: 0.82rem; font-weight: 600;"><?php echo htmlspecialchars($comp['name']); ?><?php echo $isActive ? ' <span class="badge-status accent font-mono" style="font-size: 0.6rem;">Aktif</span>' : ''; ?></div>
                                 <div class="text-muted" style="font-size: 0.7rem;"><?php echo htmlspecialchars($comp['bonus']); ?></div>

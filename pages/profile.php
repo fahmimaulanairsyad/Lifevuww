@@ -457,7 +457,11 @@ require_once __DIR__ . '/../includes/header.php';
             $profBond = game_companion_level((int) ($user['companion_exp'] ?? 0));
             ?>
             <div class="mb-3 d-inline-flex align-items-center gap-2" style="font-size: 0.78rem; border: 1px solid <?php echo $profComp['accent']; ?>44; border-radius: 999px; padding: 0.3rem 0.8rem;">
-                <i class="fas <?php echo $profComp['icon']; ?>" style="color: <?php echo $profComp['accent']; ?>;"></i>
+                <?php if (!empty($profComp['image']) && file_exists(__DIR__ . '/../' . $profComp['image'])): ?>
+                    <img src="../<?php echo htmlspecialchars($profComp['image']); ?>" alt="" style="width: 18px; height: 18px; object-fit: contain; border-radius: 4px;">
+                <?php else: ?>
+                    <i class="fas <?php echo $profComp['icon']; ?>" style="color: <?php echo $profComp['accent']; ?>;"></i>
+                <?php endif; ?>
                 <?php echo htmlspecialchars($profComp['name']); ?>
                 <span class="font-mono text-muted"><?php echo $profBond['stage']; ?> Lv.<?php echo $profBond['bond_level']; ?></span>
             </div>
@@ -671,9 +675,15 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="col-md-4">
                     <div class="bento-panel spotlight-card holo-card p-3 h-100" style="background: var(--bg-surface-hover); border-color: var(--accent-border);">
                         <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div style="width: 36px; height: 36px; border-radius: var(--radius); background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
-                                <i class="fas <?php echo htmlspecialchars($rInfo['icon']); ?>"></i>
-                            </div>
+                            <?php 
+                            $hasRelicImg = !empty($rInfo['image']) && file_exists(__DIR__ . '/../' . $rInfo['image']);
+                            if ($hasRelicImg): ?>
+                                <img src="../<?php echo htmlspecialchars($rInfo['image']); ?>" alt="<?php echo htmlspecialchars($rInfo['name']); ?>" style="width: 36px; height: 36px; object-fit: contain; border-radius: 6px; border: 1px solid var(--accent-border);">
+                            <?php else: ?>
+                                <div style="width: 36px; height: 36px; border-radius: var(--radius); background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                    <i class="fas <?php echo htmlspecialchars($rInfo['icon']); ?>"></i>
+                                </div>
+                            <?php endif; ?>
                             <span class="relic-badge-slot"><?php echo htmlspecialchars($rInfo['badge']); ?></span>
                         </div>
                         <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary); margin-bottom: 2px;">

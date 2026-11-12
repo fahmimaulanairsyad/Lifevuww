@@ -101,6 +101,40 @@ canvas {
     max-width: 100%;
 }
 
+/* RPG Asset Images Strict Constraints */
+img[src*="assets/images/bosses/"],
+img[src*="assets/images/companions/"],
+img[src*="assets/images/relics/"] {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.boss-img-display {
+    width: 120px !important;
+    height: 120px !important;
+    max-width: 120px !important;
+    max-height: 120px !important;
+    object-fit: contain !important;
+}
+
+.companion-hero-img {
+    width: 110px !important;
+    height: 110px !important;
+    max-width: 110px !important;
+    max-height: 110px !important;
+    object-fit: contain !important;
+}
+
+.relic-card-img {
+    width: 44px !important;
+    height: 44px !important;
+    max-width: 44px !important;
+    max-height: 44px !important;
+    object-fit: contain !important;
+}
+
 .bento-panel,
 .metric-strip,
 .metric-cell,
@@ -1671,26 +1705,43 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .toast-reward.gold { color: var(--status-warning); }
 .toast-reward.streak { color: #f97316; }
 
-/* Streak Nag Banner (desktop position) */
+/* Streak Nag Notification (Floating Snackbar above bottom dock) */
 .nag-banner {
     position: fixed;
-    top: 0;
-    left: var(--sidebar-width);
-    right: 0;
-    z-index: 90;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    right: 1.5rem;
+    left: auto;
+    max-width: 380px;
+    z-index: 990;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.5rem 1rem;
-    background-color: rgba(24, 24, 28, 0.97);
-    border-bottom: 1px solid var(--accent-border);
-    font-size: 0.8rem;
+    gap: 0.65rem;
+    padding: 0.65rem 0.95rem;
+    background-color: rgba(20, 20, 24, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 12px;
+    font-size: 0.78rem;
     color: var(--text-primary);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+    animation: nagSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes nagSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .nag-icon {
     color: var(--status-warning);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     flex-shrink: 0;
 }
 
@@ -1698,29 +1749,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     flex: 1;
     min-width: 0;
     line-height: 1.35;
+    font-size: 0.78rem;
 }
 
 .nag-cta {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
     flex-shrink: 0;
-    border-radius: var(--radius);
+    border-radius: 8px;
     background-color: var(--accent);
-    color: #042f2e;
-    font-size: 0.7rem;
+    color: #ffffff;
+    font-size: 0.72rem;
     transition: transform 0.1s ease, background-color 0.15s ease;
+    text-decoration: none;
 }
 
 .nag-cta:hover {
     background-color: var(--accent-hover);
-    color: #042f2e;
+    color: #ffffff;
 }
 
 .nag-cta:active {
-    transform: scale(0.9);
+    transform: scale(0.92);
 }
 
 .nag-close {
@@ -1733,7 +1786,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     border: none;
     background: transparent;
     color: var(--text-muted);
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     border-radius: var(--radius);
     cursor: pointer;
     transition: color 0.15s ease, background-color 0.15s ease;
@@ -1742,11 +1795,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .nag-close:hover {
     color: var(--text-primary);
     background-color: var(--bg-surface-hover);
-}
-
-/* Push content down when the nag banner is visible (no overlap) */
-body.nag-active .app-main {
-    padding-top: calc(2.25rem + var(--nag-h, 0px));
 }
 
 /* ==========================================================
@@ -1977,22 +2025,20 @@ body.nag-active .app-main {
     .page-subtitle { font-size: 0.78rem; }
 
     .nag-banner {
-        top: calc(52px + env(safe-area-inset-top, 0px));
-        left: 0;
-        font-size: 0.74rem;
-        padding: 0.45rem 0.7rem;
-        gap: 0.45rem;
+        top: auto;
+        bottom: calc(72px + env(safe-area-inset-bottom, 12px));
+        left: 12px;
+        right: 12px;
+        margin: 0 auto;
+        max-width: 440px;
+        font-size: 0.76rem;
+        padding: 0.55rem 0.8rem;
+        gap: 0.5rem;
     }
 
-    .nag-icon { font-size: 0.75rem; }
+    .nag-icon { font-size: 0.85rem; }
     .nag-cta,
-    .nag-close { width: 22px; height: 22px; font-size: 0.65rem; }
-
-    /* Konten turun mengikuti tinggi banner, tidak saling tumpuk */
-    body.nag-active .app-main {
-        margin-top: calc(52px + var(--nag-h, 0px) + env(safe-area-inset-top, 0px));
-        padding-top: 1.25rem;
-    }
+    .nag-close { width: 24px; height: 24px; font-size: 0.7rem; }
 
     /* 2x2 Metric Strip */
     .metric-strip {
@@ -2227,6 +2273,30 @@ body.nag-active .app-main {
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+    }
+
+    /* Focus Rift Mobile Optimization */
+    .rift-dial-container {
+        width: 190px !important;
+        height: 190px !important;
+        margin: 0.6rem auto !important;
+    }
+    .rift-svg-dial {
+        width: 190px !important;
+        height: 190px !important;
+    }
+    .rift-timer-display {
+        font-size: 2.45rem !important;
+    }
+    .rift-intensity-card {
+        padding: 0.6rem 0.4rem !important;
+    }
+    .rift-intensity-card .badge-status {
+        font-size: 0.6rem !important;
+    }
+    .rift-attr-pill {
+        padding: 0.28rem 0.55rem !important;
+        font-size: 0.72rem !important;
     }
 }
 
@@ -3468,12 +3538,14 @@ html[data-aura="violet"] {
 /* Focus Rift Pomodoro Battle Timer */
 .rift-timer-display {
     font-family: var(--font-mono);
-    font-size: 3.5rem;
+    font-size: 2.85rem;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
     color: var(--text-primary);
     text-shadow: 0 0 24px var(--accent-dim);
+    position: relative;
+    z-index: 2;
 }
 
 .rift-dial-container {
@@ -3489,10 +3561,13 @@ html[data-aura="violet"] {
 
 .rift-svg-dial {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     transform: rotate(-90deg);
+    transform-origin: center center;
+    pointer-events: none;
 }
 
 .rift-svg-track {
@@ -4181,19 +4256,26 @@ body.is-reordering-active {
 
 @media (max-width: 768px) {
     .timeblock-card {
-        left: 55px;
+        left: 56px;
         right: 0.5rem;
         padding: 0.45rem 0.6rem;
     }
 
     .timeline-hour-label {
-        width: 48px;
-        padding-left: 0.4rem;
+        width: 50px;
+        padding-left: 0.25rem;
         font-size: 0.68rem;
     }
 
     .timeline-live-line {
-        left: 45px;
+        left: 54px;
+    }
+
+    .timeline-live-badge {
+        left: -48px;
+        padding: 1px 4px;
+        font-size: 0.62rem;
+        white-space: nowrap;
     }
 
     .month-cell {

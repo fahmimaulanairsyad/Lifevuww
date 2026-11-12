@@ -355,7 +355,7 @@
 
                 <!-- SVG Dial & Timer Display -->
                 <div class="rift-dial-container">
-                    <svg class="rift-svg-dial" viewBox="0 0 200 200">
+                    <svg class="rift-svg-dial" width="220" height="220" viewBox="0 0 200 200">
                         <circle class="rift-svg-track" cx="100" cy="100" r="85"></circle>
                         <circle class="rift-svg-progress" id="riftProgressCircle" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="0"></circle>
                     </svg>
@@ -724,22 +724,14 @@
 
         function showNagBanner(incomplete, streak) {
             if (sessionStorage.getItem('lv_nag_dismissed')) return;
+            if (window.location.pathname.endsWith('habits.php')) return;
             const bar = document.getElementById('nagBanner');
             const txt = document.getElementById('nagText');
             if (!bar || !txt) return;
             txt.textContent = nagMessage(incomplete, streak);
-            bar.style.display = '';
-            document.body.classList.add('nag-active');
-            // Geser konten agar tidak tertimpa banner
-            const measure = () => {
-                document.documentElement.style.setProperty('--nag-h', bar.offsetHeight + 'px');
-            };
-            measure();
-            window.addEventListener('resize', measure);
+            bar.style.display = 'flex';
             document.getElementById('nagClose').addEventListener('click', () => {
                 bar.style.display = 'none';
-                document.body.classList.remove('nag-active');
-                document.documentElement.style.setProperty('--nag-h', '0px');
                 sessionStorage.setItem('lv_nag_dismissed', '1');
             }, { once: true });
         }

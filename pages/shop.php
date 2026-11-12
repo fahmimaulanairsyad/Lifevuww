@@ -479,9 +479,15 @@ $isHpFull = (($navUser['hp'] ?? 100) >= ($navUser['max_hp'] ?? 100));
                 <div class="bento-panel spotlight-card holo-card d-flex flex-column justify-content-between p-3 h-100 position-relative" style="<?php echo $isOwned ? 'border-color: var(--accent-border); background: rgba(16, 185, 129, 0.04);' : ($userGold < $relic['cost'] ? 'opacity: 0.75;' : ''); ?>">
                     <div>
                         <div class="d-flex align-items-start justify-content-between mb-2">
-                            <div style="width: 38px; height: 38px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
-                                <i class="fas <?php echo htmlspecialchars($relic['icon']); ?>"></i>
-                            </div>
+                            <?php 
+                            $hasRelicImg = !empty($relic['image']) && file_exists(__DIR__ . '/../' . $relic['image']);
+                            if ($hasRelicImg): ?>
+                                <img src="../<?php echo htmlspecialchars($relic['image']); ?>" alt="<?php echo htmlspecialchars($relic['name']); ?>" class="relic-card-img" style="width: 44px; height: 44px; max-width: 44px; max-height: 44px; object-fit: contain; border-radius: 8px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover);">
+                            <?php else: ?>
+                                <div style="width: 38px; height: 38px; border-radius: var(--radius); background-color: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                                    <i class="fas <?php echo htmlspecialchars($relic['icon']); ?>"></i>
+                                </div>
+                            <?php endif; ?>
                             <span class="badge-status <?php echo $isOwned ? 'accent' : 'font-mono'; ?>" style="font-size: 0.68rem;">
                                 <?php echo htmlspecialchars($relic['badge']); ?>
                             </span>
