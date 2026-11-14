@@ -355,12 +355,14 @@
 
                 <!-- SVG Dial & Timer Display -->
                 <div class="rift-dial-container">
-                    <svg class="rift-svg-dial" width="220" height="220" viewBox="0 0 200 200">
+                    <svg class="rift-svg-dial" viewBox="0 0 200 200">
                         <circle class="rift-svg-track" cx="100" cy="100" r="85"></circle>
-                        <circle class="rift-svg-progress" id="riftProgressCircle" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="0"></circle>
+                        <circle class="rift-svg-progress" id="riftProgressCircle" cx="100" cy="100" r="85" stroke-dasharray="534" stroke-dashoffset="0" transform="rotate(-90 100 100)"></circle>
                     </svg>
-                    <div class="rift-timer-display" id="riftTimerText">25:00</div>
-                    <div class="text-muted font-mono mt-1" id="riftRewardText" style="font-size: 0.75rem;">+20 EXP • +15 Gold</div>
+                    <div class="rift-dial-content">
+                        <div class="rift-timer-display" id="riftTimerText">25:00</div>
+                        <div class="text-muted font-mono" id="riftRewardText" style="font-size: 0.75rem;">+20 EXP • +15 Gold</div>
+                    </div>
                 </div>
 
                 <div class="p-2 mb-3 text-center" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-hairline); border-radius: var(--radius); font-size: 0.75rem; color: var(--text-secondary);" id="riftChallengeNote">
@@ -689,7 +691,7 @@
         /* ============ PWA: service worker + install prompt ============ */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../sw.js?v=20261104_02').catch((err) => {
+                navigator.serviceWorker.register('../sw.js?v=20261114_01').catch((err) => {
                     console.warn('SW registration failed:', err);
                 });
             });

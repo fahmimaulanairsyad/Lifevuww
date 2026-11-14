@@ -2140,6 +2140,59 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         max-height: 85vh;
         overflow-y: auto;
     }
+
+    /* 1. Native iOS/Android Bottom Sheet Modals (All Mobile Screens <= 768px) */
+    .modal.show {
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+        padding: 0 !important;
+    }
+
+    .modal .modal-dialog {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+    }
+
+    .modal .modal-content,
+    .custom-modal,
+    .custom-modal-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
+        border-radius: 22px 22px 0 0 !important;
+        max-height: 88vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 12px)) !important;
+        animation: sheetSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.75) !important;
+    }
+
+    .modal-content::before,
+    .custom-modal-box::before {
+        content: '';
+        display: block;
+        width: 36px;
+        height: 4px;
+        border-radius: 99px;
+        background: rgba(255, 255, 255, 0.2);
+        margin: 0 auto 14px;
+        flex-shrink: 0;
+    }
+
+    #lvCommandPalette.show {
+        align-items: center !important;
+    }
+    #lvCommandPalette .modal-dialog {
+        margin: 1rem auto !important;
+        max-width: calc(100vw - 24px) !important;
+        width: calc(100vw - 24px) !important;
+    }
+    #lvCommandPalette .modal-content {
+        border-radius: calc(var(--radius) * 1.5) !important;
+    }
 }
 
 /* Native Bottom-Sheet Modals, Ergonomi Tombol & Etalase Lencana di Layar HP (< 640px) */
@@ -2148,17 +2201,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     .modal.show {
         display: flex !important;
         align-items: flex-end !important;
+        justify-content: center !important;
         padding: 0 !important;
     }
 
     .modal .modal-dialog {
         width: 100% !important;
         max-width: 100% !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
     }
 
     .modal .modal-content,
+    .custom-modal,
     .custom-modal-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
         border-radius: 22px 22px 0 0 !important;
         max-height: 88vh !important;
         overflow-y: auto !important;
@@ -2280,13 +2338,39 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         width: 190px !important;
         height: 190px !important;
         margin: 0.6rem auto !important;
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     .rift-svg-dial {
-        width: 190px !important;
-        height: 190px !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        transform: none !important;
+        pointer-events: none !important;
+    }
+    .rift-dial-content {
+        position: relative !important;
+        z-index: 2 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        gap: 2px !important;
+        pointer-events: none !important;
     }
     .rift-timer-display {
         font-size: 2.45rem !important;
+        line-height: 1 !important;
+        margin-bottom: 0 !important;
+    }
+    #riftRewardText {
+        font-size: 0.72rem !important;
+        margin-top: 2px !important;
     }
     .rift-intensity-card {
         padding: 0.6rem 0.4rem !important;
@@ -3536,25 +3620,12 @@ html[data-aura="violet"] {
 }
 
 /* Focus Rift Pomodoro Battle Timer */
-.rift-timer-display {
-    font-family: var(--font-mono);
-    font-size: 2.85rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--text-primary);
-    text-shadow: 0 0 24px var(--accent-dim);
-    position: relative;
-    z-index: 2;
-}
-
 .rift-dial-container {
     position: relative;
     width: 220px;
     height: 220px;
     margin: 1rem auto;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
 }
@@ -3565,8 +3636,7 @@ html[data-aura="violet"] {
     left: 0;
     width: 100%;
     height: 100%;
-    transform: rotate(-90deg);
-    transform-origin: center center;
+    transform: none;
     pointer-events: none;
 }
 
@@ -3581,7 +3651,29 @@ html[data-aura="violet"] {
     stroke: var(--accent);
     stroke-width: 8;
     stroke-linecap: round;
+    transform-origin: 100px 100px;
     transition: stroke-dashoffset 0.8s linear, stroke 0.3s ease;
+}
+
+.rift-dial-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+}
+
+.rift-timer-display {
+    font-family: var(--font-mono);
+    font-size: 2.85rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    text-shadow: 0 0 24px var(--accent-dim);
 }
 
 .rift-intensity-card {

@@ -48,7 +48,7 @@ $activeHtmlAura = $serverAura ?: 'emerald';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261112_01" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261114_01" rel="stylesheet">
     <!-- Cache-proof mobile v3 fix: inline di head agar tidak pernah tertahan
          cache CSS eksternal di WebView APK / browser HP -->
     <style id="lv-mobile-v3-fix">
@@ -57,6 +57,14 @@ $activeHtmlAura = $serverAura ?: 'emerald';
             #floatingDock .dock-item.dock-more-btn { display: inline-flex !important; }
             .top-navbar .nav-hide-mobile, .hud-nav-links .nav-hide-mobile { display: none !important; }
             .week-schedule-grid { grid-template-columns: 1fr !important; min-width: 0 !important; }
+            .modal.show { display: flex !important; align-items: flex-end !important; justify-content: center !important; padding: 0 !important; }
+            .modal .modal-dialog { width: 100% !important; max-width: 100% !important; margin: 0 auto !important; }
+            .modal .modal-content, .custom-modal, .custom-modal-box { width: 100% !important; max-width: 100% !important; margin: 0 auto !important; border-radius: 22px 22px 0 0 !important; }
+            .rift-dial-container { width: 190px !important; height: 190px !important; margin: 0.6rem auto !important; position: relative !important; display: flex !important; align-items: center !important; justify-content: center !important; }
+            .rift-svg-dial { width: 100% !important; height: 100% !important; top: 0 !important; left: 0 !important; transform: none !important; }
+            .rift-dial-content { position: relative !important; z-index: 2 !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; text-align: center !important; gap: 2px !important; }
+            .rift-timer-display { font-size: 2.45rem !important; line-height: 1 !important; margin-bottom: 0 !important; }
+            #riftRewardText { font-size: 0.72rem !important; margin-top: 2px !important; }
         }
         @media (min-width: 769px) {
             #floatingDock .dock-item.dock-more-btn, #mobileMoreDrawer, #mobileMoreBackdrop { display: none !important; }

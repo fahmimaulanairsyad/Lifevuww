@@ -3,7 +3,7 @@
    - Images/icons: CACHE-FIRST (rarely change, safe to keep offline)
    - PHP pages: NETWORK-FIRST, never cached (session data safety)
 */
-const CACHE_NAME = 'lifevuww-v10';
+const CACHE_NAME = 'lifevuww-v14';
 const PRECACHE = [
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
