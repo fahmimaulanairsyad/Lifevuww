@@ -340,14 +340,7 @@ $dashBond = game_companion_level((int) ($user['companion_exp'] ?? 0));
 $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['overdrive_until']) > time();
 ?>
 <div class="bento-panel mb-4 p-2 px-3 d-flex flex-wrap align-items-center gap-3" style="font-size: 0.76rem;">
-    <span title="Astral Companion aktif" class="d-inline-flex align-items-center gap-1">
-        <?php if (!empty($dashComp['image']) && file_exists(__DIR__ . '/../' . $dashComp['image'])): ?>
-            <img src="../<?php echo htmlspecialchars($dashComp['image']); ?>" alt="" style="width: 16px; height: 16px; object-fit: contain; border-radius: 3px;">
-        <?php else: ?>
-            <i class="fas <?php echo $dashComp['icon']; ?> me-1" style="color: <?php echo $dashComp['accent']; ?>;"></i>
-        <?php endif; ?>
-        <?php echo htmlspecialchars($dashComp['name']); ?> <span class="font-mono text-muted">(<?php echo $dashBond['stage']; ?> Lv.<?php echo $dashBond['bond_level']; ?>)</span>
-    </span>
+    <span title="Astral Companion aktif"><i class="fas <?php echo $dashComp['icon']; ?> me-1" style="color: <?php echo $dashComp['accent']; ?>;"></i> <?php echo htmlspecialchars($dashComp['name']); ?> <span class="font-mono text-muted">(<?php echo $dashBond['stage']; ?> Lv.<?php echo $dashBond['bond_level']; ?>)</span></span>
     <span title="Skill Points tersedia" class="font-mono"><i class="fas fa-sitemap text-accent me-1"></i> SP: <?php echo game_available_skill_points((int) ($user['level'] ?? 1), (int) ($user['spent_skill_points'] ?? 0)); ?></span>
     <?php if ($dashOverdrive): ?>
         <span class="badge-status warning font-mono"><i class="fas fa-bolt me-1"></i> OVERDRIVE +50% EXP s/d <?php echo htmlspecialchars(date('H:i', strtotime((string) $user['overdrive_until']))); ?></span>

@@ -691,7 +691,7 @@
         /* ============ PWA: service worker + install prompt ============ */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../sw.js?v=20261114_01').catch((err) => {
+                navigator.serviceWorker.register('../sw.js?v=20261115_01').catch((err) => {
                     console.warn('SW registration failed:', err);
                 });
             });

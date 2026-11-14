@@ -118,23 +118,16 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
 <div class="bento-panel spotlight-card holo-card mb-4">
     <div class="row g-4 align-items-center">
         <div class="col-md-5 text-center">
-            <?php $hasBossImg = !empty($boss['image']) && file_exists(__DIR__ . '/../' . $boss['image']); ?>
-            <?php if ($hasBossImg): ?>
-                <div class="mb-2 position-relative d-inline-block">
-                    <img src="../<?php echo htmlspecialchars($boss['image']); ?>" alt="<?php echo htmlspecialchars($boss['name']); ?>" class="boss-img-display" style="width: 120px; height: 120px; max-width: 120px; max-height: 120px; object-fit: contain; border-radius: 16px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover); <?php echo $defeated ? 'opacity: 0.35; filter: grayscale(1);' : ''; ?>">
-                </div>
-            <?php else: ?>
-                <svg width="170" height="170" viewBox="0 0 170 170" style="overflow: visible;">
-                    <circle cx="85" cy="85" r="70" fill="none" stroke="<?php echo $boss['color']; ?>" stroke-opacity="<?php echo $defeated ? 0.15 : 0.5; ?>" stroke-width="4" stroke-dasharray="10 6">
-                        <animateTransform attributeName="transform" type="rotate" from="0 85 85" to="360 85 85" dur="18s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="85" cy="85" r="52" fill="<?php echo $defeated ? 'rgba(16,185,129,0.10)' : $boss['color']; ?>" fill-opacity="<?php echo $defeated ? 0.4 : 0.18; ?>" stroke="<?php echo $defeated ? 'var(--accent)' : $boss['color']; ?>" stroke-width="2.5"/>
-                    <circle cx="70" cy="80" r="5" fill="#fafafa"/>
-                    <circle cx="100" cy="80" r="5" fill="#fafafa"/>
-                    <path d="M 74 100 Q 85 110 96 100" stroke="<?php echo $defeated ? '#10b981' : '#fafafa'; ?>" stroke-width="3" fill="none" stroke-linecap="round"/>
-                    <path d="M 62 58 L 74 66 M 108 58 L 96 66" stroke="<?php echo $boss['color']; ?>" stroke-width="3.5" stroke-linecap="round"/>
-                </svg>
-            <?php endif; ?>
+            <svg width="170" height="170" viewBox="0 0 170 170" style="overflow: visible;">
+                <circle cx="85" cy="85" r="70" fill="none" stroke="<?php echo $boss['color']; ?>" stroke-opacity="<?php echo $defeated ? 0.15 : 0.5; ?>" stroke-width="4" stroke-dasharray="10 6">
+                    <animateTransform attributeName="transform" type="rotate" from="0 85 85" to="360 85 85" dur="18s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="85" cy="85" r="52" fill="<?php echo $defeated ? 'rgba(16,185,129,0.10)' : $boss['color']; ?>" fill-opacity="<?php echo $defeated ? 0.4 : 0.18; ?>" stroke="<?php echo $defeated ? 'var(--accent)' : $boss['color']; ?>" stroke-width="2.5"/>
+                <circle cx="70" cy="80" r="5" fill="#fafafa"/>
+                <circle cx="100" cy="80" r="5" fill="#fafafa"/>
+                <path d="M 74 100 Q 85 110 96 100" stroke="<?php echo $defeated ? '#10b981' : '#fafafa'; ?>" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <path d="M 62 58 L 74 66 M 108 58 L 96 66" stroke="<?php echo $boss['color']; ?>" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
             <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0.5rem 0 0.1rem;"><?php echo htmlspecialchars($boss['name']); ?></h2>
             <span class="badge-status danger font-mono mb-2"><i class="fas fa-skull me-1"></i> <?php echo htmlspecialchars($boss['gate']); ?> BOSS</span>
             <?php if ($defeated): ?>
@@ -151,14 +144,7 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
             </div>
             <div class="d-flex flex-wrap gap-3 mt-3 font-mono" style="font-size: 0.76rem;">
                 <span class="text-accent"><i class="fas fa-gavel me-1"></i> Total damage: <?php echo number_format($totalDmg); ?></span>
-                <span class="d-inline-flex align-items-center gap-1">
-                    <?php if (!empty($comp['image']) && file_exists(__DIR__ . '/../' . $comp['image'])): ?>
-                        <img src="../<?php echo htmlspecialchars($comp['image']); ?>" alt="" style="width: 16px; height: 16px; object-fit: contain; border-radius: 3px;">
-                    <?php else: ?>
-                        <i class="fas <?php echo $comp['icon']; ?> me-1" style="color: <?php echo $comp['accent']; ?>;"></i>
-                    <?php endif; ?>
-                    <?php echo htmlspecialchars($comp['name']); ?> (<?php echo $bond['stage']; ?> Lv.<?php echo $bond['bond_level']; ?> ×<?php echo number_format($bond['bonus_scale'], 2); ?>)
-                </span>
+                <span><i class="fas <?php echo $comp['icon']; ?> me-1" style="color: <?php echo $comp['accent']; ?>;"></i> <?php echo htmlspecialchars($comp['name']); ?> (<?php echo $bond['stage']; ?> Lv.<?php echo $bond['bond_level']; ?> ×<?php echo number_format($bond['bonus_scale'], 2); ?>)</span>
             </div>
 
             <div class="d-flex flex-wrap gap-2 mt-3">

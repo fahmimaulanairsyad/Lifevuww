@@ -101,40 +101,6 @@ canvas {
     max-width: 100%;
 }
 
-/* RPG Asset Images Strict Constraints */
-img[src*="assets/images/bosses/"],
-img[src*="assets/images/companions/"],
-img[src*="assets/images/relics/"] {
-    display: block;
-    max-width: 100%;
-    height: auto;
-    object-fit: contain;
-}
-
-.boss-img-display {
-    width: 120px !important;
-    height: 120px !important;
-    max-width: 120px !important;
-    max-height: 120px !important;
-    object-fit: contain !important;
-}
-
-.companion-hero-img {
-    width: 110px !important;
-    height: 110px !important;
-    max-width: 110px !important;
-    max-height: 110px !important;
-    object-fit: contain !important;
-}
-
-.relic-card-img {
-    width: 44px !important;
-    height: 44px !important;
-    max-width: 44px !important;
-    max-height: 44px !important;
-    object-fit: contain !important;
-}
-
 .bento-panel,
 .metric-strip,
 .metric-cell,
