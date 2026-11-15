@@ -6,7 +6,7 @@ from PIL import Image
 root = Path(__file__).resolve().parents[1]
 paths = re.findall(r"assets/images/(?:bosses|companions|relics)/[^']+\.png", (root / 'config/game.php').read_text(encoding='utf-8'))
 paths.extend(str(path.relative_to(root)).replace('\\', '/') for path in (root / 'assets/images/companions').glob('*_*.png'))
-assert len(paths) == len(set(paths)) == 13
+assert len(paths) == len(set(paths)) == 33
 total = 0
 for path in paths:
     image = Image.open(root / path)
@@ -16,4 +16,4 @@ for path in paths:
     left, top, right, bottom = alpha.getbbox()
     assert left > 0 and top > 0 and right < 128 and bottom < 128, path
     total += (root / path).stat().st_size
-print(f'PASS: 13 catalog assets, RGBA 128x128, transparent margins, {total:,} bytes total')
+print(f'PASS: 13 catalog sprites + 15 evolution sprites, RGBA 128x128, transparent margins, {total:,} bytes total')
