@@ -217,21 +217,21 @@
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content text-center p-4" style="border: 1px solid var(--accent-danger); background-color: var(--bg-surface);">
                     <div style="width: 64px; height: 64px; border-radius: 50%; background-color: rgba(239, 68, 68, 0.15); color: var(--accent-danger); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem auto;">
-                        <i class="fas fa-skull"></i>
+                        <i class="fas fa-heart"></i>
                     </div>
-                    <h3 class="text-danger fw-bold mb-2">KAMU GUGUR DALAM PERTEMPURAN!</h3>
+                    <h3 class="fw-bold mb-2">Waktunya pulih</h3>
                     <p class="text-secondary" style="font-size: 0.9rem;">
-                        HP-mu habis karena kebiasaan harian terlewat atau misi yang gagal.
+                        HP-mu habis. Ambil jeda, lalu mulai lagi dengan satu langkah kecil.
                     </p>
                     <div class="p-3 my-3" style="background-color: var(--bg-base); border-radius: 8px; border: 1px solid var(--border-dim); font-family: var(--font-mono); font-size: 0.85rem;">
-                        <div class="text-danger mb-1">-<?php echo $death['lost_exp']; ?> EXP Hilang (Penalti 50%)</div>
-                        <div class="text-muted">Semua streak aktif di-reset ke 0</div>
+                        <div class="text-accent mb-1">EXP, level, dan pencapaianmu tetap tersimpan.</div>
+                        <div class="text-muted">Pemulihan ini tidak mereset streak kebiasaan lain.</div>
                     </div>
                     <p class="text-light small mb-4">
-                        Sistem telah menghidupkanmu kembali dengan HP penuh. Jangan biarkan disiplinmu kendor lagi!
+                        HP sudah dipulihkan. Pilih satu aktivitas ringan yang bisa kamu selesaikan.
                     </p>
                     <button type="button" class="btn-core btn-primary w-100 py-2" onclick="document.getElementById('deathModal').remove();">
-                        Bangkit Lagi
+                        Mulai Perlahan
                     </button>
                 </div>
             </div>
@@ -239,6 +239,11 @@
         <script>LVSound.sad();</script>
     <?php endif; ?>
 
+    <script>
+    window.addEventListener('load', function () {
+        if (new URLSearchParams(window.location.search).get('rift') === '1' && window.openFocusRiftModal) window.openFocusRiftModal('beta');
+    });
+    </script>
     <!-- Shop purchase coin sound -->
     <?php if (isset($_GET['success']) && in_array($_GET['success'], ['bought', 'healed', 'frozen'], true)): ?>
         <script>window.addEventListener('DOMContentLoaded', () => LVSound.coin());</script>
@@ -1788,6 +1793,7 @@
                 sessionStorage.removeItem(SKEY_TOTAL);
                 sessionStorage.removeItem(SKEY_KEY);
                 sessionStorage.removeItem(SKEY_ATTR);
+                sessionStorage.removeItem('lv_rift_token');
                 updateDocTitle();
 
                 const toggleBtn = document.getElementById('btnRiftToggle');
@@ -1812,6 +1818,10 @@
                 if (key && !isRunning) {
                     const card = document.querySelector(`.rift-intensity-card[data-key="${key}"]`);
                     if (card) card.click();
+                }
+                if (!document.querySelector('.rift-intensity-card.active')) {
+                    const defaultCard = document.querySelector('.rift-intensity-card[data-key="beta"]');
+                    if (defaultCard) defaultCard.click();
                 }
                 const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
                 bsModal.show();
@@ -1960,6 +1970,7 @@
                                 fd.append('csrf_token', csrfInput ? csrfInput.value : '');
                                 fd.append('action', 'start_rift');
                                 fd.append('rift_key', currentRiftKey);
+                                fd.append('goal_id', new URLSearchParams(window.location.search).get('goal') || '');
                                 try {
                                     const res = await fetch('focus_rift.php', {
                                         method: 'POST',
@@ -1979,6 +1990,7 @@
                                         }
                                         return;
                                     }
+                                    sessionStorage.setItem('lv_rift_token', data.session_token);
                                 } catch (err) {
                                     console.error('Start rift error:', err);
                                     if (window.showToast) {
@@ -2029,6 +2041,7 @@
                         sessionStorage.removeItem(SKEY_TOTAL);
                         sessionStorage.removeItem(SKEY_KEY);
                         sessionStorage.removeItem(SKEY_ATTR);
+                        sessionStorage.removeItem('lv_rift_token');
                         updateDocTitle();
                         const toggleBtn = document.getElementById('btnRiftToggle');
                         if (toggleBtn) {
@@ -2075,11 +2088,13 @@
                     sessionStorage.removeItem(SKEY_TOTAL);
                     sessionStorage.removeItem(SKEY_KEY);
                     sessionStorage.removeItem(SKEY_ATTR);
+                    sessionStorage.removeItem('lv_rift_token');
                     updateDocTitle();
 
                     const formData = new FormData();
                     formData.append('csrf_token', '<?php echo csrf_token(); ?>');
                     formData.append('rift_key', currentRiftKey);
+                    formData.append('session_token', sessionStorage.getItem('lv_rift_token') || '');
                     formData.append('attribute', selectedAttribute);
 
                     try {
@@ -2091,8 +2106,9 @@
                                 'Accept': 'application/json'
                             }
                         });
-                        const data = await res.json();
-                        if (data.success) {
+                            const data = await res.json();
+                            if (data.success) {
+                            sessionStorage.removeItem('lv_rift_token');
                             // Celebrate!
                             if (typeof fireConfetti === 'function') {
                                 fireConfetti({ particleCount: 90, spread: 65, origin: { y: 0.6 } });

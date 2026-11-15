@@ -1,6 +1,6 @@
 <div align="center">
   <img src="assets/images/logo.svg" alt="Lifevuww Logo" width="84" height="84" />
-  <h1>Lifevuww v2.0</h1>
+  <h1>Lifevuww</h1>
   <p><strong>Gamified Habit Tracker & RPG Productivity Platform</strong></p>
 
   <p>
@@ -119,7 +119,7 @@ Pilihan suara fokus prosedural **Web Audio API murni** di modal Focus Rift: Brow
 ### 2. ❤️ Sistem Nyawa (HP) & Penalti Kegagalan
 * Pengguna memiliki **100 Max HP**.
 * Mengabaikan kebiasaan yang jatuh tempo atau membiarkan misi kedaluwarsa akan memotong HP sesuai tingkat kesulitan (*Easy: -5 HP, Medium: -10 HP, Hard: -15 HP*).
-* **Game Over (HP = 0):** Karakter kehilangan **50% total EXP**, seluruh streak diputus, dan nyawa dipulihkan kembali ke 100 HP.
+* **Pemulihan (HP <= 0):** HP dipulihkan ke Max HP tanpa mengurangi EXP, level, atau pencapaian. Pemulihan tidak mereset seluruh streak; aturan ketidakhadiran pada habit yang jatuh tempo tetap berlaku.
 
 ### 3. 🔥 Multiplier Streak
 * Menjaga konsistensi berturut-turut membangun pengganda hadiah:

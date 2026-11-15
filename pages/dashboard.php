@@ -331,6 +331,27 @@ try {
     </div>
 </div>
 
+<section class="bento-panel mb-4" aria-labelledby="daily-priorities-title">
+    <h2 id="daily-priorities-title" style="font-size: 1.15rem;">Langkah berikutnya</h2>
+    <a href="journey.php" class="text-accent">Tujuan &amp; Jeda Terencana</a>
+    <p class="text-muted small">Pilih satu aktivitas. Progres besar dimulai dari langkah yang bisa dikerjakan.</p>
+    <?php $dailyPriorities = game_daily_priorities($todayTimeBlocks ?? []); ?>
+    <?php foreach ($dailyPriorities as $priority): ?>
+        <div class="d-flex align-items-center justify-content-between gap-3 py-3" style="border-top: 1px solid var(--border-hairline);">
+            <div style="min-width: 0; overflow-wrap: anywhere;">
+                <div class="fw-semibold"><?php echo htmlspecialchars($priority['title']); ?></div>
+                <div class="text-muted small"><?php echo $priority['kind'] === 'habit' ? 'Kebiasaan' : 'Misi'; ?><?php if (!empty($priority['start_time'])): ?> · <?php echo htmlspecialchars(substr($priority['start_time'], 0, 5)); ?><?php endif; ?></div>
+            </div>
+            <a class="btn-core btn-outline" style="flex-shrink: 0; white-space: nowrap;" href="<?php echo $priority['kind'] === 'habit' ? 'habits.php' : 'quests.php'; ?>">Kerjakan</a>
+        </div>
+    <?php endforeach; ?>
+    <?php if (!$dailyPriorities): ?>
+        <p>Agenda aktif sudah selesai atau belum ada aktivitas terjadwal.</p>
+        <a class="btn-core btn-outline" href="habits.php">Atur Kebiasaan</a>
+    <?php endif; ?>
+    <div class="mt-3"><a class="btn-core btn-primary" href="focus_rift.php">Mulai Fokus</a></div>
+</section>
+
 <?php
 // Sovereign Expansion: chip status Companion + Skill Tree + Overdrive
 $dashCompanions = game_companions();

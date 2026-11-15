@@ -652,6 +652,12 @@ if (!function_exists('run_daily_rollover')) {
                 $completedLogs = $stmtLogs->fetchAll(PDO::FETCH_ASSOC);
 
                 $missedByDay = game_missed_habits_by_day($allHabits, $from, $to, $completedLogs);
+                $breakStmt = $pdo->prepare("SELECT start_date, end_date FROM planned_breaks WHERE user_id = ? AND end_date >= ? AND start_date <= ?");
+                $breakStmt->execute([$userId, $from, $to]);
+                $plannedBreaks = $breakStmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach (array_keys($missedByDay) as $missedDate) {
+                    if (game_date_on_break($missedDate, $plannedBreaks)) unset($missedByDay[$missedDate]);
+                }
                 ksort($missedByDay);
 
                 $userBuffs = get_user_passive_buffs($pdo, $userId, 'General', 'rollover', 'Medium');
@@ -714,7 +720,7 @@ if (!function_exists('run_daily_rollover')) {
 
                 // 2. Expired quests
                 $stmtExp = $pdo->prepare("
-                    SELECT quest_id, difficulty FROM quests
+                    SELECT quest_id, difficulty, start_date, duration_days FROM quests
                     WHERE user_id = ? AND status = 'In Progress'
                       AND DATE_ADD(start_date, INTERVAL duration_days DAY) < CURDATE()
                 ");
@@ -722,6 +728,10 @@ if (!function_exists('run_daily_rollover')) {
                 $expired = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
                 $diffRules = game_difficulties();
                 foreach ($expired as $q) {
+                    $baseDue = date('Y-m-d',strtotime($q['start_date'].' +'.(int)$q['duration_days'].' days'));
+                    $extendedDays = game_break_days_between($baseDue,$yesterday,$plannedBreaks);
+                    $newDue = date('Y-m-d',strtotime($baseDue.' +'.$extendedDays.' days'));
+                    if ($newDue >= $today) continue;
                     $baseQd = $diffRules[$q['difficulty']]['hp_penalty_quest'] ?? 10;
                     $qd = max(1, (int) round($baseQd * $hpPenaltyMul));
                     $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")

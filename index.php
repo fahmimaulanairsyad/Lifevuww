@@ -610,7 +610,7 @@ if (isset($_SESSION['user_id'])) {
                 </div>
                 <h3 class="landing-bento-title">Konsekuensi Nyata & Sistem HP</h3>
                 <p class="landing-bento-desc">
-                    Melewatkan tugas harian akan mengurangi HP. Jika HP habis (Game Over), kamu kehilangan 50% EXP. Disiplin memiliki konsekuensi yang nyata.
+                    Aktivitas yang terlewat dapat mengurangi HP. Jika HP habis, karaktermu dipulihkan tanpa kehilangan EXP atau level. Mulai lagi dengan satu langkah kecil.
                 </p>
             </div>
         </div>

@@ -3,6 +3,56 @@
 // Sentralisasi aturan, konstanta, dan logika keseimbangan (balancing) game Lifevuww.
 
 // --- 1. Kategori / Atribut Inti ---
+function game_dungeon_scaled_hp(int $baseHp, int $weeklyCompletions): int {
+    return max(100, (int) round($baseHp * max(0.35, min(1.0, $weeklyCompletions / 20))));
+}
+
+function game_focus_tier(?string $tier): string {
+    $rifts = game_focus_rifts();
+    return ($tier !== null && isset($rifts[$tier])) ? $tier : 'beta';
+}
+
+function game_user_dungeon_hp(PDO $pdo, int $userId, int $baseHp): int {
+    $stmt = $pdo->prepare("SELECT (SELECT COUNT(*) FROM habit_logs WHERE user_id=? AND status='Completed' AND completion_date>=DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND completion_date<CURDATE()) + (SELECT COUNT(*) FROM quest_logs WHERE user_id=? AND status='Completed' AND DATE(COALESCE(completed_at,completion_date,created_at))>=DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND DATE(COALESCE(completed_at,completion_date,created_at))<CURDATE())");
+    $stmt->execute([$userId,$userId]);
+    return game_dungeon_scaled_hp($baseHp,(int)$stmt->fetchColumn());
+}
+
+function game_date_on_break(string $date, array $breaks): bool {
+    foreach ($breaks as $break) {
+        if ($date >= $break['start_date'] && $date <= $break['end_date']) return true;
+    }
+    return false;
+}
+
+function game_break_days_between(string $start, string $end, array $breaks): int {
+    $days = 0;
+    $from = new DateTimeImmutable($start);
+    $to = new DateTimeImmutable($end);
+    for ($date = $from; $date <= $to; $date = $date->modify('+1 day')) {
+        if (game_date_on_break($date->format('Y-m-d'), $breaks)) $days++;
+    }
+    return $days;
+}
+
+function game_goal_progress(int $completed, int $total): int {
+    return $total > 0 ? max(0, min(100, (int) round($completed / $total * 100))) : 0;
+}
+
+function game_daily_priorities(array $dueActivities): array {
+    return array_slice(array_values(array_filter($dueActivities, static function (array $activity): bool {
+        return empty($activity['is_done']);
+    })), 0, 3);
+}
+
+function game_recovery_state(array $user): array {
+    $recovered = (int) ($user['hp'] ?? 100) <= 0;
+    if ($recovered) {
+        $user['hp'] = max(1, (int) ($user['max_hp'] ?? 100));
+    }
+    return ['recovered' => $recovered, 'user' => $user];
+}
+
 function game_categories(): array {
     return [
         'Intelligence' => [
@@ -15,7 +65,7 @@ function game_categories(): array {
         'Physical' => [
             'id' => 3,
             'name' => 'Physical',
-            'label' => 'Fisik & Stamina (Physical)',
+            'label' => 'Gerak & Kebugaran (Physical)',
             'icon' => 'fa-dumbbell',
             'color' => 'text-danger'
         ],
@@ -29,7 +79,7 @@ function game_categories(): array {
         'Health' => [
             'id' => 4,
             'name' => 'Health',
-            'label' => 'Kesehatan (Health)',
+            'label' => 'Perawatan & Pemulihan (Health)',
             'icon' => 'fa-heart',
             'color' => 'text-accent'
         ],
@@ -1001,8 +1051,9 @@ function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $act
         if (!$raid) {
             $bossKey = game_dungeon_pick_boss_key($weekKey);
             $b = $bosses[$bossKey];
+            $scaledHp = game_user_dungeon_hp($pdo,$userId,(int)$b['hp']);
             $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp) VALUES (?, ?, ?, ?, ?)")
-                ->execute([$userId, $weekKey, $bossKey, (int) $b['hp'], (int) $b['hp']]);
+                ->execute([$userId, $weekKey, $bossKey, $scaledHp, $scaledHp]);
             $stmt->execute([$userId, $weekKey]);
             $raid = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$raid) {

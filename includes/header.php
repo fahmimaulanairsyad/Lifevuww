@@ -125,31 +125,16 @@ $activeHtmlAura = $serverAura ?: 'emerald';
             }
 
             // ==========================================
-            // LOGIKA GAME OVER / DEATH PENALTY (HP <= 0)
+            // Pemulihan menjaga progres karakter yang telah diperoleh.
             // ==========================================
             if (($navUser['hp'] ?? 100) <= 0) {
-                // Penalti: Kehilangan 50% current EXP
-                $lostExp = floor(($navUser['exp'] ?? 0) * 0.5);
-                $newExp = max(0, ($navUser['exp'] ?? 0) - $lostExp);
-                $newLevel = calculateLevel($newExp);
-
-                // Pulihkan HP ke 100, potong EXP
-                $pdo->prepare("UPDATE users SET hp = max_hp, exp = ?, level = ? WHERE user_id = ?")
-                    ->execute([$newExp, $newLevel, $_SESSION['user_id']]);
-
-                // Reset semua streak habit ke 0
-                $pdo->prepare("UPDATE habits SET streak = 0 WHERE user_id = ?")
-                    ->execute([$_SESSION['user_id']]);
-
-                // Set alert session untuk ditampilkan
-                $_SESSION['game_over'] = [
-                    'lost_exp' => $lostExp,
-                    'current_exp' => $newExp
-                ];
-
-                // Update data untuk render sidebar
-                $navUser['hp'] = $navUser['max_hp'] ?? 100;
-                $navUser['exp'] = $newExp;
+                $recovery = game_recovery_state($navUser);
+                $recoverStmt = $pdo->prepare("UPDATE users SET hp = GREATEST(1, max_hp) WHERE user_id = ? AND hp <= 0");
+                $recoverStmt->execute([$_SESSION['user_id']]);
+                if ($recoverStmt->rowCount() > 0) {
+                    $_SESSION['game_over'] = ['recovered' => true];
+                }
+                $navUser = $recovery['user'];
             }
 
             // ==========================================

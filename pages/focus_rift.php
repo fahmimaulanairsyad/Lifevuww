@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validate_csrf();
     $userId = $_SESSION['user_id'];
     $action = trim($_POST['action'] ?? '');
-    $riftKey = trim($_POST['rift_key'] ?? 'beta');
+    $riftKey = game_focus_tier(trim($_POST['rift_key'] ?? ''));
     $attribute = trim($_POST['attribute'] ?? 'Intelligence');
 
     $rifts = game_focus_rifts();
@@ -23,12 +23,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Aksi baru: start_rift
     if ($action === 'start_rift') {
+        $goalId = (int) ($_POST['goal_id'] ?? 0);
+        if ($goalId > 0) {
+            $goalStmt = $pdo->prepare('SELECT goal_id FROM life_goals WHERE goal_id=? AND user_id=?');
+            $goalStmt->execute([$goalId,$userId]);
+            if (!$goalStmt->fetchColumn()) $goalId = 0;
+        }
+        $token = bin2hex(random_bytes(32));
+        $pdo->prepare('INSERT INTO focus_rift_sessions (token,user_id,goal_id,rift_key,started_at) VALUES (?,?,?,?,NOW())')->execute([$token,$userId,$goalId ?: null,$riftKey]);
         $_SESSION['active_rift'] = [
             'key' => $riftKey,
+            'goal_id' => $goalId,
+            'token' => $token,
             'started_at' => time()
         ];
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'session_token' => $token]);
         exit();
     }
 
@@ -36,12 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $activeRift = $_SESSION['active_rift'] ?? null;
     $durationSeconds = (int) ($rifts[$riftKey]['duration_seconds'] ?? 1500);
 
-    if (
-        !is_array($activeRift) ||
-        ($activeRift['key'] ?? '') !== $riftKey ||
-        !isset($activeRift['started_at']) ||
-        (time() - (int)$activeRift['started_at']) < ($durationSeconds - RIFT_TOLERANCE_SECONDS)
-    ) {
+    $sessionToken = trim((string)($_POST['session_token'] ?? ''));
+    if (!preg_match('/^[a-f0-9]{64}$/', $sessionToken) || !is_array($activeRift) || ($activeRift['token'] ?? '') !== $sessionToken || ($activeRift['key'] ?? '') !== $riftKey || !isset($activeRift['started_at']) || (time() - (int)$activeRift['started_at']) < ($durationSeconds - RIFT_TOLERANCE_SECONDS)) {
         http_response_code(409);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
@@ -50,9 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         exit();
     }
-
-    // Sekali pakai: bersihkan active_rift SEBELUM memberi hadiah
-    unset($_SESSION['active_rift']);
 
     $cats = game_categories();
     if (!isset($cats[$attribute])) {
@@ -75,6 +78,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $pdo->beginTransaction();
     try {
+        $sessionStmt=$pdo->prepare('SELECT user_id,goal_id,rift_key,started_at,completed_at FROM focus_rift_sessions WHERE token=? AND user_id=? FOR UPDATE');
+        $sessionStmt->execute([$sessionToken,$userId]);
+        $sessionRow=$sessionStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$sessionRow || $sessionRow['completed_at'] !== null || $sessionRow['rift_key'] !== $riftKey || strtotime($sessionRow['started_at']) > time()-($durationSeconds-RIFT_TOLERANCE_SECONDS)) {
+            $pdo->rollBack(); http_response_code(409); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['success'=>false,'message'=>'Sesi fokus sudah digunakan atau belum selesai.']); exit();
+        }
         $stmtUser = $pdo->prepare("SELECT exp, level, gold, hp, max_hp, `rank` FROM users WHERE user_id = ? FOR UPDATE");
         $stmtUser->execute([$userId]);
         $user = $stmtUser->fetch(PDO::FETCH_ASSOC);
@@ -101,7 +110,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Bump skill attribute progress
         bump_skill_progress($pdo, $userId, $attribute);
 
+        $pdo->prepare('UPDATE focus_rift_sessions SET completed_at=NOW() WHERE token=? AND completed_at IS NULL')->execute([$sessionToken]);
+        if (!empty($sessionRow['goal_id'])) {
+            $pdo->prepare('INSERT INTO goal_focus_sessions (user_id,goal_id,duration_seconds) SELECT ?,goal_id,? FROM life_goals WHERE goal_id=? AND user_id=?')
+                ->execute([$userId,$durationSeconds,(int)$sessionRow['goal_id'],$userId]);
+        }
+
         $pdo->commit();
+        unset($_SESSION['active_rift']);
 
         // Dungeon Raid: serang Boss mingguan (+40..90 DMG tergantung tier rift)
         $riftKeys = array_keys($rifts);

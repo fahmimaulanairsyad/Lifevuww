@@ -390,11 +390,21 @@ unset($_SESSION['skill_toast']);
             $stageScale = ['Hatchling' => 90, 'Awakened' => 110, 'Sovereign' => 130];
             $svgSize = $stageScale[$bond['stage']] ?? 90;
             $aura = $bond['stage'] === 'Sovereign' ? 0.55 : ($bond['stage'] === 'Awakened' ? 0.35 : 0.18);
-            $hasActiveImg = !empty($activeCompanion['image']) && file_exists(__DIR__ . '/../' . $activeCompanion['image']);
+            // Only known stage suffixes and a catalog key may form an asset path.
+            $stageSuffixes = ['Hatchling' => 'hatchling', 'Awakened' => 'awakened', 'Sovereign' => 'sovereign'];
+            $activeCompanionImage = $activeCompanion['image'] ?? '';
+            $stageSuffix = $stageSuffixes[$bond['stage']] ?? null;
+            if ($stageSuffix !== null && preg_match('/\A[a-z0-9_]+\z/', $activeCompanionKey)) {
+                $stageImage = 'assets/images/companions/' . $activeCompanionKey . '_' . $stageSuffix . '.png';
+                if (is_file(__DIR__ . '/../' . $stageImage)) {
+                    $activeCompanionImage = $stageImage;
+                }
+            }
+            $hasActiveImg = $activeCompanionImage !== '' && is_file(__DIR__ . '/../' . $activeCompanionImage);
             ?>
             <?php if ($hasActiveImg): ?>
                 <div class="mb-2 d-inline-block position-relative">
-                    <img src="../<?php echo htmlspecialchars($activeCompanion['image']); ?>" alt="<?php echo htmlspecialchars($activeCompanion['name']); ?>" class="companion-hero-img" style="width: 110px; height: 110px; max-width: 110px; max-height: 110px; object-fit: contain; border-radius: 16px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover);">
+                    <img src="../<?php echo htmlspecialchars($activeCompanionImage, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($activeCompanion['name'] . ' - ' . $bond['stage'], ENT_QUOTES, 'UTF-8'); ?>" class="companion-hero-img" style="width: 110px; height: 110px; max-width: 110px; max-height: 110px; object-fit: contain; image-rendering: pixelated; border-radius: 16px; border: 1px solid var(--border-hairline); background: var(--bg-surface-hover);">
                 </div>
             <?php else: ?>
                 <svg width="<?php echo $svgSize; ?>" height="<?php echo $svgSize; ?>" viewBox="0 0 140 140" style="overflow: visible;">

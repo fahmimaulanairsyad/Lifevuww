@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Klaim loot kemenangan: EXP + Gold (+ Streak Freeze) sesuai katalog boss
     if (isset($_POST['claim_raid_reward'])) {
+        $pdo->beginTransaction();
         $weekKey = date('o-W');
         $bosses = game_dungeon_bosses();
         $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, boss_max_hp, reward_claimed FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
@@ -19,7 +20,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($raid && (int) $raid['boss_hp'] <= 0 && (int) $raid['reward_claimed'] === 0 && isset($bosses[$raid['boss_key']])) {
             $b = $bosses[$raid['boss_key']];
             try {
-                $pdo->beginTransaction();
                 $stmtUser = $pdo->prepare("SELECT exp, gold FROM users WHERE user_id = ? FOR UPDATE");
                 $stmtUser->execute([$userId]);
                 $u = $stmtUser->fetch(PDO::FETCH_ASSOC);
@@ -29,8 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $newRank = calculateRank($newLvl);
                 $pdo->prepare("UPDATE users SET exp = ?, gold = gold + ?, level = ?, `rank` = ?, streak_freeze = streak_freeze + ? WHERE user_id = ?")
                     ->execute([$newExp, (int) $b['reward_gold'], $newLvl, $newRank, (int) $b['reward_freeze'], $userId]);
-                $pdo->prepare("UPDATE dungeon_raids SET reward_claimed = 1 WHERE raid_id = ?")
-                    ->execute([(int) $raid['raid_id']]);
+                $claim = $pdo->prepare("UPDATE dungeon_raids SET reward_claimed = 1 WHERE raid_id = ? AND reward_claimed = 0 AND boss_hp <= 0");
+                $claim->execute([(int) $raid['raid_id']]);
+                if ($claim->rowCount() !== 1) { $pdo->rollBack(); header("Location: dungeon.php"); exit(); }
                 $_SESSION['reward_toast'] = [
                     'type' => 'boss',
                     'name' => "RAID CLEARED: {$b['name']} [ {$b['gate']} ]",
@@ -43,6 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($pdo->inTransaction()) $pdo->rollBack();
                 error_log("Raid reward error: " . $e->getMessage());
             }
+        } else {
+            $pdo->rollBack();
         }
         header("Location: dungeon.php");
         exit();
@@ -50,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Buka Gate tingkat berikutnya setelah Boss minggu ini dikalahkan & loot diklaim
     if (isset($_POST['next_gate'])) {
+        $pdo->beginTransaction();
         $weekKey = date('o-W');
         $bosses = game_dungeon_bosses();
         $keys = array_keys($bosses);
@@ -61,10 +65,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nextIdx = ($idx === false) ? 0 : min(count($keys) - 1, $idx + 1);
             if ($nextIdx !== $idx) {
                 $nb = $bosses[$keys[$nextIdx]];
-                $pdo->prepare("UPDATE dungeon_raids SET boss_key = ?, boss_hp = ?, boss_max_hp = ?, is_defeated = 0, reward_claimed = 0, battle_log = CONCAT(COALESCE(battle_log, ''), ?) WHERE raid_id = ?")
-                    ->execute([$keys[$nextIdx], (int) $nb['hp'], (int) $nb['hp'], json_encode([['t' => date('Y-m-d H:i:s'), 'a' => 'GATE OPENED: ' . $nb['gate'], 'd' => 0]], JSON_UNESCAPED_UNICODE), (int) $raid['raid_id']]);
+                $nextHp = game_user_dungeon_hp($pdo,$userId,(int)$nb['hp']);
+                $pdo->prepare("UPDATE dungeon_raids SET boss_key = ?, boss_hp = ?, boss_max_hp = ?, is_defeated = 0, reward_claimed = 0, battle_log = CONCAT(COALESCE(battle_log, ''), ?) WHERE raid_id = ? AND boss_key = ? AND boss_hp <= 0 AND reward_claimed = 1")
+                    ->execute([$keys[$nextIdx], $nextHp, $nextHp, json_encode([['t' => date('Y-m-d H:i:s'), 'a' => 'GATE OPENED: ' . $nb['gate'], 'd' => 0]], JSON_UNESCAPED_UNICODE), (int) $raid['raid_id'], $raid['boss_key']]);
             }
         }
+        $pdo->commit();
         header("Location: dungeon.php");
         exit();
     }
@@ -82,8 +88,9 @@ $raid = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$raid) {
     $bossKey = game_dungeon_pick_boss_key($weekKey);
     $b0 = $bosses[$bossKey];
+    $initialHp = game_user_dungeon_hp($pdo,$userId,(int)$b0['hp']);
     $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp) VALUES (?, ?, ?, ?, ?)")
-        ->execute([$userId, $weekKey, $bossKey, (int) $b0['hp'], (int) $b0['hp']]);
+        ->execute([$userId, $weekKey, $bossKey, $initialHp, $initialHp]);
     $stmt->execute([$userId, $weekKey]);
     $raid = $stmt->fetch(PDO::FETCH_ASSOC);
 }
