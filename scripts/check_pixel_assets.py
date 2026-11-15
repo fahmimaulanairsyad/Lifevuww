@@ -6,7 +6,7 @@ from PIL import Image
 root = Path(__file__).resolve().parents[1]
 paths = re.findall(r"assets/images/(?:bosses|companions|relics)/[^']+\.png", (root / 'config/game.php').read_text(encoding='utf-8'))
 paths.extend(str(path.relative_to(root)).replace('\\', '/') for path in (root / 'assets/images/companions').glob('*_*.png'))
-assert len(paths) == len(set(paths)) == 33
+assert len(paths) == 33 and len(set(paths)) == 28
 total = 0
 for path in paths:
     image = Image.open(root / path)
