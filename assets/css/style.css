@@ -97,6 +97,16 @@
     box-sizing: border-box;
 }
 
+/* Original transparent pixel sprites; explicit dimensions live on each image. */
+img[src*="assets/images/bosses/"],
+img[src*="assets/images/companions/"],
+img[src*="assets/images/relics/"] {
+    image-rendering: pixelated;
+    object-fit: contain;
+    flex-shrink: 0;
+    max-width: 100%;
+}
+
 canvas {
     max-width: 100%;
 }

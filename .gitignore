@@ -5,6 +5,12 @@
 assets/images/*
 !assets/images/logo.svg
 !assets/images/.htaccess
+!assets/images/bosses/
+!assets/images/bosses/*.png
+!assets/images/companions/
+!assets/images/companions/*.png
+!assets/images/relics/
+!assets/images/relics/*.png
 
 # Design assets
 assets/logo-concepts/
