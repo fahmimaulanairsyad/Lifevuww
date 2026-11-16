@@ -48,7 +48,7 @@ $activeHtmlAura = $serverAura ?: 'emerald';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
     <!-- Unified Stylesheet (desktop + mobile + APK via media queries) -->
-    <link href="../assets/css/style.css?v=20261115_02" rel="stylesheet">
+    <link href="../assets/css/style.css?v=20261116_02" rel="stylesheet">
     <!-- Cache-proof mobile v3 fix: inline di head agar tidak pernah tertahan
          cache CSS eksternal di WebView APK / browser HP -->
     <style id="lv-mobile-v3-fix">
@@ -193,14 +193,14 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                     <img src="../assets/images/logo.svg" alt="Logo" class="hud-logo">
                     <span class="hud-title">Lifevuww</span>
                     <span class="hud-rank-pill font-mono d-none d-sm-inline-block">
-                        <?php echo htmlspecialchars($userRankTitle); ?>
+                        <?php echo htmlspecialchars($userRankTitle); ?> · <?php echo htmlspecialchars(game_world_label('ranks',$userRankTitle)); ?>
                     </span>
                 </a>
 
                 <!-- Telemetry Control Center (Right) -->
                 <?php 
                 $currentPage = basename($_SERVER['PHP_SELF']); 
-                $isMoreActive = in_array($currentPage, ['dungeon.php', 'journal.php', 'skills.php', 'shop.php', 'history.php', 'profile.php'], true);
+                $isMoreActive = in_array($currentPage, ['journey.php', 'dungeon.php', 'journal.php', 'skills.php', 'shop.php', 'history.php', 'profile.php'], true);
                 ?>
                 <div class="hud-telemetry">
                     <!-- Unified Glass Status Capsule -->

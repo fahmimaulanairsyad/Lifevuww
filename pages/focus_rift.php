@@ -116,14 +116,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ->execute([$userId,$durationSeconds,(int)$sessionRow['goal_id'],$userId]);
         }
 
-        $pdo->commit();
-        unset($_SESSION['active_rift']);
-
         // Dungeon Raid: serang Boss mingguan (+40..90 DMG tergantung tier rift)
         $riftKeys = array_keys($rifts);
         $riftIdx = array_search($riftKey, $riftKeys, true);
         $riftDmg = 40 + ((int) ($riftIdx === false ? 0 : $riftIdx)) * 25;
         deal_dungeon_damage($pdo, (int) $userId, $riftDmg, 'Focus Rift: ' . ($rift['title'] ?? $riftKey));
+
+        $pdo->commit();
+        unset($_SESSION['active_rift']);
 
         $isLevelUp = ($newLvl > $oldLvl);
         if ($isLevelUp) {
@@ -156,7 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         exit();
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            try { $pdo->rollBack(); } catch (Throwable $cleanup) { error_log('Focus rollback: '.$cleanup->getMessage()); }
+        }
         error_log("Focus Rift claim error: " . $e->getMessage());
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');

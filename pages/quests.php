@@ -285,6 +285,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                        VALUES (?, ?, ?, 'Completed', NOW(), ?)");
                 $stmt->execute([$questId, $_SESSION['user_id'], $skillId, $expReward]);
 
+                advance_linked_goal_milestones($pdo, (int) $_SESSION['user_id'], 'quest', $questId);
+
                 $pdo->commit();
 
                 if ($isAjax) {

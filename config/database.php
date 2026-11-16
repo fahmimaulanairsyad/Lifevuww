@@ -719,19 +719,25 @@ if (!function_exists('run_daily_rollover')) {
                 $result['frozen'] = ($freezeUsed > 0);
 
                 // 2. Expired quests
+                $questBreakStmt=$pdo->prepare("SELECT quest_id,start_date,end_date,duration_days FROM quests WHERE user_id=? AND status='In Progress' FOR UPDATE");
+                $questBreakStmt->execute([$userId]);
+                foreach($questBreakStmt->fetchAll(PDO::FETCH_ASSOC) as $liveQuest) {
+                    $oldDeadline=!empty($liveQuest['end_date'])?$liveQuest['end_date']:date('Y-m-d',strtotime($liveQuest['start_date'].' +'.(int)$liveQuest['duration_days'].' days'));
+                    $extended=game_extend_quest_for_break($liveQuest['start_date'],$oldDeadline,$from,$yesterday,$plannedBreaks);
+                    if($extended!==$oldDeadline) {
+                        $extra=(int)((new DateTimeImmutable($oldDeadline))->diff(new DateTimeImmutable($extended))->days);
+                        $pdo->prepare('UPDATE quests SET end_date=?,duration_days=duration_days+? WHERE quest_id=? AND user_id=?')->execute([$extended,$extra,(int)$liveQuest['quest_id'],$userId]);
+                    }
+                }
                 $stmtExp = $pdo->prepare("
                     SELECT quest_id, difficulty, start_date, duration_days FROM quests
                     WHERE user_id = ? AND status = 'In Progress'
-                      AND DATE_ADD(start_date, INTERVAL duration_days DAY) < CURDATE()
+                      AND COALESCE(end_date,DATE_ADD(start_date, INTERVAL duration_days DAY)) < CURDATE()
                 ");
                 $stmtExp->execute([$userId]);
                 $expired = $stmtExp->fetchAll(PDO::FETCH_ASSOC);
                 $diffRules = game_difficulties();
                 foreach ($expired as $q) {
-                    $baseDue = date('Y-m-d',strtotime($q['start_date'].' +'.(int)$q['duration_days'].' days'));
-                    $extendedDays = game_break_days_between($baseDue,$yesterday,$plannedBreaks);
-                    $newDue = date('Y-m-d',strtotime($baseDue.' +'.$extendedDays.' days'));
-                    if ($newDue >= $today) continue;
                     $baseQd = $diffRules[$q['difficulty']]['hp_penalty_quest'] ?? 10;
                     $qd = max(1, (int) round($baseQd * $hpPenaltyMul));
                     $pdo->prepare("UPDATE users SET hp = GREATEST(0, hp - ?) WHERE user_id = ?")

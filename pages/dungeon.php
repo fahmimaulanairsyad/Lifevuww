@@ -12,6 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Klaim loot kemenangan: EXP + Gold (+ Streak Freeze) sesuai katalog boss
     if (isset($_POST['claim_raid_reward'])) {
         $pdo->beginTransaction();
+        $userLock=$pdo->prepare('SELECT user_id FROM users WHERE user_id=? FOR UPDATE');$userLock->execute([$userId]);
         $weekKey = date('o-W');
         $bosses = game_dungeon_bosses();
         $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, boss_max_hp, reward_claimed FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
@@ -54,10 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Buka Gate tingkat berikutnya setelah Boss minggu ini dikalahkan & loot diklaim
     if (isset($_POST['next_gate'])) {
         $pdo->beginTransaction();
+        $userLock=$pdo->prepare('SELECT user_id FROM users WHERE user_id=? FOR UPDATE');$userLock->execute([$userId]);
         $weekKey = date('o-W');
         $bosses = game_dungeon_bosses();
         $keys = array_keys($bosses);
-        $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, reward_claimed FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
+        $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, reward_claimed,capacity_count FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
         $stmt->execute([$userId, $weekKey]);
         $raid = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($raid && (int) $raid['boss_hp'] <= 0 && (int) $raid['reward_claimed'] === 1) {
@@ -65,7 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nextIdx = ($idx === false) ? 0 : min(count($keys) - 1, $idx + 1);
             if ($nextIdx !== $idx) {
                 $nb = $bosses[$keys[$nextIdx]];
-                $nextHp = game_user_dungeon_hp($pdo,$userId,(int)$nb['hp']);
+                $capacity=$raid['capacity_count'] !== null?(int)$raid['capacity_count']:game_user_weekly_completions($pdo,$userId);
+                $nextHp = game_dungeon_scaled_hp((int)$nb['hp'],$capacity);
+                $pdo->prepare('UPDATE dungeon_raids SET capacity_count=? WHERE raid_id=?')->execute([$capacity,(int)$raid['raid_id']]);
                 $pdo->prepare("UPDATE dungeon_raids SET boss_key = ?, boss_hp = ?, boss_max_hp = ?, is_defeated = 0, reward_claimed = 0, battle_log = CONCAT(COALESCE(battle_log, ''), ?) WHERE raid_id = ? AND boss_key = ? AND boss_hp <= 0 AND reward_claimed = 1")
                     ->execute([$keys[$nextIdx], $nextHp, $nextHp, json_encode([['t' => date('Y-m-d H:i:s'), 'a' => 'GATE OPENED: ' . $nb['gate'], 'd' => 0]], JSON_UNESCAPED_UNICODE), (int) $raid['raid_id'], $raid['boss_key']]);
             }
@@ -88,9 +92,10 @@ $raid = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$raid) {
     $bossKey = game_dungeon_pick_boss_key($weekKey);
     $b0 = $bosses[$bossKey];
-    $initialHp = game_user_dungeon_hp($pdo,$userId,(int)$b0['hp']);
-    $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp) VALUES (?, ?, ?, ?, ?)")
-        ->execute([$userId, $weekKey, $bossKey, $initialHp, $initialHp]);
+    $capacity=game_user_weekly_completions($pdo,$userId);
+    $initialHp = game_dungeon_scaled_hp((int)$b0['hp'],$capacity);
+    $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp,capacity_count) VALUES (?, ?, ?, ?, ?, ?)")
+        ->execute([$userId, $weekKey, $bossKey, $initialHp, $initialHp,$capacity]);
     $stmt->execute([$userId, $weekKey]);
     $raid = $stmt->fetch(PDO::FETCH_ASSOC);
 }
@@ -116,8 +121,8 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
 
 <div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
-        <h1 class="page-title"><i class="fas fa-dungeon text-danger me-1"></i> Dungeon Raid</h1>
-        <p class="page-subtitle">Boss mingguan berganti setiap minggu — serang lewat Habit, Misi, Focus Rift, dan Jurnal.</p>
+        <h1 class="page-title"><i class="fas fa-dungeon text-danger me-1"></i> Ekspedisi Poros</h1>
+        <p class="page-subtitle">Urai Simpul Penghalang melalui kebiasaan, misi, Ruang Fokus, dan jurnal. Tantangan berganti tiap minggu.</p>
     </div>
     <span class="badge-status font-mono">Minggu <?php echo htmlspecialchars($weekKey); ?> • <?php echo htmlspecialchars($boss['gate']); ?></span>
 </div>
@@ -142,7 +147,9 @@ $bond = game_companion_level((int) ($meRow['companion_exp'] ?? 0));
                     <path d="M 62 58 L 74 66 M 108 58 L 96 66" stroke="<?php echo $boss['color']; ?>" stroke-width="3.5" stroke-linecap="round"/>
                 </svg>
             <?php endif; ?>
-            <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0.5rem 0 0.1rem;"><?php echo htmlspecialchars($boss['name']); ?></h2>
+            <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0.5rem 0 0.1rem;"><?php echo htmlspecialchars(game_world_label('bosses',$raid['boss_key'])); ?></h2>
+            <p class="small text-muted"><?php echo htmlspecialchars($boss['name']); ?></p>
+            <p class="small text-muted mt-2"><?php if($raid['capacity_count'] !== null): ?>Target ekspedisi ditetapkan dari <?php echo (int)$raid['capacity_count']; ?> habit/misi yang selesai selama tujuh tanggal sebelum ekspedisi dibuka. Skala 35%-100%, minimum 100 HP. Target tetap sampai boss selesai dan memakai skala yang sama untuk wilayah berikutnya.<?php else: ?>Ekspedisi ini dibuat sebelum pencatatan kapasitas tersedia. HP yang sudah ditetapkan tetap dipertahankan.<?php endif; ?> Loot mengikuti katalog boss; satu klaim per boss yang dituntaskan.</p>
             <span class="badge-status danger font-mono mb-2"><i class="fas fa-skull me-1"></i> <?php echo htmlspecialchars($boss['gate']); ?> BOSS</span>
             <?php if ($defeated): ?>
                 <div class="badge-status accent font-mono d-block mt-1"><i class="fas fa-trophy me-1"></i> TUMBANG!</div>

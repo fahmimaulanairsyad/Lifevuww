@@ -10,6 +10,12 @@ $todayDate = date('Y-m-d');
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validate_csrf();
 
+    if (isset($_POST['dismiss_recovery'])) {
+        $_SESSION['lv_recovery_prompt_date'] = $todayDate;
+        header('Location: dashboard.php');
+        exit();
+    }
+
     // 1. Klaim Supply Crate Harian
     if (isset($_POST['claim_supply_crate'])) {
         $stmtHCount = $pdo->prepare("SELECT COUNT(*) FROM habit_logs WHERE user_id = ? AND status = 'Completed' AND completion_date = CURDATE()");
@@ -307,6 +313,28 @@ try {
     $isHealedToday = (($user['last_emergency_heal_date'] ?? '') === $todayDate);
     $canEmergencyHeal = ($isEmergency && !$isHealedToday && ($doneHabitsToday + $doneQuestsToday >= 1));
 
+    $recoveryPrompt = null;
+    $recoveryPromptKey = 'lv_recovery_prompt_date';
+    if (($_SESSION[$recoveryPromptKey] ?? '') !== $todayDate) {
+        $breakTodayStmt = $pdo->prepare('SELECT COUNT(*) FROM planned_breaks WHERE user_id=? AND start_date<=CURDATE() AND end_date>=CURDATE()');
+        $breakTodayStmt->execute([$_SESSION['user_id']]);
+        $isOnPlannedBreak = (int) $breakTodayStmt->fetchColumn() > 0;
+        $missedStmt = $pdo->prepare("SELECT (SELECT COUNT(*) FROM habit_logs WHERE user_id=? AND status='Failed' AND completion_date BETWEEN DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND CURDATE()) + (SELECT COUNT(*) FROM quest_logs WHERE user_id=? AND status='Failed' AND DATE(COALESCE(completed_at,completion_date,created_at)) BETWEEN DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND CURDATE())");
+        $missedStmt->execute([$_SESSION['user_id'], $_SESSION['user_id']]);
+        $hasRecentMiss = (int) $missedStmt->fetchColumn() > 0;
+        $openHabitCount = count(array_filter($todayTimeBlocks, static fn(array $a): bool => $a['kind']==='habit' && !$a['is_done']));
+        $openQuestCount = count(array_filter($todayTimeBlocks, static fn(array $a): bool => $a['kind']==='quest' && !$a['is_done']));
+        $recoveryKind = game_recovery_recommendation($openHabitCount, $openQuestCount, $isOnPlannedBreak, $hasRecentMiss);
+        if ($recoveryKind !== null) {
+            $recoveryPrompt = [
+                'kind' => $recoveryKind,
+                'href' => $recoveryKind === 'habit' ? 'habits.php' : ($recoveryKind === 'quest' ? 'quests.php' : 'journal.php'),
+                'title' => $recoveryKind === 'habit' ? 'Pilih satu rutinitas ringan' : ($recoveryKind === 'quest' ? 'Lanjutkan satu misi kecil' : 'Catat kondisi dan energimu'),
+                'message' => $isOnPlannedBreak ? 'Kamu sedang mengambil jeda. Cukup cek keadaanmu, tanpa target atau penalti.' : 'Lama tidak membuka Lifevuww? Tidak perlu mengejar semuanya. Pilih satu langkah kecil.',
+            ];
+        }
+    }
+
 } catch (PDOException $e) {
     error_log("Dashboard error: " . $e->getMessage());
     die("Error loading dashboard. Please try again later.");
@@ -315,7 +343,7 @@ try {
 
 <div class="page-header dashboard-heading d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
-        <p class="dashboard-date font-mono"><?php echo htmlspecialchars(indo_short_date($todayDate, true)); ?></p>
+        <p class="dashboard-date font-mono"><?php echo htmlspecialchars(indo_short_date($todayDate)); ?></p>
         <h1 class="page-title">Satu langkah lagi, <?php echo htmlspecialchars($user['username'] ?? 'Hunter'); ?></h1>
         <p class="page-subtitle">Pilih aktivitas berikutnya. Progresmu tersimpan seiring kamu melangkah.</p>
     </div>
@@ -374,14 +402,22 @@ try {
     </div>
 </section>
 
+<?php if ($recoveryPrompt): ?>
+    <section class="dashboard-recovery" aria-labelledby="recovery-title">
+        <span class="dashboard-recovery-mark"><i class="fas fa-arrow-rotate-right" aria-hidden="true"></i></span>
+        <div><h2 id="recovery-title">Mulai lagi dengan ringan</h2><p><?php echo htmlspecialchars($recoveryPrompt['message']); ?></p></div>
+        <a class="btn-core btn-outline" href="<?php echo htmlspecialchars($recoveryPrompt['href']); ?>"><?php echo htmlspecialchars($recoveryPrompt['title']); ?></a>
+        <form method="post"><?php echo csrf_field(); ?><button type="submit" name="dismiss_recovery" value="1" class="dashboard-recovery-dismiss" aria-label="Sembunyikan saran hari ini">×</button></form>
+    </section>
+<?php endif; ?>
+
 <?php
-$dashboardMilestoneCount = (int) ($progress['total_quests'] ?? 0) + (int) ($habitStats['total_habits'] ?? 0);
 $hpPercentage = min(100, max(0, ((int) ($user['hp'] ?? 100) / max(1, (int) ($user['max_hp'] ?? 100))) * 100));
 $expPercentage = min(100, max(0, (($totalExp - $currentLevelExp) / max(1, $nextLevelExp - $currentLevelExp)) * 100));
 ?>
 <section class="dashboard-overview" aria-label="Ringkasan karakter">
     <div class="dashboard-overview-main">
-        <div class="dashboard-overview-label"><span class="dashboard-live-dot"></span> Karakter saat ini</div>
+        <div class="dashboard-overview-label"><span class="dashboard-live-dot"></span> <?php echo htmlspecialchars(game_world_label('ranks',$rank)); ?></div>
         <div class="dashboard-overview-rank">
             <?php $rankBadge = game_badge_asset('rank', $rank); ?><span class="dashboard-rank-emblem"><img src="../assets/images/badges/<?php echo htmlspecialchars($rankBadge); ?>.png" alt="" width="34" height="34"></span>
             <div><strong><?php echo htmlspecialchars($rank); ?></strong><span>Level <?php echo (int) $level; ?> · <?php echo number_format((int) $totalExp); ?> EXP</span></div>
@@ -510,108 +546,6 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
     </div>
 <?php endif; ?>
-
-<!-- Primary Tactical Console -->
-<div class="row g-3 mb-4 dashboard-legacy-core">
-    <!-- Character Core Status -->
-    <div class="col-md-8">
-        <div class="bento-panel spotlight-card holo-card h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.16) 0%, transparent 48%), radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 40%), #111114; border-top: 1px solid rgba(255, 255, 255, 0.18);">
-            <div>
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <span class="badge-status accent font-mono mb-2" style="font-size: 0.74rem; padding: 0.25rem 0.7rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.14); box-shadow: 0 0 14px rgba(16, 185, 129, 0.18);">
-                            <i class="fas fa-crown me-1 text-warning"></i> <?php echo htmlspecialchars($rank); ?>
-                        </span>
-                        <h2 style="font-size: 1.65rem; margin: 0; font-weight: 600;"><?php echo htmlspecialchars($user['username']); ?></h2>
-                    </div>
-                    <div class="text-end">
-                        <div class="text-muted" style="font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Tingkat</div>
-                        <div style="font-size: 2.2rem; font-weight: 600; line-height: 1; font-family: var(--font-mono); color: var(--text-primary);"><span class="count-up" data-target="<?php echo $level; ?>"><?php echo $level; ?></span></div>
-                    </div>
-                </div>
-
-                <!-- Health Points (HP) -->
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem;">
-                        <span class="text-muted"><i class="fas fa-heart text-danger me-1"></i> Poin Kesehatan (HP)</span>
-                        <span class="font-mono text-danger"><span class="count-up" data-target="<?php echo (int)($user['hp'] ?? 100); ?>"><?php echo $user['hp'] ?? 100; ?></span> / <?php echo $user['max_hp'] ?? 100; ?></span>
-                    </div>
-                    <div class="vitals-track">
-                        <?php 
-                            $hp = $user['hp'] ?? 100;
-                            $max_hp = $user['max_hp'] ?? 100;
-                            $hpPercentage = min(100, max(0, ($hp / $max_hp) * 100)); 
-                        ?>
-                        <div class="vitals-fill" style="width: <?php echo $hpPercentage; ?>%; background-color: var(--status-danger);"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- EXP Meter -->
-            <div class="pt-2">
-                <div class="d-flex justify-content-between mb-1" style="font-size: 0.75rem;">
-                    <span class="text-muted"><i class="fas fa-bolt text-accent me-1"></i> Pengalaman (EXP)</span>
-                    <span class="font-mono text-accent"><span class="count-up" data-target="<?php echo (int)$totalExp; ?>"><?php echo number_format($totalExp); ?></span> / <?php echo number_format($nextLevelExp); ?></span>
-                </div>
-                <div class="vitals-track">
-                    <?php $expPercentage = min(100, max(0, (($totalExp - $currentLevelExp) / ($nextLevelExp - $currentLevelExp)) * 100)); ?>
-                    <div class="vitals-fill" style="width: <?php echo $expPercentage; ?>%; background-color: var(--accent);"></div>
-                </div>
-                <div class="mt-2 d-flex justify-content-between align-items-center font-mono" style="font-size: 0.72rem;">
-                    <span class="text-muted">Progres ke Tingkat <?php echo $level + 1; ?></span>
-                    <span class="badge-status font-mono" style="font-size: 0.7rem; background: rgba(255, 255, 255, 0.05); color: #d4d4d8; border-color: rgba(255, 255, 255, 0.1);">
-                        Butuh <strong class="text-accent ms-1"><?php echo number_format(max(0, $expToNextLevel)); ?> EXP</strong> lagi
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Gold & Shop Quick Access -->
-    <div class="col-md-4">
-        <div class="bento-panel spotlight-card h-100 d-flex flex-column justify-content-between text-center py-4">
-            <div>
-                <div class="text-muted mb-2" style="font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;">Saldo Gold</div>
-                <div style="font-family: var(--font-mono); font-size: 2.25rem; font-weight: 600; color: var(--status-warning); line-height: 1.1;">
-                    <i class="fas fa-coins me-1" style="font-size: 1.6rem;"></i><span class="count-up" data-target="<?php echo (int)($user['gold'] ?? 0); ?>"><?php echo number_format($user['gold'] ?? 0); ?></span>
-                </div>
-                <p class="text-muted mt-2 mb-0" style="font-size: 0.78rem;">Kumpulkan gold dengan menjaga kebiasaan dan menuntaskan misi.</p>
-            </div>
-            <div class="mt-3 d-flex flex-column gap-2">
-                <button type="button" class="btn-core btn-accent w-100 font-mono" onclick="window.openFocusRiftModal && window.openFocusRiftModal();">
-                    <i class="fas fa-hourglass-half me-1"></i> Mulai Focus Rift
-                </button>
-                <a href="shop.php" class="btn-core btn-outline w-100">
-                    <i class="fas fa-store me-1"></i> Toko Hadiah
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Unified Metric Strip (Anti-slop connected grid) -->
-<div class="metric-strip mb-4 dashboard-legacy-metrics">
-    <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-check-square text-accent"></i> Kebiasaan</div>
-        <div class="metric-value"><span class="count-up" data-target="<?php echo (int)$completedHabits; ?>"><?php echo $completedHabits; ?></span> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalHabits; ?></span></div>
-        <div class="metric-sub">Tuntas hari ini</div>
-    </div>
-    <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-scroll text-accent"></i> Misi</div>
-        <div class="metric-value"><span class="count-up" data-target="<?php echo (int)$completedQuests; ?>"><?php echo $completedQuests; ?></span> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalQuests; ?></span></div>
-        <div class="metric-sub">Total tuntas</div>
-    </div>
-    <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-fire text-warning"></i> Streak</div>
-        <div class="metric-value text-warning"><span class="count-up" data-target="<?php echo (int)$maxStreak; ?>"><?php echo $maxStreak; ?></span> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">HARI</span></div>
-        <div class="metric-sub">Rekor beruntun</div>
-    </div>
-    <div class="metric-cell">
-        <div class="metric-label"><i class="fas fa-snowflake" style="color: var(--status-info);"></i> Perisai</div>
-        <div class="metric-value" style="color: var(--status-info);"><span class="count-up" data-target="<?php echo (int)($user['streak_freeze'] ?? 0); ?>"><?php echo $user['streak_freeze'] ?? 0; ?></span> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">SLOT</span></div>
-        <div class="metric-sub">Hari terlindungi</div>
-    </div>
-</div>
 
 <!-- Daily System Directive (Supply Crate Harian) -->
 <div class="bento-panel spotlight-card mb-4" style="border-top: 1px solid rgba(245, 158, 11, 0.4); background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(17, 17, 20, 0.95) 45%);">

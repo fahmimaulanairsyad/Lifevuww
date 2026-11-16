@@ -424,7 +424,7 @@ unset($_SESSION['skill_toast']);
                 </svg>
             <?php endif; ?>
             <div class="mt-2" style="font-size: 0.92rem; font-weight: 600; color: <?php echo $activeCompanion['accent']; ?>;">
-                <?php echo htmlspecialchars($activeCompanion['name']); ?>
+                <?php echo htmlspecialchars(game_world_label('companions',$activeCompanionKey)); ?><small class="d-block text-muted"><?php echo htmlspecialchars($activeCompanion['name']); ?></small>
             </div>
             <div class="font-mono text-muted" style="font-size: 0.72rem;">
                 <?php echo $bond['stage']; ?> • Bond Lv.<?php echo $bond['bond_level']; ?> • Bonus x<?php echo number_format($bond['bonus_scale'], 2); ?>
@@ -533,4 +533,5 @@ unset($_SESSION['skill_toast']);
     });
 </script>
 
+<?php require __DIR__.'/../includes/companion_chronicle.php'; ?>
 <?php require_once("../includes/footer.php"); ?>

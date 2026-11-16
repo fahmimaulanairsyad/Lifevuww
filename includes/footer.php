@@ -311,7 +311,7 @@
                             <i class="fas fa-hourglass-half"></i>
                         </div>
                         <div>
-                            <h5 class="modal-title mb-0" style="font-size: 1rem; font-weight: 600;">Focus Rift</h5>
+                            <h5 class="modal-title mb-0" style="font-size: 1rem; font-weight: 600;">Ruang Fokus <small class="text-muted">/ Focus Rift</small></h5>
                             <span class="text-muted" style="font-size: 0.72rem;">Deep Work Raid • Pomodoro RPG</span>
                         </div>
                     </div>
@@ -441,13 +441,17 @@
         </div>
         <?php $curDrawerPage = basename($_SERVER['PHP_SELF']); ?>
         <div class="drawer-grid">
+            <a href="journey.php" class="drawer-card <?php echo $curDrawerPage === 'journey.php' ? 'active' : ''; ?>">
+                <div class="drawer-card-icon skills"><i class="fas fa-route" aria-hidden="true"></i></div>
+                <div class="drawer-card-info"><div class="drawer-card-title">Perjalanan</div><div class="drawer-card-desc">Tujuan, langkah, dan jeda</div></div>
+            </a>
             <!-- 1. Dungeon Raid -->
             <a href="dungeon.php" class="drawer-card <?php echo $curDrawerPage === 'dungeon.php' ? 'active' : ''; ?>">
                 <div class="drawer-card-icon dungeon">
                     <i class="fas fa-dungeon"></i>
                 </div>
                 <div class="drawer-card-info">
-                    <div class="drawer-card-title">Dungeon Raid</div>
+                    <div class="drawer-card-title">Ekspedisi Poros</div>
                     <div class="drawer-card-desc">Boss &amp; Ekspedisi</div>
                 </div>
                 <?php if ($curDrawerPage === 'dungeon.php'): ?>
@@ -696,7 +700,7 @@
         /* ============ PWA: service worker + install prompt ============ */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../sw.js?v=20261115_02').catch((err) => {
+                navigator.serviceWorker.register('../sw.js?v=20261116_01').catch((err) => {
                     console.warn('SW registration failed:', err);
                 });
             });
@@ -2072,7 +2076,9 @@
                     });
                 }
 
-                // Complete Focus Rift AJAX Claim
+            });
+
+                // Shared by the timer loop, visibility handler and initial restore.
                 async function completeFocusRift() {
                     isRunning = false;
                     if (window.LVAmbient) window.LVAmbient.stop();
@@ -2088,7 +2094,6 @@
                     sessionStorage.removeItem(SKEY_TOTAL);
                     sessionStorage.removeItem(SKEY_KEY);
                     sessionStorage.removeItem(SKEY_ATTR);
-                    sessionStorage.removeItem('lv_rift_token');
                     updateDocTitle();
 
                     const formData = new FormData();
@@ -2156,7 +2161,6 @@
                         alert('Terjadi kesalahan jaringan.');
                     }
                 }
-            });
         })();
 
         /* ============ HTML5 Canvas Status Card PNG Generator (1080x1350) ============ */

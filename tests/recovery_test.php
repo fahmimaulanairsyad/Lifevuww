@@ -5,6 +5,11 @@ $cases = [
     [['hp' => -10, 'max_hp' => 100, 'exp' => 50, 'level' => 1], true, 100],
     [['hp' => 1, 'max_hp' => 100, 'exp' => 50, 'level' => 1], false, 1],
 ];
+if (!function_exists('game_recovery_recommendation')) { fwrite(STDERR, "FAIL: recovery recommendation is not implemented\n"); exit(1); }
+if (game_recovery_recommendation(1, 1, false, false) !== null || game_recovery_recommendation(1, 0, false, true) !== 'habit' || game_recovery_recommendation(0, 1, false, true) !== 'quest' || game_recovery_recommendation(0, 0, true, false) !== 'journal') {
+    fwrite(STDERR, "FAIL: recovery should choose the smallest available next action and respect breaks\n"); exit(1);
+}
+echo "PASS: recovery recommendation selects a simple valid action and skips protected days\n";
 if (!function_exists('game_recovery_state')) {
     fwrite(STDERR, "FAIL: recovery transition is not implemented\n");
     exit(1);

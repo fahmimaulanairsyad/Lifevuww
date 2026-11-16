@@ -1134,4 +1134,5 @@ require_once __DIR__ . '/../includes/header.php';
     });
 </script>
 
+<?php require __DIR__.'/../includes/companion_chronicle.php'; ?>
 <?php require_once("../includes/footer.php"); ?>

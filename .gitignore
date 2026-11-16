@@ -13,6 +13,8 @@ assets/images/*
 !assets/images/relics/*.png
 !assets/images/badges/
 !assets/images/badges/*.png
+!assets/images/world/
+!assets/images/world/*.png
 
 # Design assets
 assets/logo-concepts/

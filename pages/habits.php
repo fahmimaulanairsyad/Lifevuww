@@ -85,9 +85,9 @@ function completeHabit($pdo, $userId, $habitId) {
             ->execute([$finalExp, $earnedGold, $newLvl, $newRank, $userId]);
 
         // Dungeon Raid: serang Boss mingguan (+20..35 DMG tergantung difficulty)
-        $diffIdx = array_search($difficulty, ['Easy', 'Medium', 'Hard'], true);
+        $diffIdx = array_search($habit['difficulty'], ['Easy', 'Medium', 'Hard'], true);
         $raidDmg = 20 + ((int) ($diffIdx === false ? 0 : $diffIdx)) * 7;
-        deal_dungeon_damage($pdo, $userId, $raidDmg, 'Habit: ' . ($habitName ?? 'Habit'));
+        deal_dungeon_damage($pdo, $userId, $raidDmg, 'Habit: ' . $habit['habit_name']);
 
         // Cek jika naik tingkat / rank
         if ($newLvl > $oldLvl) {
@@ -118,6 +118,8 @@ function completeHabit($pdo, $userId, $habitId) {
             INSERT INTO habit_logs (habit_id, user_id, completion_date, status, exp_reward)
             VALUES (?, ?, NOW(), 'Completed', ?)
         ")->execute([$habitId, $userId, $finalExp]);
+
+        advance_linked_goal_milestones($pdo, (int) $userId, 'habit', (int) $habitId);
 
         $pdo->commit();
     } catch (Exception $e) {
@@ -501,8 +503,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['complete_habit']) && !empty($_POST['habit_id'])) {
         $habitId = intval($_POST['habit_id']);
         completeHabit($pdo, $userId, $habitId);
-        $pdo->prepare("UPDATE habits SET current_count = target_count, last_completed_at = NOW() WHERE habit_id = ? AND user_id = ?")
-            ->execute([$habitId, $userId]);
         if ($isAjax) {
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode(['success' => true, 'habit_id' => $habitId]);

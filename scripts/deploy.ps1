@@ -4,6 +4,8 @@
 param(
     [string]$Destination = 'C:\Lifevuww\lifevuww-deploy',
     [string]$Source = (Split-Path -Parent $PSScriptRoot),
+    [switch]$IncludeSupportFiles,
+    [string[]]$AdditionalFiles = @(),
     [switch]$Apply
 )
 
@@ -54,6 +56,28 @@ function Get-Hash([string]$Path) {
     return (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash
 }
 
+function Assert-SafeRelativePath([string]$Relative) {
+    if (!$Relative -or $Relative.StartsWith('/') -or
+        $Relative -match '[\x00-\x1f<>:"\\|?*]' -or $Relative -match '(^|/)\.{1,2}(/|$)' -or
+        $Relative -match '//|/$|(^|/)[^/]*[. ](/|$)' -or
+        $Relative -match '(^|/)(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\.[^/]*)?(/|$)') {
+        throw "Unsafe file name (use explicit repository-relative paths with /): $Relative"
+    }
+}
+
+function Test-ExcludedPath([string]$Relative) {
+    return $Relative -match '(^|/)(\.git[^/]*|\.env[^/]*|uploads?|avatars?|storage|data|cache|logs?|sessions?|backups?)(/|$)'
+}
+
+function Test-SelectedPath([string]$Relative) {
+    $runtime = $Relative -match '^(assets|config|cron|includes|pages|migrations)/' -or
+        $Relative -match '^[^/]+\.php$' -or
+        $Relative -in @('.htaccess', 'manifest.json', 'sw.js', 'offline.html')
+    $support = $Relative -in @('README.md', 'docs/deployment.md', 'docs/world-guide.md', 'scripts/deploy.ps1') -or
+        $Relative -match '^scripts/(check|generate)[^/]*\.py$' -or $Relative -match '^tests/'
+    return $runtime -or ($IncludeSupportFiles -and $support)
+}
+
 $Source = Get-FullPath $Source
 $Destination = Get-FullPath $Destination
 Assert-NoLinks $Source
@@ -68,10 +92,11 @@ if ((Test-Path -LiteralPath $Destination) -and !(Test-Path -LiteralPath $Destina
 $gitRoot = Get-FullPath ((Invoke-Git 'rev-parse --show-toplevel').Trim())
 if (!$Source.Equals($gitRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Source must be the Git repository root.' }
 
-# Deliberate runtime allowlist. Untracked files are never included.
+# Tracked working-tree files by default, plus only explicitly named pending files.
 $entries = (Invoke-Git 'ls-files --stage -z').Split([char]0)
-$plan = New-Object 'System.Collections.Generic.List[object]'
+$selected = New-Object 'System.Collections.Generic.List[string]'
 $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+$trackedProtection = $false
 foreach ($entry in $entries) {
     if (!$entry) { continue }
     if ($entry -notmatch '^(\d{6}) ([0-9a-f]+) ([0-3])\t(.+)$') { throw 'Unexpected Git index entry.' }
@@ -79,21 +104,32 @@ foreach ($entry in $entries) {
     $stage = $Matches[3]
     $relative = $Matches[4]
     if ($stage -ne '0') { throw "Resolve Git conflicts before deploying: $relative" }
-    if ($relative -match '(^|/)(\.git[^/]*|\.env[^/]*|uploads?|avatars?|storage|data|cache|logs?|sessions?|backups?)(/|$)') { continue }
-    $runtime = $relative -match '^(assets|config|cron|includes|pages|migrations)/' -or
-        $relative -match '^[^/]+\.php$' -or
-        $relative -in @('.htaccess', 'manifest.json', 'sw.js', 'offline.html')
-    if (!$runtime) { continue }
+    if ((Test-ExcludedPath $relative) -or !(Test-SelectedPath $relative)) { continue }
     if ($mode -notin @('100644', '100755')) { throw "Only regular tracked files may be deployed: $relative" }
-    if ($relative -match '[\x00-\x1f<>:"\\|?*]' -or $relative -match '(^|/)\.{1,2}(/|$)' -or
-        $relative -match '(^|/)[^/]*[. ](/|$)') { throw "Unsafe file name: $relative" }
+    Assert-SafeRelativePath $relative
     if (!$seen.Add($relative)) { throw "Case-insensitive path collision: $relative" }
+    $selected.Add($relative)
+    if ($relative -ceq 'tests/.htaccess') { $trackedProtection = $true }
+}
+foreach ($relative in $AdditionalFiles) {
+    Assert-SafeRelativePath $relative
+    if ((Test-ExcludedPath $relative) -or !(Test-SelectedPath $relative)) {
+        throw "Additional file is outside the enabled runtime/support allowlist: $relative"
+    }
+    if ($seen.Add($relative)) { $selected.Add($relative) }
+    elseif (!($selected -ccontains $relative)) { throw "Case-insensitive path collision: $relative" }
+}
+if (@($selected | Where-Object { $_ -match '^tests/' }).Count -gt 0 -and !$trackedProtection) {
+    throw 'Deploying tests requires tracked tests/.htaccess web-access protection.'
+}
+$plan = New-Object 'System.Collections.Generic.List[object]'
+foreach ($relative in $selected) {
     $sourceFile = Get-FullPath (Join-Path $Source $relative)
     $targetFile = Get-FullPath (Join-Path $Destination $relative)
     if (!(Test-Within $sourceFile $Source) -or !(Test-Within $targetFile $Destination)) { throw 'Path escapes its root.' }
     Assert-NoLinks $sourceFile
     Assert-NoLinks $targetFile
-    if (!(Test-Path -LiteralPath $sourceFile -PathType Leaf)) { throw "Tracked source file is missing: $relative" }
+    if (!(Test-Path -LiteralPath $sourceFile -PathType Leaf)) { throw "Selected source file is missing: $relative" }
     $parent = Split-Path -Parent $targetFile
     while (Test-Within $parent $Destination) {
         if ((Test-Path -LiteralPath $parent) -and !(Test-Path -LiteralPath $parent -PathType Container)) {
@@ -110,10 +146,14 @@ foreach ($entry in $entries) {
     $action = if ($oldHash -eq $sourceHash) { 'Unchanged' } elseif ($null -eq $oldHash) { 'Add' } else { 'Replace' }
     $plan.Add([pscustomobject]@{ Path = $relative; Action = $action; SourceHash = $sourceHash; PreviousHash = $oldHash })
 }
-if ($plan.Count -eq 0) { throw 'No tracked runtime files were selected.' }
+if ($plan.Count -eq 0) { throw 'No runtime or enabled support files were selected.' }
 $plan | Select-Object Action, Path | Format-Table -AutoSize | Out-Host
 $changes = @($plan | Where-Object Action -ne 'Unchanged')
 Write-Host "Selected: $($plan.Count); changes: $($changes.Count); apply: $($Apply.IsPresent)"
+$replacements = @($changes | Where-Object Action -eq 'Replace')
+if ($replacements.Count -gt 0) {
+    Write-Warning "$($replacements.Count) destination files differ and will be replaced on apply. They may contain user edits. Review every Replace; all replaced versions are backed up before any application write. No merge is performed."
+}
 if (!$Apply) {
     Write-Host 'Preview only. No files or directories were written. Use -Apply to deploy.'
     return

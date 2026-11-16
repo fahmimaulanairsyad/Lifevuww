@@ -3,6 +3,23 @@
 // Sentralisasi aturan, konstanta, dan logika keseimbangan (balancing) game Lifevuww.
 
 // --- 1. Kategori / Atribut Inti ---
+function game_world(): array {
+    static $world = null;
+    if ($world === null) $world = require __DIR__.'/world.php';
+    return $world;
+}
+
+function game_world_label(string $group, string $key): string {
+    return game_world()[$group][$key] ?? $key;
+}
+
+function game_world_visual_state(int $progress): string {
+    $progress=max(0,$progress);
+    if($progress>=5) return 'flourishing';
+    if($progress>=1) return 'awakening';
+    return 'quiet';
+}
+
 function game_dungeon_scaled_hp(int $baseHp, int $weeklyCompletions): int {
     return max(100, (int) round($baseHp * max(0.35, min(1.0, $weeklyCompletions / 20))));
 }
@@ -22,10 +39,14 @@ function game_badge_asset(string $type, string $key): string {
     return $allowed[$type][$key] ?? '';
 }
 
-function game_user_dungeon_hp(PDO $pdo, int $userId, int $baseHp): int {
+function game_user_weekly_completions(PDO $pdo, int $userId): int {
     $stmt = $pdo->prepare("SELECT (SELECT COUNT(*) FROM habit_logs WHERE user_id=? AND status='Completed' AND completion_date>=DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND completion_date<CURDATE()) + (SELECT COUNT(*) FROM quest_logs WHERE user_id=? AND status='Completed' AND DATE(COALESCE(completed_at,completion_date,created_at))>=DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND DATE(COALESCE(completed_at,completion_date,created_at))<CURDATE())");
     $stmt->execute([$userId,$userId]);
-    return game_dungeon_scaled_hp($baseHp,(int)$stmt->fetchColumn());
+    return (int)$stmt->fetchColumn();
+}
+
+function game_user_dungeon_hp(PDO $pdo, int $userId, int $baseHp): int {
+    return game_dungeon_scaled_hp($baseHp,game_user_weekly_completions($pdo,$userId));
 }
 
 function game_date_on_break(string $date, array $breaks): bool {
@@ -45,6 +66,48 @@ function game_break_days_between(string $start, string $end, array $breaks): int
     return $days;
 }
 
+function game_extend_quest_for_break(string $questStart,string $deadline,string $from,string $to,array $breaks): string {
+    $current=new DateTimeImmutable(max($questStart,$from));
+    $end=new DateTimeImmutable($to);
+    for(; $current<=$end; $current=$current->modify('+1 day')) {
+        $day=$current->format('Y-m-d');
+        if($day>$deadline) break;
+        if(game_date_on_break($day,$breaks)) $deadline=(new DateTimeImmutable($deadline))->modify('+1 day')->format('Y-m-d');
+    }
+    return $deadline;
+}
+
+function game_linked_milestones(array $links, string $kind, int $activityId): array {
+    $milestones = [];
+    foreach ($links as $link) {
+        if (($link['kind'] ?? '') !== $kind || (int) ($link['activity_id'] ?? 0) !== $activityId || !empty($link['advanced_at'])) continue;
+        $milestoneId = (int) ($link['milestone_id'] ?? 0);
+        if ($milestoneId > 0) $milestones[$milestoneId] = $milestoneId;
+    }
+    return array_values($milestones);
+}
+
+function advance_linked_goal_milestones(PDO $pdo, int $userId, string $kind, int $activityId): int {
+    if (!$pdo->inTransaction()) throw new LogicException('Goal progress requires the activity transaction.');
+    $stmt = $pdo->prepare('SELECT gap.user_id,gap.kind,gap.activity_id,gap.goal_id,gap.milestone_id,gap.advanced_at FROM goal_activity_progress gap JOIN life_goals g ON g.goal_id=gap.goal_id AND g.user_id=gap.user_id JOIN goal_milestones m ON m.milestone_id=gap.milestone_id AND m.goal_id=g.goal_id WHERE gap.user_id=? AND gap.kind=? AND gap.activity_id=? AND gap.advanced_at IS NULL FOR UPDATE');
+    $stmt->execute([$userId,$kind,$activityId]);
+    $links = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $milestones = game_linked_milestones($links,$kind,$activityId);
+    if (!$milestones) return 0;
+
+    $advanced = 0;
+    $claim = $pdo->prepare('UPDATE goal_activity_progress SET advanced_at=NOW() WHERE user_id=? AND kind=? AND activity_id=? AND goal_id=? AND milestone_id=? AND advanced_at IS NULL');
+    $complete = $pdo->prepare('UPDATE goal_milestones SET completed=1 WHERE milestone_id=? AND goal_id=? AND completed=0');
+    foreach ($links as $link) {
+        if (!in_array((int)$link['milestone_id'], $milestones, true)) continue;
+        $claim->execute([$userId,$kind,$activityId,(int)$link['goal_id'],(int)$link['milestone_id']]);
+        if ($claim->rowCount() !== 1) continue;
+        $complete->execute([(int)$link['milestone_id'],(int)$link['goal_id']]);
+        $advanced++;
+    }
+    return $advanced;
+}
+
 function game_goal_progress(int $completed, int $total): int {
     return $total > 0 ? max(0, min(100, (int) round($completed / $total * 100))) : 0;
 }
@@ -61,6 +124,30 @@ function game_recovery_state(array $user): array {
         $user['hp'] = max(1, (int) ($user['max_hp'] ?? 100));
     }
     return ['recovered' => $recovered, 'user' => $user];
+}
+
+function game_recovery_recommendation(int $openHabits, int $openQuests, bool $onPlannedBreak, bool $hasRecentMiss = false): ?string {
+    if (!$hasRecentMiss && !$onPlannedBreak) return null;
+    if ($onPlannedBreak) return 'journal';
+    if ($openHabits > 0) return 'habit';
+    if ($openQuests > 0) return 'quest';
+    return null;
+}
+
+function game_applied_damage(int $hp, int $damage): int {
+    return min(max(0,$hp),max(0,$damage));
+}
+
+function game_is_transaction_abort(Throwable $error): bool {
+    return $error instanceof PDOException && (($error->errorInfo[0]??'')==='40001' || in_array((int)($error->errorInfo[1]??0),[1213,1205],true));
+}
+
+function game_companion_transitions(int $oldExp, int $newExp): array {
+    $stages = [];
+    foreach ([240=>'Awakened',560=>'Sovereign'] as $threshold=>$stage) {
+        if ($oldExp < $threshold && $newExp >= $threshold) $stages[] = $stage;
+    }
+    return $stages;
 }
 
 function game_categories(): array {
@@ -1051,38 +1138,49 @@ function game_dungeon_effective_damage(int $baseDamage, string $companionKey, in
 function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $actionLabel): array {
     // Seluruh operasi dungeon dilindungi: kegagalan DB apa pun TIDAK boleh
     // membuat aksi utama (centang habit/quest/focus rift) ikut gagal.
+    $ownTransaction = !$pdo->inTransaction();
     try {
+        if ($ownTransaction) $pdo->beginTransaction();
+        else $pdo->exec('SAVEPOINT lv_dungeon_damage');
         $weekKey = date('o-W');
         $bosses = game_dungeon_bosses();
 
+        // All activity and raid paths lock the user before the raid.
+        $stmtUser = $pdo->prepare("SELECT active_companion, companion_exp FROM users WHERE user_id = ? FOR UPDATE");
+        $stmtUser->execute([$userId]);
+        $uRow = $stmtUser->fetch(PDO::FETCH_ASSOC);
+        if (!$uRow) throw new RuntimeException('Dungeon user not found.');
         $stmt = $pdo->prepare("SELECT raid_id, boss_key, boss_hp, is_defeated, total_damage_dealt, battle_log FROM dungeon_raids WHERE user_id = ? AND week_key = ? FOR UPDATE");
         $stmt->execute([$userId, $weekKey]);
         $raid = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$raid) {
             $bossKey = game_dungeon_pick_boss_key($weekKey);
             $b = $bosses[$bossKey];
-            $scaledHp = game_user_dungeon_hp($pdo,$userId,(int)$b['hp']);
-            $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp) VALUES (?, ?, ?, ?, ?)")
-                ->execute([$userId, $weekKey, $bossKey, $scaledHp, $scaledHp]);
+            $capacity=game_user_weekly_completions($pdo,$userId);
+            $scaledHp = game_dungeon_scaled_hp((int)$b['hp'],$capacity);
+            $pdo->prepare("INSERT IGNORE INTO dungeon_raids (user_id, week_key, boss_key, boss_hp, boss_max_hp,capacity_count) VALUES (?, ?, ?, ?, ?, ?)")
+                ->execute([$userId, $weekKey, $bossKey, $scaledHp, $scaledHp,$capacity]);
             $stmt->execute([$userId, $weekKey]);
             $raid = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$raid) {
+                if ($ownTransaction) $pdo->commit();
+                else $pdo->exec('RELEASE SAVEPOINT lv_dungeon_damage');
                 return ['applied' => 0, 'defeated' => false, 'message' => 'Raid minggu ini tidak tersedia.'];
             }
         }
         if ((int) $raid['boss_hp'] <= 0) {
+            if ($ownTransaction) $pdo->commit();
+            else $pdo->exec('RELEASE SAVEPOINT lv_dungeon_damage');
             return ['applied' => 0, 'defeated' => true, 'message' => 'Boss minggu ini sudah tumbang. Klaim lootnya!'];
         }
 
         // Bonus familiar aktif (diskalakan bond level) — murni via helper
-        $stmtUser = $pdo->prepare("SELECT active_companion, companion_exp FROM users WHERE user_id = ?");
-        $stmtUser->execute([$userId]);
-        $uRow = $stmtUser->fetch(PDO::FETCH_ASSOC);
         $comps = game_companions();
         $compKey = isset($comps[$uRow['active_companion'] ?? '']) ? $uRow['active_companion'] : 'obsidian_wolf';
         $comp = $comps[$compKey];
         $bond = game_companion_level((int) ($uRow['companion_exp'] ?? 0));
         $dmg = game_dungeon_effective_damage($baseDamage, $compKey, (int) ($uRow['companion_exp'] ?? 0));
+        $dmg = game_applied_damage((int)$raid['boss_hp'],$dmg);
 
         $newHp = max(0, (int) $raid['boss_hp'] - $dmg);
         $defeated = $newHp <= 0 ? 1 : (int) $raid['is_defeated'];
@@ -1096,6 +1194,15 @@ function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $act
         $pdo->prepare("UPDATE users SET companion_exp = companion_exp + ? WHERE user_id = ?")
             ->execute([$dmg, $userId]);
 
+        $oldBondExp=(int)($uRow['companion_exp']??0);
+        $event=$pdo->prepare('INSERT IGNORE INTO companion_chronicle (user_id,companion_key,event_key,stage,bond_exp) VALUES (?,?,?,?,?)');
+        $event->execute([$userId,$compKey,'first_record',$bond['stage'],$oldBondExp]);
+        foreach (game_companion_transitions($oldBondExp,$oldBondExp+$dmg) as $stage) {
+            $event->execute([$userId,$compKey,'evolution:'.$stage,$stage,$oldBondExp+$dmg]);
+        }
+        if ($ownTransaction) $pdo->commit();
+        else $pdo->exec('RELEASE SAVEPOINT lv_dungeon_damage');
+
         return [
             'applied' => $dmg,
             'defeated' => $newHp <= 0,
@@ -1105,6 +1212,21 @@ function deal_dungeon_damage(PDO $pdo, int $userId, int $baseDamage, string $act
         ];
 
     } catch (Throwable $eDungeon) {
+        if (game_is_transaction_abort($eDungeon)) {
+            if ($ownTransaction && $pdo->inTransaction()) {
+                try { $pdo->rollBack(); } catch (Throwable $cleanup) { error_log('Dungeon rollback: '.$cleanup->getMessage()); }
+            }
+            throw $eDungeon;
+        }
+        if ($pdo->inTransaction()) {
+            try {
+                if ($ownTransaction) $pdo->rollBack();
+                else $pdo->exec('ROLLBACK TO SAVEPOINT lv_dungeon_damage');
+            } catch (Throwable $cleanup) {
+                error_log('Dungeon cleanup: '.$cleanup->getMessage());
+                throw $eDungeon;
+            }
+        }
         error_log('Dungeon damage failed: ' . $eDungeon->getMessage());
         return ['damage' => 0, 'applied' => 0, 'defeated' => false];
     }}

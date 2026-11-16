@@ -142,8 +142,8 @@ for ($i = 13; $i >= 0; $i--) {
     $d = date('Y-m-d', strtotime("-$i days"));
     $days14[] = [
         'date' => $d,
-        'mood' => $byDay[$d]['avg_mood'] ? (float) $byDay[$d]['avg_mood'] : null,
-        'energy' => $byDay[$d]['avg_energy'] ? (float) $byDay[$d]['avg_energy'] : null,
+        'mood' => isset($byDay[$d]['avg_mood']) ? (float) $byDay[$d]['avg_mood'] : null,
+        'energy' => isset($byDay[$d]['avg_energy']) ? (float) $byDay[$d]['avg_energy'] : null,
         'done' => $habitByDay[$d] ?? 0,
     ];
 }

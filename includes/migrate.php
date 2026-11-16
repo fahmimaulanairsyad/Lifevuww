@@ -14,7 +14,7 @@
 // Naikkan setiap menambah file migrasi di migrations/ — probe ensure_lifevuww_migrated()
 // memakai nilai ini sebagai penanda skema sudah terkini (1 query per request).
 if (!defined('LV_SCHEMA_VERSION')) {
-    define('LV_SCHEMA_VERSION', '014_focus_session_claims.sql');
+    define('LV_SCHEMA_VERSION', '018_raid_capacity.sql');
 }
 
 function run_lifevuww_migrations(PDO $pdo): array {
