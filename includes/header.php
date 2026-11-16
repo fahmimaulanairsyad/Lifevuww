@@ -288,7 +288,11 @@ $activeHtmlAura = $serverAura ?: 'emerald';
                     <span class="dock-label">Menu</span>
                 </button>
 
-                <!-- Desktop-Only Items (6 s/d 11) -->
+                <!-- Desktop items remain inside the mobile drawer at small sizes. -->
+                <a href="journey.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'journey.php' ? 'active' : ''; ?>" data-tooltip="Perjalanan">
+                    <i class="fas fa-route"></i>
+                    <span class="dock-label">Perjalanan</span>
+                </a>
                 <a href="dungeon.php" class="dock-item dock-desktop-only dock-mobile-secondary <?php echo $currentPage == 'dungeon.php' ? 'active' : ''; ?>" data-tooltip="Dungeon">
                     <i class="fas fa-dungeon"></i>
                     <span class="dock-label">Dungeon</span>

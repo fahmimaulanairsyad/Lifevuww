@@ -577,7 +577,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <div>
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div style="width: 36px; height: 36px; border-radius: 50%; background: <?php echo $spec['color']; ?>22; border: 1px solid <?php echo $spec['color']; ?>66; color: <?php echo $spec['color']; ?>; display: flex; align-items: center; justify-content: center; font-size: 1rem;">
-                                <i class="fas <?php echo htmlspecialchars($spec['icon']); ?>"></i>
+                                <?php $specializationBadge = game_badge_asset('specialization', $spec['id']); ?><img src="../assets/images/badges/<?php echo htmlspecialchars($specializationBadge); ?>.png" alt="" width="30" height="30" class="badge-pixel-icon">
                             </div>
                             <span class="badge-status font-mono" style="font-size: 0.65rem; border-color: <?php echo $spec['color']; ?>55; color: <?php echo $spec['color']; ?>;">
                                 <?php echo htmlspecialchars($spec['aura_name']); ?>

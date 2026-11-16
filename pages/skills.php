@@ -227,7 +227,7 @@ arsort($sorted_stats);
                 <div>
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div style="width: 36px; height: 36px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
-                            <i class="fas <?php echo $catInfo['icon'] . ' ' . $catInfo['color']; ?>"></i>
+                            <?php $attributeBadge = game_badge_asset('attribute', $category); ?><img src="../assets/images/badges/<?php echo htmlspecialchars($attributeBadge); ?>.png" alt="" width="32" height="32" class="badge-pixel-icon">
                         </div>
                         <span class="badge-status accent font-mono" style="font-size: 0.72rem;">
                             Tingkat <?php echo $attrLevel; ?>

@@ -652,7 +652,7 @@ require_once __DIR__ . '/../includes/header.php';
                             <i class="fas fa-grip-vertical"></i>
                         </button>
                         <div style="width: 30px; height: 30px; border-radius: var(--radius); background-color: var(--bg-surface-hover); border: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: center; color: <?php echo $isBoss ? 'var(--status-danger)' : ($quest['status'] === 'Completed' ? 'var(--accent)' : 'var(--text-muted)'); ?>; font-size: 0.8rem; flex-shrink: 0;">
-                            <i class="fas <?php echo $isBoss ? 'fa-dragon' : ($quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'); ?>"></i>
+                            <?php if ($isBoss): ?><img src="../assets/images/badges/boss_quest.png" alt="" width="30" height="30" class="badge-pixel-icon"><?php else: ?><i class="fas <?php echo $quest['status'] === 'Completed' ? 'fa-check' : 'fa-scroll'; ?>"></i><?php endif; ?>
                         </div>
                         <div style="flex: 1;">
                             <div class="data-title d-flex align-items-center flex-wrap gap-2">
@@ -662,7 +662,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 </span>
                                 <?php if ($isBoss): ?>
                                     <span class="badge-status danger font-mono" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">
-                                        <i class="fas fa-skull me-1"></i> BOSS QUEST
+                                        <img src="../assets/images/badges/boss_quest.png" alt="" width="18" height="18" class="badge-pixel-icon me-1"> BOSS QUEST
                                     </span>
                                 <?php endif; ?>
                             </div>

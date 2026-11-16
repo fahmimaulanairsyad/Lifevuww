@@ -313,68 +313,109 @@ try {
 }
 ?>
 
-<div class="page-header d-flex justify-content-between align-items-end flex-wrap gap-2">
+<div class="page-header dashboard-heading d-flex justify-content-between align-items-end flex-wrap gap-2">
     <div>
-        <h1 class="page-title">Dasbor</h1>
-        <p class="page-subtitle">Status real-time progres karakter, disiplin harian, dan statistik vital.</p>
+        <p class="dashboard-date font-mono"><?php echo htmlspecialchars(indo_short_date($todayDate, true)); ?></p>
+        <h1 class="page-title">Satu langkah lagi, <?php echo htmlspecialchars($user['username'] ?? 'Hunter'); ?></h1>
+        <p class="page-subtitle">Pilih aktivitas berikutnya. Progresmu tersimpan seiring kamu melangkah.</p>
     </div>
-    <div class="d-flex flex-wrap gap-2">
-        <button type="button" class="btn-core btn-outline font-mono" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="Buka Focus Rift Pomodoro Battle Timer">
-            <i class="fas fa-hourglass-half text-accent me-1"></i> Focus Rift
+    <div class="dashboard-heading-actions">
+        <a href="journey.php" class="btn-core btn-outline"><i class="fas fa-route me-2" aria-hidden="true"></i>Perjalanan</a>
+        <button type="button" class="btn-core btn-primary" onclick="window.openFocusRiftModal && window.openFocusRiftModal();" title="Mulai sesi fokus">
+            <i class="fas fa-hourglass-half me-2" aria-hidden="true"></i>Mulai Fokus
         </button>
-        <a href="dungeon.php" class="btn-core btn-outline font-mono" title="Dungeon Raid Boss Mingguan">
-            <i class="fas fa-dungeon text-danger me-1"></i> Dungeon
-        </a>
-        <button type="button" class="btn-core btn-outline font-mono" id="btnDownloadCardDashboard" title="Unduh Kartu Status PNG">
-            <i class="fas fa-camera text-accent me-1"></i> Unduh Kartu (PNG)
+        <button type="button" class="btn-core btn-quiet dashboard-download" id="btnDownloadCardDashboard" title="Unduh Kartu Status PNG" aria-label="Unduh kartu status PNG">
+            <i class="fas fa-camera" aria-hidden="true"></i>
         </button>
     </div>
 </div>
 
-<section class="bento-panel mb-4" aria-labelledby="daily-priorities-title">
-    <h2 id="daily-priorities-title" style="font-size: 1.15rem;">Langkah berikutnya</h2>
-    <a href="journey.php" class="text-accent">Tujuan &amp; Jeda Terencana</a>
-    <p class="text-muted small">Pilih satu aktivitas. Progres besar dimulai dari langkah yang bisa dikerjakan.</p>
+<section class="dashboard-next" aria-labelledby="daily-priorities-title">
     <?php $dailyPriorities = game_daily_priorities($todayTimeBlocks ?? []); ?>
-    <?php foreach ($dailyPriorities as $priority): ?>
-        <div class="d-flex align-items-center justify-content-between gap-3 py-3" style="border-top: 1px solid var(--border-hairline);">
-            <div style="min-width: 0; overflow-wrap: anywhere;">
-                <div class="fw-semibold"><?php echo htmlspecialchars($priority['title']); ?></div>
-                <div class="text-muted small"><?php echo $priority['kind'] === 'habit' ? 'Kebiasaan' : 'Misi'; ?><?php if (!empty($priority['start_time'])): ?> · <?php echo htmlspecialchars(substr($priority['start_time'], 0, 5)); ?><?php endif; ?></div>
-            </div>
-            <a class="btn-core btn-outline" style="flex-shrink: 0; white-space: nowrap;" href="<?php echo $priority['kind'] === 'habit' ? 'habits.php' : 'quests.php'; ?>">Kerjakan</a>
+    <div class="dashboard-next-heading">
+        <div>
+            <h2 id="daily-priorities-title">Prioritas hari ini</h2>
+            <p><?php echo count($dailyPriorities); ?> langkah berikutnya dipilih dari agenda aktifmu.</p>
         </div>
-    <?php endforeach; ?>
-    <?php if (!$dailyPriorities): ?>
-        <p>Agenda aktif sudah selesai atau belum ada aktivitas terjadwal.</p>
-        <a class="btn-core btn-outline" href="habits.php">Atur Kebiasaan</a>
+        <a href="habits.php" class="dashboard-text-link">Semua aktivitas <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
+    </div>
+    <?php if ($dailyPriorities): ?>
+        <div class="dashboard-priority-list">
+            <?php foreach ($dailyPriorities as $priorityIndex => $priority): ?>
+                <article class="dashboard-priority-row<?php echo $priorityIndex === 0 ? ' is-first' : ''; ?>">
+                    <span class="dashboard-priority-index font-mono"><?php echo str_pad((string) ($priorityIndex + 1), 2, '0', STR_PAD_LEFT); ?></span>
+                    <div class="dashboard-priority-copy">
+                        <h3><?php echo htmlspecialchars($priority['title']); ?></h3>
+                        <p><?php echo $priority['kind'] === 'habit' ? 'Kebiasaan' : 'Misi'; ?>
+                            <span aria-hidden="true">/</span> <?php echo htmlspecialchars($priority['category']); ?>
+                            <?php if (!empty($priority['start_time'])): ?>
+                                <span aria-hidden="true">/</span> <?php echo htmlspecialchars(substr($priority['start_time'], 0, 5)); ?>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                    <span class="dashboard-priority-reward font-mono">+<?php echo (int) $priority['exp']; ?> EXP</span>
+                    <a class="btn-core <?php echo $priorityIndex === 0 ? 'btn-primary' : 'btn-outline'; ?> dashboard-priority-action" href="<?php echo $priority['kind'] === 'habit' ? 'habits.php' : 'quests.php'; ?>" aria-label="Kerjakan <?php echo htmlspecialchars($priority['title']); ?>">
+                        Kerjakan <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i>
+                    </a>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div class="dashboard-priority-empty">
+            <span class="dashboard-empty-mark"><i class="fas fa-check" aria-hidden="true"></i></span>
+            <div><h3>Agenda hari ini selesai</h3><p>Kamu bisa berhenti di sini atau menyiapkan langkah untuk hari berikutnya.</p></div>
+            <a class="btn-core btn-outline" href="habits.php">Lihat kebiasaan</a>
+        </div>
     <?php endif; ?>
-    <div class="mt-3"><a class="btn-core btn-primary" href="focus_rift.php">Mulai Fokus</a></div>
+    <div class="dashboard-next-footer">
+        <a href="journey.php"><i class="fas fa-route me-2" aria-hidden="true"></i>Tujuan, rencana, dan jeda</a>
+        <button type="button" class="dashboard-focus-link" onclick="window.openFocusRiftModal && window.openFocusRiftModal();"><i class="fas fa-hourglass-half me-2" aria-hidden="true"></i>Mulai sesi fokus</button>
+        <a href="dungeon.php"><i class="fas fa-dungeon me-2" aria-hidden="true"></i>Lihat dungeon</a>
+    </div>
 </section>
 
 <?php
-// Sovereign Expansion: chip status Companion + Skill Tree + Overdrive
+$dashboardMilestoneCount = (int) ($progress['total_quests'] ?? 0) + (int) ($habitStats['total_habits'] ?? 0);
+$hpPercentage = min(100, max(0, ((int) ($user['hp'] ?? 100) / max(1, (int) ($user['max_hp'] ?? 100))) * 100));
+$expPercentage = min(100, max(0, (($totalExp - $currentLevelExp) / max(1, $nextLevelExp - $currentLevelExp)) * 100));
+?>
+<section class="dashboard-overview" aria-label="Ringkasan karakter">
+    <div class="dashboard-overview-main">
+        <div class="dashboard-overview-label"><span class="dashboard-live-dot"></span> Karakter saat ini</div>
+        <div class="dashboard-overview-rank">
+            <?php $rankBadge = game_badge_asset('rank', $rank); ?><span class="dashboard-rank-emblem"><img src="../assets/images/badges/<?php echo htmlspecialchars($rankBadge); ?>.png" alt="" width="34" height="34"></span>
+            <div><strong><?php echo htmlspecialchars($rank); ?></strong><span>Level <?php echo (int) $level; ?> · <?php echo number_format((int) $totalExp); ?> EXP</span></div>
+        </div>
+        <div class="dashboard-overview-bars">
+            <div class="dashboard-overview-bar-row"><span>HP</span><div class="vitals-track"><div class="vitals-fill" style="width: <?php echo $hpPercentage; ?>%; background-color: var(--status-danger);"></div></div><strong><?php echo (int) ($user['hp'] ?? 100); ?>/<?php echo (int) ($user['max_hp'] ?? 100); ?></strong></div>
+            <div class="dashboard-overview-bar-row"><span>EXP</span><div class="vitals-track"><div class="vitals-fill" style="width: <?php echo $expPercentage; ?>%; background-color: var(--accent);"></div></div><strong><?php echo number_format((int) max(0, $expToNextLevel)); ?> lagi</strong></div>
+        </div>
+    </div>
+    <div class="dashboard-overview-stat"><span>Gold</span><strong><i class="fas fa-coins" aria-hidden="true"></i><?php echo number_format((int) ($user['gold'] ?? 0)); ?></strong><a href="shop.php">Buka toko</a></div>
+    <div class="dashboard-overview-stat"><span>Kebiasaan</span><strong><?php echo (int) $completedHabits; ?><small>/<?php echo (int) $totalHabits; ?></small></strong><a href="habits.php">Lihat progres</a></div>
+    <div class="dashboard-overview-stat"><span>Streak tertinggi</span><strong><?php echo (int) $maxStreak; ?><small> hari</small></strong><a href="history.php">Lihat riwayat</a></div>
+</section>
+
+<?php
 $dashCompanions = game_companions();
 $dashCompKey = isset($dashCompanions[$user['active_companion'] ?? '']) ? $user['active_companion'] : 'obsidian_wolf';
 $dashComp = $dashCompanions[$dashCompKey];
 $dashBond = game_companion_level((int) ($user['companion_exp'] ?? 0));
 $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['overdrive_until']) > time();
 ?>
-<div class="bento-panel mb-4 p-2 px-3 d-flex flex-wrap align-items-center gap-3" style="font-size: 0.76rem;">
-    <span title="Astral Companion aktif" class="d-inline-flex align-items-center gap-1">
+<section class="dashboard-companion-strip" aria-label="Status companion dan skill">
+    <div class="dashboard-companion-summary">
         <?php if (!empty($dashComp['image']) && file_exists(__DIR__ . '/../' . $dashComp['image'])): ?>
-            <img src="../<?php echo htmlspecialchars($dashComp['image']); ?>" alt="" style="width: 16px; height: 16px; object-fit: contain; border-radius: 3px;">
+            <img src="../<?php echo htmlspecialchars($dashComp['image'], ENT_QUOTES, 'UTF-8'); ?>" alt="" width="42" height="42">
         <?php else: ?>
-            <i class="fas <?php echo $dashComp['icon']; ?> me-1" style="color: <?php echo $dashComp['accent']; ?>;"></i>
+            <span class="dashboard-companion-icon"><i class="fas <?php echo htmlspecialchars($dashComp['icon'], ENT_QUOTES, 'UTF-8'); ?>" aria-hidden="true"></i></span>
         <?php endif; ?>
-        <?php echo htmlspecialchars($dashComp['name']); ?> <span class="font-mono text-muted">(<?php echo $dashBond['stage']; ?> Lv.<?php echo $dashBond['bond_level']; ?>)</span>
-    </span>
-    <span title="Skill Points tersedia" class="font-mono"><i class="fas fa-sitemap text-accent me-1"></i> SP: <?php echo game_available_skill_points((int) ($user['level'] ?? 1), (int) ($user['spent_skill_points'] ?? 0)); ?></span>
-    <?php if ($dashOverdrive): ?>
-        <span class="badge-status warning font-mono"><i class="fas fa-bolt me-1"></i> OVERDRIVE +50% EXP s/d <?php echo htmlspecialchars(date('H:i', strtotime((string) $user['overdrive_until']))); ?></span>
-    <?php endif; ?>
-    <a href="skills.php" class="ms-auto font-mono text-accent" style="font-size: 0.72rem;">Kelola Sanctum <i class="fas fa-arrow-right ms-1"></i></a>
-</div>
+        <div><span>Companion aktif</span><strong><?php echo htmlspecialchars($dashComp['name']); ?></strong><small><?php echo htmlspecialchars($dashBond['stage']); ?> · Lv.<?php echo (int) $dashBond['bond_level']; ?></small></div>
+    </div>
+    <div class="dashboard-companion-meta"><span>Skill point</span><strong><?php echo game_available_skill_points((int) ($user['level'] ?? 1), (int) ($user['spent_skill_points'] ?? 0)); ?> SP tersedia</strong></div>
+    <?php if ($dashOverdrive): ?><span class="badge-status warning font-mono"><i class="fas fa-bolt me-1" aria-hidden="true"></i>Overdrive +50% EXP sampai <?php echo htmlspecialchars(date('H:i', strtotime((string) $user['overdrive_until']))); ?></span><?php endif; ?>
+    <a href="skills.php" class="dashboard-text-link">Kelola companion <i class="fas fa-arrow-right ms-1" aria-hidden="true"></i></a>
+</section>
 
 <?php if (isset($_SESSION['dashboard_alert'])): 
     $dbAlert = $_SESSION['dashboard_alert'];
@@ -471,7 +512,7 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 <?php endif; ?>
 
 <!-- Primary Tactical Console -->
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-4 dashboard-legacy-core">
     <!-- Character Core Status -->
     <div class="col-md-8">
         <div class="bento-panel spotlight-card holo-card h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="background: radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.16) 0%, transparent 48%), radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 40%), #111114; border-top: 1px solid rgba(255, 255, 255, 0.18);">
@@ -549,7 +590,7 @@ $dashOverdrive = !empty($user['overdrive_until']) && strtotime((string) $user['o
 </div>
 
 <!-- Unified Metric Strip (Anti-slop connected grid) -->
-<div class="metric-strip mb-4">
+<div class="metric-strip mb-4 dashboard-legacy-metrics">
     <div class="metric-cell">
         <div class="metric-label"><i class="fas fa-check-square text-accent"></i> Kebiasaan</div>
         <div class="metric-value"><span class="count-up" data-target="<?php echo (int)$completedHabits; ?>"><?php echo $completedHabits; ?></span> <span class="text-muted" style="font-size: 1rem; font-weight: 400;">/ <?php echo $totalHabits; ?></span></div>

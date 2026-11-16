@@ -447,19 +447,19 @@ if (isset($_SESSION['user_id'])) {
     <!-- Infinite Marquee Bar (Rank Progression) -->
     <div class="marquee-wrapper mb-5" id="lp-ranks">
         <div class="marquee-track">
-            <span class="marquee-item"><i class="fas fa-crown text-muted"></i> F-Rank Novice</span>
+            <span class="marquee-item"><img src="assets/images/badges/f_rank_novice.png" alt="" width="24" height="24" class="badge-pixel-icon"> F-Rank Novice</span>
             <span class="text-muted">✦</span>
-            <span class="marquee-item"><i class="fas fa-crown text-muted"></i> E-Rank Rookie</span>
+            <span class="marquee-item"><img src="assets/images/badges/e_rank_rookie.png" alt="" width="24" height="24" class="badge-pixel-icon"> E-Rank Rookie</span>
             <span class="text-muted">✦</span>
-            <span class="marquee-item"><i class="fas fa-compass text-accent"></i> D-Rank Explorer</span>
+            <span class="marquee-item"><img src="assets/images/badges/d_rank_explorer.png" alt="" width="24" height="24" class="badge-pixel-icon"> D-Rank Explorer</span>
             <span class="text-muted">✦</span>
-            <span class="marquee-item"><i class="fas fa-shield-alt text-info"></i> C-Rank Vanguard</span>
+            <span class="marquee-item"><img src="assets/images/badges/c_rank_vanguard.png" alt="" width="24" height="24" class="badge-pixel-icon"> C-Rank Vanguard</span>
             <span class="text-muted">✦</span>
-            <span class="marquee-item"><i class="fas fa-award text-accent"></i> B-Rank Elite</span>
+            <span class="marquee-item"><img src="assets/images/badges/b_rank_elite.png" alt="" width="24" height="24" class="badge-pixel-icon"> B-Rank Elite</span>
             <span class="text-muted">✦</span>
-            <span class="marquee-item"><i class="fas fa-dragon text-warning"></i> A-Rank Master</span>
+            <span class="marquee-item"><img src="assets/images/badges/a_rank_master.png" alt="" width="24" height="24" class="badge-pixel-icon"> A-Rank Master</span>
             <span class="text-muted">✦</span>
-            <span class="marquee-item"><i class="fas fa-medal text-warning"></i> S-Rank Sovereign</span>
+            <span class="marquee-item"><img src="assets/images/badges/s_rank_sovereign.png" alt="" width="24" height="24" class="badge-pixel-icon"> S-Rank Sovereign</span>
             <span class="text-muted">✦</span>
             <!-- Duplicate for seamless infinite loop -->
             <span class="marquee-item"><i class="fas fa-crown text-muted"></i> F-Rank Novice</span>

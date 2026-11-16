@@ -11,6 +11,8 @@ assets/images/*
 !assets/images/companions/*.png
 !assets/images/relics/
 !assets/images/relics/*.png
+!assets/images/badges/
+!assets/images/badges/*.png
 
 # Design assets
 assets/logo-concepts/

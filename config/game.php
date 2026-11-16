@@ -12,6 +12,16 @@ function game_focus_tier(?string $tier): string {
     return ($tier !== null && isset($rifts[$tier])) ? $tier : 'beta';
 }
 
+function game_badge_asset(string $type, string $key): string {
+    $allowed = [
+        'rank' => ['F-Rank Novice' => 'f_rank_novice', 'E-Rank Rookie' => 'e_rank_rookie', 'D-Rank Explorer' => 'd_rank_explorer', 'C-Rank Vanguard' => 'c_rank_vanguard', 'B-Rank Elite' => 'b_rank_elite', 'A-Rank Master' => 'a_rank_master', 'S-Rank Sovereign' => 's_rank_sovereign'],
+        'attribute' => ['Intelligence' => 'intelligence', 'Physical' => 'physical', 'Health' => 'health', 'Wealth' => 'wealth', 'Social' => 'social'],
+        'specialization' => ['Obsidian Vanguard' => 'obsidian_vanguard', 'Arcane Scholar' => 'arcane_scholar', 'Crimson Striker' => 'crimson_striker', 'Solar Sovereign' => 'solar_sovereign', 'Abyssal Archon' => 'abyssal_archon'],
+        'quest' => ['boss' => 'boss_quest'],
+    ];
+    return $allowed[$type][$key] ?? '';
+}
+
 function game_user_dungeon_hp(PDO $pdo, int $userId, int $baseHp): int {
     $stmt = $pdo->prepare("SELECT (SELECT COUNT(*) FROM habit_logs WHERE user_id=? AND status='Completed' AND completion_date>=DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND completion_date<CURDATE()) + (SELECT COUNT(*) FROM quest_logs WHERE user_id=? AND status='Completed' AND DATE(COALESCE(completed_at,completion_date,created_at))>=DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND DATE(COALESCE(completed_at,completion_date,created_at))<CURDATE())");
     $stmt->execute([$userId,$userId]);
