@@ -697,6 +697,58 @@
             LVNative.scheduleDaily(parseInt(parts[0], 10), parseInt(parts[1], 10), R.incomplete, R.streak);
         })();
 
+        /* ============ Android Home Screen Widget Sync Bridge (Capacitor) ============ */
+        window.lvSyncWidgetSnapshot = async function () {
+            const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LvWidget;
+            if (!plugin || typeof plugin.saveSnapshot !== 'function') return;
+            try {
+                const isAuthPage = /\/(login|register)\.php$/i.test(window.location.pathname);
+                if (isAuthPage) {
+                    if (typeof plugin.clearSnapshot === 'function') await plugin.clearSnapshot();
+                    return;
+                }
+                const inPages = window.location.pathname.indexOf('/pages/') !== -1;
+                if (typeof plugin.consumePendingMutations === 'function') {
+                    const pendingRes = await plugin.consumePendingMutations();
+                    const muts = (pendingRes && Array.isArray(pendingRes.mutations)) ? pendingRes.mutations : [];
+                    const csrf = document.querySelector('input[name="csrf_token"]')?.value || '';
+                    if (muts.length > 0 && csrf) {
+                        for (const m of muts) {
+                            const fd = new FormData();
+                            fd.append('csrf_token', csrf);
+                            if (m.kind === 'habit') {
+                                fd.append('habit_id', String(m.id));
+                                fd.append('increment_habit', '1');
+                                await fetch(inPages ? 'habits.php' : 'pages/habits.php', { method: 'POST', body: fd, credentials: 'same-origin' });
+                            } else if (m.kind === 'quest') {
+                                fd.append('quest_id', String(m.id));
+                                fd.append('complete_quest', '1');
+                                await fetch(inPages ? 'quests.php' : 'pages/quests.php', { method: 'POST', body: fd, credentials: 'same-origin' });
+                            }
+                        }
+                    }
+                }
+                const endpoint = inPages
+                    ? 'widget_snapshot.php'
+                    : 'pages/widget_snapshot.php';
+                const res = await fetch(endpoint, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (!res.ok) return;
+                const text = await res.text();
+                if (text && text.trim().startsWith('{')) {
+                    await plugin.saveSnapshot({ json: text });
+                }
+            } catch (e) {
+                console.warn('Widget snapshot sync failed:', (e && e.message) || e);
+            }
+        };
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.lvSyncWidgetSnapshot) window.lvSyncWidgetSnapshot();
+        });
+
         /* ============ PWA: service worker + install prompt ============ */
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -1080,6 +1132,7 @@
                             'Accept': 'application/json'
                         }
                     });
+                    if (window.lvSyncWidgetSnapshot) window.lvSyncWidgetSnapshot();
                 } catch (err) {
                     console.warn('Reorder save failed:', err);
                 }
@@ -1141,6 +1194,7 @@
                         const sortSel = document.getElementById(isQuest ? 'sortQuests' : 'sortHabits');
                         const mode = sortSel ? sortSel.value : 'default';
                         sortDataList(list, mode, isQuest);
+                        if (window.lvSyncWidgetSnapshot) window.lvSyncWidgetSnapshot();
                     }
                 } catch (err) {
                     console.error('Pin toggle error:', err);
@@ -1150,99 +1204,159 @@
             });
 
             // 2. Pointer-Event Drag-and-Drop via .drag-handle (Mobile & Desktop Safe)
-            //    Halus: baris terangkat mengikuti pointer via transform GPU (0ms latency),
-            //    baris lain bergeser dengan animasi FLIP 180ms, auto-scroll kontinu
-            //    di tepi viewport, dan haptic feedback halus di HP.
-            let drag = null; // { row, list, placeholder, pointerId, startClientY, lastClientY, rafId, scrollSpeed }
+            //    Baris terangkat mengikuti pointer via transform GPU; slot placeholder
+            //    hanya berpindah saat target berubah (cegah FLIP ulang 60fps); auto-scroll
+            //    instan (tanpa scroll-behavior: smooth) di zona aman di bawah HUD & di atas dock.
+            let drag = null;
             let dragFinishing = false;
 
             const dragReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const FLIP_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
-            function dragVisibleRows(list) {
+            function dragVisibleDataRows(list) {
                 return Array.from(list.querySelectorAll(':scope > .data-row')).filter(el => el.style.display !== 'none');
             }
 
-            // Pindahkan placeholder ke index baru dengan animasi FLIP pada baris terdampak
-            function movePlaceholderTo(index) {
-                const rows = dragVisibleRows(drag.list);
-                const ph = drag.placeholder;
-                const curIdx = rows.indexOf(ph);
-                if (curIdx === index) return;
+            function isPlaceholderBefore(ph, targetRef) {
+                let node = ph.nextElementSibling;
+                while (node) {
+                    if (node.classList.contains('data-row') && node.style.display !== 'none') {
+                        return node === targetRef;
+                    }
+                    node = node.nextElementSibling;
+                }
+                return targetRef === null;
+            }
 
+            function movePlaceholderTo(targetRef) {
+                if (!drag) return;
+                const ph = drag.placeholder;
+                if (isPlaceholderBefore(ph, targetRef)) return;
+
+                const rows = dragVisibleDataRows(drag.list);
                 if (!dragReduced) {
                     rows.forEach(r => {
-                        if (r === ph) return;
-                        const first = r.getBoundingClientRect().top;
-                        r.dataset.flipFirst = String(first);
+                        const cs = getComputedStyle(r);
+                        if (cs.transform && cs.transform !== 'none') {
+                            try {
+                                const m = new DOMMatrixReadOnly(cs.transform);
+                                r.style.transition = 'none';
+                                r.style.transform = 'translate3d(0, ' + m.m42 + 'px, 0)';
+                            } catch (_) {}
+                        }
+                        r.dataset.flipFirst = String(r.getBoundingClientRect().top);
                     });
                 }
 
-                if (index >= rows.length) drag.list.appendChild(ph);
-                else drag.list.insertBefore(ph, rows[index]);
+                if (targetRef) drag.list.insertBefore(ph, targetRef);
+                else drag.list.appendChild(ph);
 
                 if (!dragReduced) {
+                    rows.forEach(r => { r.style.transform = ''; });
                     rows.forEach(r => {
-                        if (r === ph) return;
                         const first = parseFloat(r.dataset.flipFirst || '0');
                         delete r.dataset.flipFirst;
                         const delta = first - r.getBoundingClientRect().top;
-                        if (!delta) return;
+                        if (Math.abs(delta) < 1) return;
                         r.style.transition = 'none';
-                        r.style.transform = 'translateY(' + delta + 'px)';
+                        r.style.transform = 'translate3d(0, ' + delta + 'px, 0)';
                         requestAnimationFrame(() => {
-                            r.style.transition = 'transform 180ms ' + FLIP_EASE;
+                            r.style.transition = 'transform 160ms ' + FLIP_EASE;
                             r.style.transform = '';
                         });
-                        r.addEventListener('transitionend', function te(ev) {
-                            if (ev.propertyName !== 'transform') return;
-                            r.style.transition = '';
-                            r.removeEventListener('transitionend', te);
-                        });
+                        if (!r.dataset.flipBound) {
+                            r.dataset.flipBound = '1';
+                            r.addEventListener('transitionend', function te(ev) {
+                                if (ev.propertyName !== 'transform') return;
+                                r.style.transition = '';
+                            });
+                        }
                     });
                 }
                 if (navigator.vibrate) { try { navigator.vibrate(4); } catch (_) {} }
             }
 
-            // Hitung index target placeholder dari posisi pointer (viewport Y)
-            function targetIndexFor(clientY) {
-                const rows = dragVisibleRows(drag.list);
+            // Gunakan offsetTop agar titik tengah baris tidak terganggu animasi transform FLIP
+            function targetRefFor(clientY) {
+                const rows = dragVisibleDataRows(drag.list);
+                const listRect = drag.list.getBoundingClientRect();
+                const listTop = listRect.top + drag.list.clientTop;
                 for (let i = 0; i < rows.length; i++) {
-                    if (rows[i] === drag.placeholder) continue;
-                    const box = rows[i].getBoundingClientRect();
-                    if (clientY < box.top + box.height / 2) return i;
+                    const r = rows[i];
+                    const rowTop = (r.offsetParent === drag.list)
+                        ? (listTop + r.offsetTop)
+                        : r.getBoundingClientRect().top;
+                    if (clientY < rowTop + r.offsetHeight / 2) return r;
                 }
-                return rows.length;
+                return null;
             }
 
-            // Loop rAF: baris mengikuti pointer + auto-scroll kontinu di tepi layar
-            function dragFrame() {
+            function computeAutoScrollDelta(clientY, dtFactor) {
+                const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+                const hud = document.querySelector('.telemetry-hud');
+                const dock = document.querySelector('.floating-magnetic-dock');
+                const hudBottom = hud ? Math.max(0, Math.min(vh * 0.25, hud.getBoundingClientRect().bottom)) : 0;
+                const dockTop = dock ? Math.max(vh * 0.72, Math.min(vh, dock.getBoundingClientRect().top)) : vh;
+
+                // Zona pemicu dimulai ~72px di dalam area list terlihat; kecepatan penuh tercapai tepat di tepi HUD / dock
+                const topTrigger = Math.min(vh * 0.32, hudBottom + 72);
+                const bottomTrigger = Math.max(vh * 0.68, dockTop - 72);
+
+                let ratio = 0;
+                let dir = 0;
+                if (clientY < topTrigger) {
+                    const fullAt = Math.max(12, hudBottom);
+                    ratio = Math.min(1, Math.max(0, (topTrigger - clientY) / Math.max(40, topTrigger - fullAt)));
+                    dir = -1;
+                } else if (clientY > bottomTrigger) {
+                    const fullAt = Math.min(vh - 12, dockTop);
+                    ratio = Math.min(1, Math.max(0, (clientY - bottomTrigger) / Math.max(40, fullAt - bottomTrigger)));
+                    dir = 1;
+                }
+
+                if (!dir || ratio <= 0) return 0;
+                const pxPerFrame = 5 + 31 * (ratio * ratio);
+                return Math.round(dir * pxPerFrame * dtFactor);
+            }
+
+            // Loop rAF: baris mengikuti pointer + auto-scroll instan di zona aman atas & bawah
+            function dragFrame(now) {
                 if (!drag) return;
+                const dtFactor = drag.lastFrameTs
+                    ? Math.min(2.5, Math.max(0.4, (now - drag.lastFrameTs) / 16.667))
+                    : 1;
+                drag.lastFrameTs = now;
+
                 const dy = drag.lastClientY - drag.startClientY;
                 drag.row.style.transform = 'translate3d(0, ' + dy + 'px, 0) scale(1.02)';
 
-                const edge = 84;
-                let speed = 0;
-                if (drag.lastClientY < edge) {
-                    speed = -Math.ceil((1 - drag.lastClientY / edge) * 16);
-                } else if (window.innerHeight - drag.lastClientY < edge) {
-                    speed = Math.ceil((1 - (window.innerHeight - drag.lastClientY) / edge) * 16);
+                const scrollDelta = computeAutoScrollDelta(drag.lastClientY, dtFactor);
+                if (scrollDelta) {
+                    try {
+                        window.scrollBy({ top: scrollDelta, left: 0, behavior: 'instant' });
+                    } catch (_) {
+                        window.scrollBy(0, scrollDelta);
+                    }
                 }
-                if (speed) window.scrollBy(0, speed);
 
-                const idx = targetIndexFor(drag.lastClientY);
-                movePlaceholderTo(idx);
+                const targetRef = targetRefFor(drag.lastClientY);
+                movePlaceholderTo(targetRef);
 
                 drag.rafId = requestAnimationFrame(dragFrame);
             }
 
+            document.addEventListener('touchmove', function(e) {
+                if (drag) e.preventDefault();
+            }, { passive: false });
+
             document.addEventListener('pointerdown', function(e) {
                 if (drag || dragFinishing) return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
                 const handle = e.target.closest('.drag-handle');
                 if (!handle) return;
                 const row = handle.closest('.data-row');
                 const list = handle.closest('.data-list[data-reorder-endpoint]');
-                if (!row || !list || dragVisibleRows(list).length < 2) return;
+                if (!row || !list || dragVisibleDataRows(list).length < 2) return;
 
                 e.preventDefault();
 
@@ -1252,19 +1366,20 @@
                 placeholder.style.height = rect.height + 'px';
 
                 drag = {
-                    row, list, placeholder,
+                    row, list, placeholder, handle,
                     pointerId: e.pointerId,
                     startClientY: e.clientY,
                     lastClientY: e.clientY,
+                    initialTop: rect.top,
+                    lastFrameTs: 0,
                     rafId: null
                 };
 
-                try { handle.setPointerCapture(e.pointerId); } catch (_) {}
-
-                // Angkat baris: keluar dari list, melayang fixed mengikuti pointer;
-                // placeholder mengambil slot asalnya agar layout tidak melompat
+                // Angkat baris lalu pasang pointer capture agar perpindahan node DOM tidak memutus capture
                 list.insertBefore(placeholder, row.nextSibling);
                 document.body.appendChild(row);
+                try { handle.setPointerCapture(e.pointerId); } catch (_) {}
+
                 row.classList.add('is-dragging');
                 row.style.position = 'fixed';
                 row.style.top = rect.top + 'px';
@@ -1273,6 +1388,7 @@
                 row.style.zIndex = '1099';
                 row.style.pointerEvents = 'none';
                 row.style.transform = 'translate3d(0, 0, 0) scale(1.02)';
+                document.documentElement.classList.add('is-reordering-active');
                 document.body.classList.add('is-reordering-active');
                 if (typeof LVSound !== 'undefined') LVSound.tick();
                 if (navigator.vibrate) { try { navigator.vibrate(8); } catch (_) {} }
@@ -1287,7 +1403,8 @@
             }, { passive: false });
 
             async function finishDrag(e) {
-                if (!drag || (e && drag.pointerId !== null && e.pointerId !== undefined && e.pointerId !== drag.pointerId)) return;
+                if (!drag) return;
+                if (e && e.pointerId !== undefined && e.pointerId !== null && e.pointerId !== drag.pointerId) return;
 
                 const state = drag;
                 drag = null;
@@ -1298,23 +1415,33 @@
                 const list = state.list;
                 const placeholder = state.placeholder;
 
-                // Animasi mendarat halus ke posisi placeholder
-                const rowTop = row.getBoundingClientRect().top;
-                const targetTop = placeholder.getBoundingClientRect().top;
-                const dy = targetTop - rowTop;
+                try {
+                    if (state.handle && state.handle.hasPointerCapture && state.handle.hasPointerCapture(state.pointerId)) {
+                        state.handle.releasePointerCapture(state.pointerId);
+                    }
+                } catch (_) {}
 
-                if (!dragReduced && Math.abs(dy) > 1) {
-                    row.style.transition = 'transform 200ms ' + FLIP_EASE;
-                    row.style.transform = 'translate3d(0, ' + dy + 'px, 0) scale(1)';
-                    await new Promise(r => setTimeout(r, 200));
+                // Animasi mendarat akurat dari posisi visual saat ini ke slot placeholder
+                const targetTop = placeholder.getBoundingClientRect().top;
+                const landingDy = targetTop - state.initialTop;
+
+                if (!dragReduced) {
+                    row.style.transition = 'transform 140ms ' + FLIP_EASE;
+                    row.style.transform = 'translate3d(0, ' + landingDy + 'px, 0) scale(1)';
+                    await new Promise(r => setTimeout(r, 140));
                 }
 
                 // Kembalikan baris ke list pada slot placeholder, rapikan style
                 list.insertBefore(row, placeholder);
                 placeholder.remove();
+                dragVisibleDataRows(list).forEach(r => {
+                    r.style.transition = '';
+                    r.style.transform = '';
+                });
                 ['position', 'top', 'left', 'width', 'zIndex', 'pointerEvents', 'transform', 'transition']
                     .forEach(prop => { row.style[prop] = ''; });
                 row.classList.remove('is-dragging');
+                document.documentElement.classList.remove('is-reordering-active');
                 document.body.classList.remove('is-reordering-active');
                 dragFinishing = false;
 
@@ -1333,6 +1460,7 @@
 
             document.addEventListener('pointerup', finishDrag);
             document.addEventListener('pointercancel', finishDrag);
+            window.addEventListener('blur', () => finishDrag());
         })();
 
         /* ============ Quick Attribute Filter Pills with LocalStorage ============ */

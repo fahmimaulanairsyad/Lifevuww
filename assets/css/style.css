@@ -1697,6 +1697,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     flex-direction: column;
 }
 
+.data-list[data-reorder-endpoint] {
+    position: relative;
+}
+
 .data-row {
     display: flex;
     align-items: center;
@@ -3979,20 +3983,22 @@ html[data-aura="violet"] {
     background: transparent;
     border: 1px solid transparent;
     color: var(--text-muted);
-    opacity: 0.45;
+    opacity: 0.55;
     cursor: grab;
     touch-action: none !important;
     user-select: none;
     -webkit-user-select: none;
-    width: 26px;
-    height: 32px;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+    width: 30px;
+    height: 36px;
     border-radius: 6px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     padding: 0;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     transition: color 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
 }
 
@@ -4071,18 +4077,24 @@ html[data-aura="violet"] {
     pointer-events: none;
 }
 
+html.is-reordering-active,
 body.is-reordering-active {
+    scroll-behavior: auto !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: none !important;
     user-select: none !important;
     -webkit-user-select: none !important;
     cursor: grabbing !important;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px), (pointer: coarse) {
     .drag-handle {
-        width: 30px;
-        height: 34px;
-        opacity: 0.65;
-        font-size: 0.88rem;
+        width: 40px;
+        height: 44px;
+        min-width: 40px;
+        min-height: 44px;
+        opacity: 0.85;
+        font-size: 0.95rem;
     }
     .data-row.is-pinned-card {
         padding-left: 0.5rem !important;

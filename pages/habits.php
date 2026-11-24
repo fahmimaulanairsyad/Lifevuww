@@ -1028,6 +1028,30 @@ function toggleScheduleOptions(selectEl) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 0. Handle pending 1-tap check-in action from Android Home Screen Widget
+    (async function handleWidgetPendingAction() {
+        const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LvWidget;
+        if (!plugin || typeof plugin.consumePendingAction !== 'function') return;
+        try {
+            const action = await plugin.consumePendingAction();
+            if (!action || action.type !== 'complete_or_increment_habit' || !action.id) return;
+            const row = document.querySelector(`.data-row[data-id="${action.id}"]`);
+            if (!row) return;
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const incBtn = row.querySelector('.btn-stepper-inc:not(:disabled)');
+            if (incBtn) {
+                incBtn.click();
+                return;
+            }
+            const doneBtn = row.querySelector('button[name="complete_habit"]');
+            if (doneBtn) {
+                doneBtn.click();
+            }
+        } catch (e) {
+            console.warn('Widget pending action failed:', (e && e.message) || e);
+        }
+    })();
+
     // 1. Check URL new_cat or open_modal parameter for auto-open
     const params = new URLSearchParams(window.location.search);
     const newCat = params.get('new_cat');
@@ -1172,6 +1196,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const hLvl = document.getElementById('hudLevelVal');
                 if (hLvl) hLvl.textContent = 'Lv.' + data.user_level;
             }
+            if (window.lvSyncWidgetSnapshot) window.lvSyncWidgetSnapshot();
 
         } catch (err) {
             console.error('Stepper error:', err);
