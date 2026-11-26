@@ -716,14 +716,25 @@
                         for (const m of muts) {
                             const fd = new FormData();
                             fd.append('csrf_token', csrf);
+                            const isUndo = (m.action === 'undo');
                             if (m.kind === 'habit') {
                                 fd.append('habit_id', String(m.id));
-                                fd.append('increment_habit', '1');
-                                await fetch(inPages ? 'habits.php' : 'pages/habits.php', { method: 'POST', body: fd, credentials: 'same-origin' });
+                                fd.append(isUndo ? 'decrement_habit' : 'increment_habit', '1');
+                                await fetch(inPages ? 'habits.php' : 'pages/habits.php', {
+                                    method: 'POST',
+                                    body: fd,
+                                    credentials: 'same-origin',
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                                });
                             } else if (m.kind === 'quest') {
                                 fd.append('quest_id', String(m.id));
-                                fd.append('complete_quest', '1');
-                                await fetch(inPages ? 'quests.php' : 'pages/quests.php', { method: 'POST', body: fd, credentials: 'same-origin' });
+                                fd.append(isUndo ? 'undo_quest' : 'complete_quest', '1');
+                                await fetch(inPages ? 'quests.php' : 'pages/quests.php', {
+                                    method: 'POST',
+                                    body: fd,
+                                    credentials: 'same-origin',
+                                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                                });
                             }
                         }
                     }
