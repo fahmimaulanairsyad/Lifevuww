@@ -38,7 +38,7 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha384-3B6NwesSXE7YJlcLI9RpRqGf2p/EgVH8BgoKTaUrmKNDkHPStTQ3EyoYjCGXaOTS" crossorigin="anonymous">
-    <link href="assets/css/style.css?v=20261116_01" rel="stylesheet">
+    <link href="assets/css/style.css?v=20261127_03" rel="stylesheet">
 
     <!-- Motion Libraries: GSAP via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -69,6 +69,7 @@ if (isset($_SESSION['user_id'])) {
     <!-- Interactive Antigravity Canvas & Film Grain Noise Overlay -->
     <canvas id="antigravity-canvas" class="antigravity-canvas"></canvas>
     <div class="film-grain"></div>
+    <div class="lp-page-transition-veil" id="lpPageTransitionVeil"></div>
 
     <!-- Custom Magnetic Cursor Follower (Desktop only) -->
     <div class="cursor-dot" id="cursorDot"></div>
@@ -103,11 +104,9 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </nav>
 
-    <!-- 2. Hero Section with Atmospheric 3D Stage & Perspective Grid -->
+    <!-- 2. Hero Section with Creation-of-Hands 3D Emerald Apple Stage -->
     <section class="lp-hero">
-        <div class="lp-hero-stage">
-            <canvas id="hero-3d-canvas"></canvas>
-        </div>
+        <div class="lp-hero-stage" aria-hidden="true"></div>
 
         <div class="lp-hero-content">
             <span class="badge-status accent font-mono mb-3" style="font-size: 0.74rem; padding: 0.32rem 0.8rem; border-radius: 999px;">
@@ -124,20 +123,45 @@ if (isset($_SESSION['user_id'])) {
             </h1>
 
             <p class="lp-hero-subtitle">
-                Ubah rutinitas harianmu menjadi petualangan level-up. Kalahkan Boss Quest, jaga streak konsistensi, bangun radar 5 pilar karakter, dan tebus reward impianmu.
+                Ubah rutinitas harianmu menjadi petualangan level-up. Raih kendali atas disiplinmu, kalahkan Boss Quest, dan bangun karakter terbaikmu.
             </p>
 
             <div class="lp-cta-group">
-                <a href="register.php" class="btn-core btn-primary" style="padding: 0.75rem 1.6rem; font-size: 0.9rem; border-radius: 999px;">
-                    <i class="fas fa-bolt me-1"></i> Mulai Petualangan
+                <a href="register.php" class="lp-btn-adventure" id="btnMulaiPetualangan">
+                    <i class="fas fa-bolt" style="font-size: 0.82rem;"></i>
+                    <span>Mulai Petualangan</span>
+                    <i class="fas fa-arrow-right" style="font-size: 0.78rem;"></i>
                 </a>
                 <form action="login.php" method="POST" style="margin: 0;">
                     <?php echo csrf_field(); ?>
                     <input type="hidden" name="login_demo" value="1">
                     <button type="submit" class="btn-core btn-outline" style="padding: 0.75rem 1.5rem; font-size: 0.9rem; border-radius: 999px;">
-                        <i class="fas fa-play text-accent me-1"></i> Coba Akun Demo (Guest Mode)
+                        <i class="fas fa-play text-accent me-1"></i> Coba Akun Demo
                     </button>
                 </form>
+            </div>
+        </div>
+
+        <!-- 3D Creation Stage: Tangan Halftone Kiri & Kanan Menggapai Apel Kristal Emerald -->
+        <div class="lp-creation-stage" id="creationStage" aria-hidden="true">
+            <div class="lp-stage-aura"></div>
+            <div class="lp-emerald-swell"></div>
+            <canvas id="lp-relic-rays"></canvas>
+            <div class="lp-contact-ring"></div>
+            <div class="lp-emerald-surge"></div>
+
+            <div class="lp-hand-wrap lp-hand-left-wrap" id="handLeftWrap">
+                <img src="assets/images/hero/hand-left-halftone.png" alt="" class="lp-hand-img" width="960" height="720" loading="eager">
+            </div>
+
+            <div class="lp-center-relic-wrap" id="centerRelicWrap">
+                <div class="lp-center-relic-inner">
+                    <img src="assets/images/hero/obj-a-apple-3d.png" alt="Apel Kristal Emerald Lifevuww" class="lp-center-relic-img" width="800" height="800" loading="eager">
+                </div>
+            </div>
+
+            <div class="lp-hand-wrap lp-hand-right-wrap" id="handRightWrap">
+                <img src="assets/images/hero/hand-right-halftone.png" alt="" class="lp-hand-img" width="960" height="720" loading="eager">
             </div>
         </div>
 
@@ -983,98 +1007,164 @@ if (isset($_SESSION['user_id'])) {
             }, 1400);
         })();
 
-        // 7. Atmospheric 3D Canvas Stage Renderer behind Hero
-        (function initHero3DStage() {
-            const canvas = document.getElementById('hero-3d-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            let w = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
-            let h = canvas.height = canvas.parentElement.offsetHeight || 600;
+        // 7. Creation-of-Hands Emerald Apple Stage & Touch-Surge Navigation
+        (function initHeroCreationStage() {
+            const stage = document.getElementById('creationStage');
+            const btnAdventure = document.getElementById('btnMulaiPetualangan');
+            const centerRelicWrap = document.getElementById('centerRelicWrap');
+            const veil = document.getElementById('lpPageTransitionVeil');
+            if (!stage) return;
 
-            window.addEventListener('resize', () => {
-                w = canvas.width = canvas.parentElement.offsetWidth || window.innerWidth;
-                h = canvas.height = canvas.parentElement.offsetHeight || 600;
-            }, { passive: true });
+            const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            let isNavigating = false;
+            let chargeLevel = 0.0;
+            let surgeLevel = 0.0;
 
-            // 3D Polyhedral Octahedron Geometry
-            const vertices = [
-                { x: 0, y: -90, z: 0 },
-                { x: 75, y: 0, z: -75 },
-                { x: -75, y: 0, z: -75 },
-                { x: -75, y: 0, z: 75 },
-                { x: 75, y: 0, z: 75 },
-                { x: 0, y: 90, z: 0 }
-            ];
-
-            const faces = [
-                [0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1],
-                [5, 2, 1], [5, 3, 2], [5, 4, 3], [5, 1, 4]
-            ];
-
-            let rotX = 0.2, rotY = 0.3;
-            let targetRotX = 0.2, targetRotY = 0.3;
-
-            window.addEventListener('mousemove', (e) => {
-                const normX = (e.clientX / window.innerWidth) - 0.5;
-                const normY = (e.clientY / window.innerHeight) - 0.5;
-                targetRotY = normX * 1.4;
-                targetRotX = normY * 0.9;
-            }, { passive: true });
-
-            function project(p, rx, ry) {
-                const cosY = Math.cos(ry), sinY = Math.sin(ry);
-                const x1 = p.x * cosY + p.z * sinY;
-                const z1 = -p.x * sinY + p.z * cosY;
-
-                const cosX = Math.cos(rx), sinX = Math.sin(rx);
-                const y2 = p.y * cosX - z1 * sinX;
-                const z2 = p.y * sinX + z1 * cosX;
-
-                const fov = 380;
-                const scale = fov / (fov + z2 + 180);
-                return {
-                    x: (w / 2) + x1 * scale,
-                    y: (h * 0.42) + y2 * scale,
-                    z: z2
-                };
+            function resetStage() {
+                isNavigating = false;
+                chargeLevel = 0.0;
+                surgeLevel = 0.0;
+                stage.classList.remove('is-primed', 'is-converging', 'is-surge');
+                if (veil) veil.classList.remove('is-active');
             }
 
-            function draw() {
-                ctx.clearRect(0, 0, w, h);
-                rotY += 0.007; // Continuous subtle rotation
-                rotX += (targetRotX - rotX) * 0.05;
-                rotY += (targetRotY - rotY) * 0.03;
+            window.addEventListener('pageshow', (e) => {
+                if (e.persisted) resetStage();
+            });
 
-                const projected = vertices.map(v => project(v, rotX, rotY));
-
-                const sortedFaces = faces.map(f => {
-                    const avgZ = (projected[f[0]].z + projected[f[1]].z + projected[f[2]].z) / 3;
-                    return { face: f, z: avgZ };
-                }).sort((a, b) => b.z - a.z);
-
-                sortedFaces.forEach(sf => {
-                    const f = sf.face;
-                    const p0 = projected[f[0]];
-                    const p1 = projected[f[1]];
-                    const p2 = projected[f[2]];
-
-                    ctx.beginPath();
-                    ctx.moveTo(p0.x, p0.y);
-                    ctx.lineTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.closePath();
-
-                    ctx.fillStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.08)' : 'rgba(99, 102, 241, 0.16)';
-                    ctx.fill();
-
-                    ctx.strokeStyle = sf.z > 0 ? 'rgba(16, 185, 129, 0.45)' : 'rgba(99, 102, 241, 0.65)';
-                    ctx.lineWidth = 1.6;
-                    ctx.stroke();
+            if (btnAdventure) {
+                btnAdventure.addEventListener('pointerenter', () => {
+                    if (!isNavigating) stage.classList.add('is-primed');
                 });
+                btnAdventure.addEventListener('pointerleave', () => {
+                    stage.classList.remove('is-primed');
+                });
+                btnAdventure.addEventListener('click', (e) => {
+                    const targetHref = btnAdventure.getAttribute('href') || 'register.php';
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                    if (isNavigating) {
+                        e.preventDefault();
+                        return;
+                    }
+                    e.preventDefault();
+                    isNavigating = true;
 
-                requestAnimationFrame(draw);
+                    if (reduceMotion) {
+                        if (veil) veil.classList.add('is-active');
+                        setTimeout(() => { window.location.href = targetHref; }, 160);
+                        return;
+                    }
+
+                    // Beat 1 (0ms): Kedua tangan mendekat & cahaya hijau apel perlahan membesar sebelum menyentuh
+                    stage.classList.remove('is-primed');
+                    stage.classList.add('is-converging');
+                    chargeLevel = 1.0;
+
+                    // Beat 2 (~520ms): Ujung jari menyentuh apel -> cahaya hijau memancar membesar mengisi layar
+                    setTimeout(() => {
+                        stage.classList.add('is-surge');
+                        surgeLevel = 1.0;
+                    }, 520);
+
+                    // Beat 3 (~820ms..1140ms): Cross-fade veil & pindah ke register.php
+                    setTimeout(() => {
+                        if (veil) veil.classList.add('is-active');
+                    }, 820);
+
+                    setTimeout(() => {
+                        window.location.href = targetHref;
+                    }, 1150);
+                });
             }
-            requestAnimationFrame(draw);
+
+            // Mouse 3D tilt parallax on Emerald Apple
+            let targetTiltX = 0, targetTiltY = 0, curTiltX = 0, curTiltY = 0;
+            if (!reduceMotion) {
+                window.addEventListener('mousemove', (e) => {
+                    const nx = (e.clientX / window.innerWidth) - 0.5;
+                    const ny = (e.clientY / window.innerHeight) - 0.5;
+                    targetTiltY = nx * 22;
+                    targetTiltX = -ny * 18;
+                }, { passive: true });
+            }
+
+            // Volumetric Emerald Starburst Rays Canvas
+            const rayCanvas = document.getElementById('lp-relic-rays');
+            const rayCtx = rayCanvas ? rayCanvas.getContext('2d') : null;
+            let rw = 0, rh = 0;
+
+            function resizeRayCanvas() {
+                if (!rayCanvas || !rayCtx) return;
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+                rw = stage.clientWidth || 800;
+                rh = stage.clientHeight || 340;
+                rayCanvas.width = rw * dpr;
+                rayCanvas.height = rh * dpr;
+                rayCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resizeRayCanvas();
+            window.addEventListener('resize', resizeRayCanvas, { passive: true });
+
+            const sparks = Array.from({ length: 24 }, (_, i) => ({
+                ang: (i / 24) * Math.PI * 2,
+                dist: 24 + (i % 5) * 26,
+                speed: 0.16 + (i % 4) * 0.08,
+                size: 1.0 + (i % 3) * 0.7
+            }));
+
+            let t = 0;
+            let smoothGlow = 0.0;
+            function frameLoop() {
+                t += 0.016;
+                curTiltX += (targetTiltX - curTiltX) * 0.08;
+                curTiltY += (targetTiltY - curTiltY) * 0.08;
+                if (centerRelicWrap && !reduceMotion) {
+                    centerRelicWrap.style.transform =
+                        `translate(-50%, -50%) perspective(900px) rotateX(${curTiltX.toFixed(2)}deg) rotateY(${curTiltY.toFixed(2)}deg)`;
+                }
+
+                const targetGlow = isNavigating ? (surgeLevel > 0 ? 1.45 : 0.72) : (stage.classList.contains('is-primed') ? 0.25 : 0.0);
+                smoothGlow += (targetGlow - smoothGlow) * 0.08;
+
+                if (rayCtx && rw > 0 && rh > 0) {
+                    rayCtx.clearRect(0, 0, rw, rh);
+                    const cx = rw * 0.5;
+                    const cy = rh * 0.5;
+                    const baseAlpha = 0.20 + smoothGlow * 0.52;
+                    const rayCount = 16;
+
+                    for (let i = 0; i < rayCount; i++) {
+                        const a = (i / rayCount) * Math.PI * 2 + (reduceMotion ? 0 : t * (0.12 + smoothGlow * 0.22));
+                        const len = Math.min(rw, rh) * (0.28 + (i % 2 === 0 ? 0.16 : 0.06) + smoothGlow * 0.26);
+                        const grad = rayCtx.createLinearGradient(cx, cy, cx + Math.cos(a) * len, cy + Math.sin(a) * len);
+                        grad.addColorStop(0, `rgba(167, 243, 208, ${Math.min(1, baseAlpha * 0.92).toFixed(3)})`);
+                        grad.addColorStop(0.36, `rgba(16, 185, 129, ${Math.min(1, baseAlpha * 0.48).toFixed(3)})`);
+                        grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+                        rayCtx.beginPath();
+                        rayCtx.moveTo(cx, cy);
+                        rayCtx.lineTo(cx + Math.cos(a) * len, cy + Math.sin(a) * len);
+                        rayCtx.strokeStyle = grad;
+                        rayCtx.lineWidth = ((i % 2 === 0) ? 2.2 : 1.1) * (1 + smoothGlow * 0.6);
+                        rayCtx.stroke();
+                    }
+
+                    if (!reduceMotion) {
+                        sparks.forEach(sp => {
+                            sp.dist += sp.speed * (1 + smoothGlow * 3.8);
+                            if (sp.dist > Math.min(rw, rh) * 0.48) sp.dist = 18;
+                            const px = cx + Math.cos(sp.ang + t * 0.22) * sp.dist;
+                            const py = cy + Math.sin(sp.ang + t * 0.22) * sp.dist * 0.86;
+                            const a = (1 - sp.dist / (Math.min(rw, rh) * 0.48)) * Math.min(1, 0.45 + smoothGlow * 0.5);
+                            rayCtx.beginPath();
+                            rayCtx.arc(px, py, sp.size * (1 + smoothGlow * 0.35), 0, Math.PI * 2);
+                            rayCtx.fillStyle = `rgba(110, 231, 183, ${a.toFixed(3)})`;
+                            rayCtx.fill();
+                        });
+                    }
+                }
+                requestAnimationFrame(frameLoop);
+            }
+            requestAnimationFrame(frameLoop);
         })();
 
         // 8. GSAP 3D Scroll Scrub on App Mockup (Native Scroll Friendly)
@@ -1421,9 +1511,13 @@ if (isset($_SESSION['user_id'])) {
             let mouseX = window.innerWidth / 2, mouseY = window.innerHeight / 2;
             let ringX = mouseX, ringY = mouseY;
 
+            dot.style.opacity = '0';
+            ring.style.opacity = '0';
             window.addEventListener('mousemove', e => {
                 mouseX = e.clientX;
                 mouseY = e.clientY;
+                dot.style.opacity = '1';
+                ring.style.opacity = '1';
                 dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
             }, { passive: true });
 

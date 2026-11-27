@@ -2813,8 +2813,8 @@ html.is-apk #btn-install-app {
 /* 2. Hero Section with Atmospheric 3D Stage & Perspective Grid */
 .lp-hero {
     position: relative;
-    padding: 130px 1.5rem 3.5rem 1.5rem;
-    max-width: 1180px;
+    padding: 96px 1.5rem 3.5rem 1.5rem;
+    max-width: 1220px;
     margin: 0 auto;
     text-align: center;
     overflow: visible;
@@ -2871,26 +2871,26 @@ html.is-apk #btn-install-app {
 .lp-hero-content {
     position: relative;
     z-index: 2;
-    max-width: 840px;
+    max-width: 920px;
     margin: 0 auto;
 }
 
 .lp-hero-title {
-    font-size: clamp(2.6rem, 5.8vw, 4.8rem);
+    font-size: clamp(2.15rem, 4.35vw, 3.65rem);
     letter-spacing: -0.04em;
-    line-height: 1.18;
+    line-height: 1.12;
     font-weight: 700;
     font-family: var(--font-display, var(--font-sans));
-    margin: 1.25rem 0 1rem 0;
+    margin: 0.75rem 0 0.85rem 0;
     overflow: visible !important;
 }
 
 .lp-hero-subtitle {
-    max-width: 640px;
+    max-width: 580px;
     color: #a1a1aa;
-    font-size: 1.05rem;
-    line-height: 1.6;
-    margin: 0 auto 2.2rem auto;
+    font-size: 1.02rem;
+    line-height: 1.58;
+    margin: 0 auto 1.45rem auto;
 }
 
 .lp-cta-group {
@@ -2899,7 +2899,7 @@ html.is-apk #btn-install-app {
     justify-content: center;
     gap: 0.85rem;
     flex-wrap: wrap;
-    margin-bottom: 3rem;
+    margin-bottom: 0.5rem;
 }
 
 /* 3. 3D Perspective App Window Showcase */
@@ -3364,7 +3364,7 @@ html.is-apk #btn-install-app {
         display: none !important;
     }
     .lp-hero {
-        padding: 90px 1rem 2rem 1rem;
+        padding: 78px 1rem 2rem 1rem;
     }
     .lp-hero-title {
         font-size: 2.2rem;
@@ -4730,4 +4730,332 @@ body.is-reordering-active {
 
 @media (min-width: 769px) {
     #floatingDock .dock-item.dock-more-btn, #mobileMoreDrawer, #mobileMoreBackdrop { display: none !important; }
+}
+
+/* ==========================================================
+   LANDING HERO 3D CREATION STAGE (HALFTONE + EMERALD APPLE)
+   ========================================================== */
+.lp-btn-adventure {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0.75rem 1.55rem;
+    border-radius: 999px;
+    background: #fafafa;
+    color: #09090b !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid rgba(255, 255, 255, 0.92);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+                background-color 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.25s ease;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.lp-btn-adventure:hover,
+.lp-btn-adventure:focus-visible {
+    background: #10b981;
+    color: #032016 !important;
+    border-color: #34d399;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(16, 185, 129, 0.32);
+    outline: none;
+}
+
+.lp-btn-adventure:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.lp-creation-stage {
+    position: relative;
+    width: 100%;
+    max-width: 1120px;
+    height: clamp(270px, 38vh, 390px);
+    margin: 0.35rem auto 2.5rem auto;
+    pointer-events: none;
+    user-select: none;
+    perspective: 1100px;
+    overflow: visible;
+}
+
+.lp-stage-aura {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(280px, 42vw, 520px);
+    height: clamp(260px, 38vw, 460px);
+    transform: translate(-50%, -50%) scale(1);
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, rgba(16, 185, 129, 0.06) 44%, transparent 72%);
+    transition: transform 0.56s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease;
+    opacity: 0.82;
+    z-index: 1;
+    will-change: transform, opacity;
+}
+
+.lp-emerald-swell {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(220px, 28vw, 340px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.38);
+    background: radial-gradient(circle, rgba(167, 243, 208, 0.9) 0%, rgba(16, 185, 129, 0.58) 38%, rgba(16, 185, 129, 0) 72%);
+    opacity: 0.22;
+    transition: transform 0.56s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.52s ease;
+    z-index: 2;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+.lp-emerald-surge {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(240px, 30vw, 360px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%) scale(0.18);
+    background: radial-gradient(circle, rgba(236, 253, 245, 0.96) 0%, rgba(52, 211, 153, 0.88) 26%, rgba(16, 185, 129, 0.48) 54%, rgba(16, 185, 129, 0) 78%);
+    opacity: 0;
+    z-index: 6;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+#lp-relic-rays {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.lp-hand-wrap {
+    position: absolute;
+    width: clamp(235px, 40vw, 470px);
+    z-index: 4;
+    will-change: transform;
+    transition: transform 0.62s cubic-bezier(0.25, 0.85, 0.35, 1), opacity 0.35s ease;
+}
+
+.lp-hand-left-wrap {
+    left: -2%;
+    top: -3%;
+    transform-origin: left center;
+    transform: translate3d(0, 0, 0);
+}
+
+.lp-hand-right-wrap {
+    right: -1%;
+    bottom: -11%;
+    transform-origin: right bottom;
+    transform: translate3d(0, 0, 0);
+}
+
+.lp-hand-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    pointer-events: none;
+    filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.7));
+}
+
+.lp-center-relic-wrap {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(148px, 19.5vw, 240px);
+    aspect-ratio: 1 / 1;
+    transform: translate(-50%, -50%);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+}
+
+.lp-center-relic-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    will-change: transform;
+    animation: lpRelicFloat 4.8s ease-in-out infinite;
+}
+
+@keyframes lpRelicFloat {
+    0%, 100% { transform: translate3d(0, -5px, 0) scale(1); }
+    50% { transform: translate3d(0, 6px, 0) scale(1.015); }
+}
+
+.lp-center-relic-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    filter: drop-shadow(0 0 28px rgba(16, 185, 129, 0.38));
+    transition: transform 0.56s cubic-bezier(0.22, 1, 0.36, 1), filter 0.45s ease;
+    will-change: transform;
+}
+
+.lp-contact-ring {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: clamp(140px, 18vw, 210px);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    border: 2px solid rgba(52, 211, 153, 0.9);
+    box-shadow: 0 0 42px rgba(16, 185, 129, 0.65), inset 0 0 28px rgba(16, 185, 129, 0.35);
+    transform: translate(-50%, -50%) scale(0.42);
+    opacity: 0;
+    z-index: 5;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+.lp-page-transition-veil {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(circle at 50% 60%, rgba(16, 185, 129, 0.92) 0%, rgba(5, 78, 53, 0.97) 42%, #07130f 78%, #09090b 100%);
+    transition: opacity 0.42s ease-out;
+    will-change: opacity;
+}
+
+.lp-page-transition-veil.is-active {
+    opacity: 1;
+}
+
+/* Hover priming on CTA */
+.lp-creation-stage.is-primed .lp-hand-left-wrap {
+    transform: translate3d(clamp(16px, 2.5vw, 34px), clamp(2px, 0.4vw, 6px), 0);
+}
+
+.lp-creation-stage.is-primed .lp-hand-right-wrap {
+    transform: translate3d(calc(-1 * clamp(16px, 2.5vw, 34px)), calc(-1 * clamp(4px, 0.8vw, 12px)), 0);
+}
+
+.lp-creation-stage.is-primed .lp-emerald-swell {
+    transform: translate(-50%, -50%) scale(0.62);
+    opacity: 0.45;
+}
+
+.lp-creation-stage.is-primed .lp-center-relic-img {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 42px rgba(16, 185, 129, 0.65));
+}
+
+/* Click Step 1 (0..560ms): Hands glide together + Emerald glow swells BEFORE contact */
+.lp-creation-stage.is-converging .lp-hand-left-wrap {
+    transform: translate3d(clamp(82px, 15.5vw, 188px), clamp(2px, 0.4vw, 6px), 0) scale(1.03);
+}
+
+.lp-creation-stage.is-converging .lp-hand-right-wrap {
+    transform: translate3d(calc(-1 * clamp(72px, 12.8vw, 154px)), calc(-1 * clamp(10px, 1.6vw, 22px)), 0) scale(1.03);
+}
+
+.lp-creation-stage.is-converging .lp-stage-aura {
+    transform: translate(-50%, -50%) scale(1.38);
+    opacity: 1;
+}
+
+.lp-creation-stage.is-converging .lp-emerald-swell {
+    transform: translate(-50%, -50%) scale(1.22);
+    opacity: 0.88;
+}
+
+.lp-creation-stage.is-converging .lp-center-relic-img {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 58px rgba(52, 211, 153, 0.92));
+}
+
+/* Click Step 2 (~520..1120ms): Fingertips kiss -> Emerald light surges & expands across screen */
+.lp-creation-stage.is-surge .lp-emerald-surge {
+    animation: lpEmeraldSurge 0.62s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.lp-creation-stage.is-surge .lp-contact-ring {
+    animation: lpContactPulseHero 0.68s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.lp-creation-stage.is-surge .lp-center-relic-img {
+    transform: scale(1.18);
+    filter: drop-shadow(0 0 76px rgba(167, 243, 208, 1));
+}
+
+@keyframes lpEmeraldSurge {
+    0% {
+        transform: translate(-50%, -50%) scale(0.28);
+        opacity: 0.78;
+    }
+    55% {
+        opacity: 0.98;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(5.4);
+        opacity: 0.92;
+    }
+}
+
+@keyframes lpContactPulseHero {
+    0% {
+        transform: translate(-50%, -50%) scale(0.48);
+        opacity: 0.96;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(2.45);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .lp-creation-stage {
+        height: 235px;
+        margin: 0.5rem auto 1.65rem auto;
+    }
+    .lp-hand-wrap {
+        width: 47vw;
+        max-width: 215px;
+    }
+    .lp-hand-left-wrap {
+        left: -4%;
+        top: 6%;
+    }
+    .lp-hand-right-wrap {
+        right: -4%;
+        bottom: 2%;
+    }
+    .lp-center-relic-wrap {
+        width: 120px;
+    }
+    .lp-creation-stage.is-converging .lp-hand-left-wrap {
+        transform: translate3d(52px, 2px, 0) scale(1.03);
+    }
+    .lp-creation-stage.is-converging .lp-hand-right-wrap {
+        transform: translate3d(-48px, -10px, 0) scale(1.03);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lp-center-relic-inner { animation: none; }
+    .lp-hand-wrap,
+    .lp-center-relic-img,
+    .lp-stage-aura,
+    .lp-emerald-swell,
+    .lp-page-transition-veil { transition: none; }
+    .lp-creation-stage.is-surge .lp-emerald-surge,
+    .lp-creation-stage.is-surge .lp-contact-ring { animation: none; }
 }
