@@ -4848,7 +4848,7 @@ body.is-reordering-active {
 
 .lp-hand-left-wrap {
     left: -2%;
-    top: -42%;
+    top: -50%;
     transform-origin: left center;
     transform: translate3d(0, 0, 0);
 }
@@ -4942,7 +4942,7 @@ body.is-reordering-active {
 
 /* Hover priming on CTA */
 .lp-creation-stage.is-primed .lp-hand-left-wrap {
-    transform: translate3d(clamp(16px, 2.5vw, 34px), clamp(8px, 1.2vw, 16px), 0);
+    transform: translate3d(clamp(16px, 2.5vw, 34px), clamp(10px, 1.5vw, 20px), 0);
 }
 
 .lp-creation-stage.is-primed .lp-hand-right-wrap {
@@ -4961,7 +4961,7 @@ body.is-reordering-active {
 
 /* Click Step 1 (0..560ms): Hands glide together + Emerald glow swells BEFORE contact */
 .lp-creation-stage.is-converging .lp-hand-left-wrap {
-    transform: translate3d(clamp(82px, 15.5vw, 188px), clamp(42px, 5.5vw, 72px), 0) scale(1.03);
+    transform: translate3d(clamp(82px, 15.5vw, 188px), clamp(54px, 6.8vw, 86px), 0) scale(1.03);
 }
 
 .lp-creation-stage.is-converging .lp-hand-right-wrap {
@@ -5033,7 +5033,7 @@ body.is-reordering-active {
     }
     .lp-hand-left-wrap {
         left: -4%;
-        top: -20%;
+        top: -28%;
     }
     .lp-hand-right-wrap {
         right: -4%;
@@ -5044,7 +5044,7 @@ body.is-reordering-active {
         width: 120px;
     }
     .lp-creation-stage.is-converging .lp-hand-left-wrap {
-        transform: translate3d(52px, 26px, 0) scale(1.03);
+        transform: translate3d(52px, 32px, 0) scale(1.03);
     }
     .lp-creation-stage.is-converging .lp-hand-right-wrap {
         transform: translate3d(-48px, -18px, 0) scale(1.03);
