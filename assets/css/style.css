@@ -4848,14 +4848,15 @@ body.is-reordering-active {
 
 .lp-hand-left-wrap {
     left: -2%;
-    top: -3%;
+    top: -22%;
     transform-origin: left center;
     transform: translate3d(0, 0, 0);
 }
 
 .lp-hand-right-wrap {
     right: -1%;
-    bottom: -11%;
+    top: 39%;
+    bottom: auto;
     transform-origin: right bottom;
     transform: translate3d(0, 0, 0);
 }
@@ -4941,11 +4942,11 @@ body.is-reordering-active {
 
 /* Hover priming on CTA */
 .lp-creation-stage.is-primed .lp-hand-left-wrap {
-    transform: translate3d(clamp(16px, 2.5vw, 34px), clamp(2px, 0.4vw, 6px), 0);
+    transform: translate3d(clamp(16px, 2.5vw, 34px), clamp(4px, 0.7vw, 10px), 0);
 }
 
 .lp-creation-stage.is-primed .lp-hand-right-wrap {
-    transform: translate3d(calc(-1 * clamp(16px, 2.5vw, 34px)), calc(-1 * clamp(4px, 0.8vw, 12px)), 0);
+    transform: translate3d(calc(-1 * clamp(16px, 2.5vw, 34px)), calc(-1 * clamp(5px, 0.9vw, 14px)), 0);
 }
 
 .lp-creation-stage.is-primed .lp-emerald-swell {
@@ -4960,11 +4961,11 @@ body.is-reordering-active {
 
 /* Click Step 1 (0..560ms): Hands glide together + Emerald glow swells BEFORE contact */
 .lp-creation-stage.is-converging .lp-hand-left-wrap {
-    transform: translate3d(clamp(82px, 15.5vw, 188px), clamp(2px, 0.4vw, 6px), 0) scale(1.03);
+    transform: translate3d(clamp(82px, 15.5vw, 188px), clamp(18px, 2.6vw, 34px), 0) scale(1.03);
 }
 
 .lp-creation-stage.is-converging .lp-hand-right-wrap {
-    transform: translate3d(calc(-1 * clamp(72px, 12.8vw, 154px)), calc(-1 * clamp(10px, 1.6vw, 22px)), 0) scale(1.03);
+    transform: translate3d(calc(-1 * clamp(72px, 12.8vw, 154px)), calc(-1 * clamp(22px, 3vw, 40px)), 0) scale(1.03);
 }
 
 .lp-creation-stage.is-converging .lp-stage-aura {
@@ -5032,20 +5033,21 @@ body.is-reordering-active {
     }
     .lp-hand-left-wrap {
         left: -4%;
-        top: 6%;
+        top: -8%;
     }
     .lp-hand-right-wrap {
         right: -4%;
-        bottom: 2%;
+        top: 44%;
+        bottom: auto;
     }
     .lp-center-relic-wrap {
         width: 120px;
     }
     .lp-creation-stage.is-converging .lp-hand-left-wrap {
-        transform: translate3d(52px, 2px, 0) scale(1.03);
+        transform: translate3d(52px, 14px, 0) scale(1.03);
     }
     .lp-creation-stage.is-converging .lp-hand-right-wrap {
-        transform: translate3d(-48px, -10px, 0) scale(1.03);
+        transform: translate3d(-48px, -18px, 0) scale(1.03);
     }
 }
 
