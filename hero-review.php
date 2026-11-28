@@ -176,8 +176,8 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
         }
 
         .lp-hand-left-wrap {
-            left: -7.5%;
-            top: -104%;
+            left: -8%;
+            top: -118%;
             transform-origin: left center;
             transform: translate3d(0, 0, 0);
         }
@@ -276,7 +276,7 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
 
         /* Active Converging State (after clicking Mulai Petualangan) */
         .lp-creation-stage.is-converging .lp-hand-left-wrap {
-            transform: translate3d(clamp(145px, 21.8vw, 265px), clamp(160px, calc(58.5vh - 245px), 295px), 0) scale(1.03);
+            transform: translate3d(clamp(150px, 22.4vw, 272px), clamp(190px, calc(63.8vh - 246px), 340px), 0) scale(1.03);
         }
 
         .lp-creation-stage.is-converging .lp-hand-right-wrap {
