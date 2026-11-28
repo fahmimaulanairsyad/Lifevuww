@@ -276,11 +276,11 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
 
         /* Active Converging State (after clicking Mulai Petualangan) */
         .lp-creation-stage.is-converging .lp-hand-left-wrap {
-            transform: translate3d(clamp(54px, 7.6vw, 96px), clamp(2px, 0.35vw, 5px), 0) scale(1.02);
+            transform: translate3d(clamp(38px, 5vw, 62px), clamp(1px, 0.2vw, 3px), 0) scale(1.02);
         }
 
         .lp-creation-stage.is-converging .lp-hand-right-wrap {
-            transform: translate3d(calc(-1 * clamp(44px, 6.2vw, 78px)), calc(-1 * clamp(6px, 0.9vw, 13px)), 0) scale(1.02);
+            transform: translate3d(calc(-1 * clamp(32px, 4.2vw, 52px)), calc(-1 * clamp(4px, 0.7vw, 10px)), 0) scale(1.02);
         }
 
         .lp-creation-stage.is-converging .lp-center-relic-img {
@@ -431,10 +431,10 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
                 top: 50%;
             }
             .lp-creation-stage.is-converging .lp-hand-left-wrap {
-                transform: translate3d(26px, 2px, 0) scale(1.02);
+                transform: translate3d(22px, 1px, 0) scale(1.02);
             }
             .lp-creation-stage.is-converging .lp-hand-right-wrap {
-                transform: translate3d(-24px, -6px, 0) scale(1.02);
+                transform: translate3d(-20px, -5px, 0) scale(1.02);
             }
             .lp-creation-cta-wrap {
                 gap: 0.5rem;
