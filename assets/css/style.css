@@ -4847,16 +4847,16 @@ body.is-reordering-active {
 }
 
 .lp-hand-left-wrap {
-    left: -8%;
-    top: -118%;
+    left: -3%;
+    top: -3%;
     transform-origin: left center;
     transform: translate3d(0, 0, 0);
 }
 
 .lp-hand-right-wrap {
-    right: -1%;
-    top: 39%;
-    bottom: auto;
+    right: -2%;
+    bottom: -11%;
+    top: auto;
     transform-origin: right bottom;
     transform: translate3d(0, 0, 0);
 }
@@ -4942,11 +4942,11 @@ body.is-reordering-active {
 
 /* Hover priming on CTA */
 .lp-creation-stage.is-primed .lp-hand-left-wrap {
-    transform: translate3d(clamp(28px, 3.8vw, 48px), clamp(28px, 3.6vw, 46px), 0);
+    transform: translate3d(clamp(12px, 1.8vw, 22px), clamp(2px, 0.3vw, 4px), 0);
 }
 
 .lp-creation-stage.is-primed .lp-hand-right-wrap {
-    transform: translate3d(calc(-1 * clamp(16px, 2.5vw, 34px)), calc(-1 * clamp(5px, 0.9vw, 14px)), 0);
+    transform: translate3d(calc(-1 * clamp(12px, 1.8vw, 22px)), calc(-1 * clamp(3px, 0.5vw, 8px)), 0);
 }
 
 .lp-creation-stage.is-primed .lp-emerald-swell {
@@ -4959,13 +4959,13 @@ body.is-reordering-active {
     filter: drop-shadow(0 0 42px rgba(16, 185, 129, 0.65));
 }
 
-/* Click Step 1 (0..560ms): Hands glide together + Emerald glow swells BEFORE contact */
+/* Click Step 1 (0..560ms): Hands glide closer with open breathing gap + Emerald glow swells */
 .lp-creation-stage.is-converging .lp-hand-left-wrap {
-    transform: translate3d(clamp(150px, 22.4vw, 272px), clamp(190px, calc(63.8vh - 246px), 340px), 0) scale(1.03);
+    transform: translate3d(clamp(54px, 7.6vw, 96px), clamp(2px, 0.35vw, 5px), 0) scale(1.02);
 }
 
 .lp-creation-stage.is-converging .lp-hand-right-wrap {
-    transform: translate3d(calc(-1 * clamp(72px, 12.8vw, 154px)), calc(-1 * clamp(22px, 3vw, 40px)), 0) scale(1.03);
+    transform: translate3d(calc(-1 * clamp(44px, 6.2vw, 78px)), calc(-1 * clamp(6px, 0.9vw, 13px)), 0) scale(1.02);
 }
 
 .lp-creation-stage.is-converging .lp-stage-aura {
@@ -5032,22 +5032,22 @@ body.is-reordering-active {
         max-width: 215px;
     }
     .lp-hand-left-wrap {
-        left: -7.5%;
-        top: -62%;
+        left: -5%;
+        top: 6%;
     }
     .lp-hand-right-wrap {
-        right: -4%;
-        top: 44%;
-        bottom: auto;
+        right: -5%;
+        bottom: 2%;
+        top: auto;
     }
     .lp-center-relic-wrap {
         width: 120px;
     }
     .lp-creation-stage.is-converging .lp-hand-left-wrap {
-        transform: translate3d(64px, 108px, 0) scale(1.03);
+        transform: translate3d(26px, 2px, 0) scale(1.02);
     }
     .lp-creation-stage.is-converging .lp-hand-right-wrap {
-        transform: translate3d(-48px, -18px, 0) scale(1.03);
+        transform: translate3d(-24px, -6px, 0) scale(1.02);
     }
 }
 

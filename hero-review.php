@@ -3,7 +3,7 @@
 $allowedOpts = ['a', 'b', 'c', 'd'];
 $initOpt = in_array($_GET['opt'] ?? 'a', $allowedOpts, true) ? $_GET['opt'] : 'a';
 $allowedStyles = ['hybrid', 'halftone', '3d'];
-$initStyle = in_array($_GET['style'] ?? 'hybrid', $allowedStyles, true) ? $_GET['style'] : 'hybrid';
+$initStyle = in_array($_GET['style'] ?? 'halftone', $allowedStyles, true) ? $_GET['style'] : 'halftone';
 $initConverged = (($_GET['state'] ?? '') === 'converged');
 ?>
 <!DOCTYPE html>
@@ -176,16 +176,16 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
         }
 
         .lp-hand-left-wrap {
-            left: -8%;
-            top: -118%;
+            left: -3%;
+            top: -3%;
             transform-origin: left center;
             transform: translate3d(0, 0, 0);
         }
 
         .lp-hand-right-wrap {
-            right: -1%;
-            top: 39%;
-            bottom: auto;
+            right: -2%;
+            bottom: -11%;
+            top: auto;
             transform-origin: right bottom;
             transform: translate3d(0, 0, 0);
         }
@@ -276,11 +276,11 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
 
         /* Active Converging State (after clicking Mulai Petualangan) */
         .lp-creation-stage.is-converging .lp-hand-left-wrap {
-            transform: translate3d(clamp(150px, 22.4vw, 272px), clamp(190px, calc(63.8vh - 246px), 340px), 0) scale(1.03);
+            transform: translate3d(clamp(54px, 7.6vw, 96px), clamp(2px, 0.35vw, 5px), 0) scale(1.02);
         }
 
         .lp-creation-stage.is-converging .lp-hand-right-wrap {
-            transform: translate3d(calc(-1 * clamp(72px, 12.8vw, 154px)), calc(-1 * clamp(22px, 3vw, 40px)), 0) scale(1.03);
+            transform: translate3d(calc(-1 * clamp(44px, 6.2vw, 78px)), calc(-1 * clamp(6px, 0.9vw, 13px)), 0) scale(1.02);
         }
 
         .lp-creation-stage.is-converging .lp-center-relic-img {
@@ -431,10 +431,10 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
                 top: 50%;
             }
             .lp-creation-stage.is-converging .lp-hand-left-wrap {
-                transform: translate3d(58px, 8px, 0) scale(1.03);
+                transform: translate3d(26px, 2px, 0) scale(1.02);
             }
             .lp-creation-stage.is-converging .lp-hand-right-wrap {
-                transform: translate3d(-48px, -10px, 0) scale(1.03);
+                transform: translate3d(-24px, -6px, 0) scale(1.02);
             }
             .lp-creation-cta-wrap {
                 gap: 0.5rem;
