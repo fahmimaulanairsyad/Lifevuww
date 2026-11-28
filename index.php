@@ -109,10 +109,6 @@ if (isset($_SESSION['user_id'])) {
         <div class="lp-hero-stage" aria-hidden="true"></div>
 
         <div class="lp-hero-content">
-            <span class="badge-status accent font-mono mb-3" style="font-size: 0.74rem; padding: 0.32rem 0.8rem; border-radius: 999px;">
-                <i class="fas fa-gamepad me-1"></i> GAMIFIED PRODUCTIVITY PLATFORM
-            </span>
-
             <h1 class="lp-hero-title" style="line-height: 1.18; overflow: visible !important;">
                 <span class="char-reveal" style="--char-i: 1; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Disiplin</span>
                 <span class="char-reveal" style="--char-i: 2; line-height: 1.28; padding-bottom: 0.24em; margin-bottom: -0.18em; overflow: visible;">Nyata</span>
