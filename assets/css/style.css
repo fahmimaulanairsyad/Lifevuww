@@ -2723,10 +2723,14 @@ html.is-apk #btn-install-app {
    LANDING PAGE STYLES - Awwwards / High-Craft Product Showcase
    Scoped with .lp-* to avoid touching internal app pages
    ========================================================== */
+html:has(.landing-body),
+.landing-body {
+    overflow-x: clip;
+}
+
 .landing-body {
     background-color: var(--bg-base);
     color: var(--text-primary);
-    overflow-x: hidden;
     position: relative;
 }
 
@@ -3364,15 +3368,18 @@ html.is-apk #btn-install-app {
         display: none !important;
     }
     .lp-hero {
-        padding: 78px 1rem 2rem 1rem;
+        padding: 76px 1rem 2.2rem 1rem;
     }
     .lp-hero-title {
-        font-size: 2.2rem;
-        line-height: 1.18;
+        font-size: clamp(1.75rem, 7.8vw, 2.2rem);
+        line-height: 1.15;
+        margin: 0.45rem 0 0.7rem 0;
         overflow: visible !important;
     }
     .lp-hero-subtitle {
-        font-size: 0.92rem;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        margin: 0 auto 1.15rem auto;
     }
     .landing-bento-grid {
         grid-template-columns: 1fr;
@@ -3383,11 +3390,20 @@ html.is-apk #btn-install-app {
     }
     .lp-cta-group {
         flex-direction: column;
+        align-items: center;
         width: 100%;
+        gap: 0.65rem;
     }
-    .lp-cta-group .btn-core,
+    .lp-cta-group .lp-btn-adventure,
     .lp-cta-group form {
         width: 100%;
+        max-width: 260px;
+        display: flex;
+        justify-content: center;
+    }
+    .lp-cta-group .btn-core {
+        width: 100%;
+        justify-content: center;
     }
     .lp-reel-section {
         padding: 0 1rem;
@@ -3456,20 +3472,20 @@ html.is-apk #btn-install-app {
         grid-area: tabs;
         width: 100%;
         display: flex !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        white-space: nowrap !important;
-        scrollbar-width: none !important;
+        flex-wrap: wrap !important;
+        justify-content: center;
+        overflow: visible !important;
         gap: 4px;
-        padding: 2px 0;
-    }
-    .lp-window-tabs::-webkit-scrollbar {
-        display: none;
+        padding: 4px;
+        border-radius: 14px;
     }
     .lp-tab-btn {
-        flex-shrink: 0;
-        font-size: 0.72rem;
-        padding: 5px 10px;
+        flex: 1 1 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.68rem;
+        padding: 5px 8px;
         white-space: nowrap;
     }
     .lp-mock-body {
@@ -5024,30 +5040,36 @@ body.is-reordering-active {
 
 @media (max-width: 768px) {
     .lp-creation-stage {
-        height: 235px;
-        margin: 0.5rem auto 1.65rem auto;
+        height: clamp(195px, 28vh, 232px);
+        margin: 0.45rem auto 1.25rem auto;
     }
     .lp-hand-wrap {
-        width: 47vw;
-        max-width: 215px;
+        width: clamp(144px, 41vw, 195px);
+        max-width: none;
     }
     .lp-hand-left-wrap {
-        left: -5%;
-        top: 6%;
+        left: -13%;
+        top: 29%;
     }
     .lp-hand-right-wrap {
-        right: -5%;
-        bottom: 2%;
+        right: -13%;
+        bottom: 13%;
         top: auto;
     }
     .lp-center-relic-wrap {
-        width: 120px;
+        width: clamp(104px, 29vw, 132px);
+    }
+    .lp-creation-stage.is-primed .lp-hand-left-wrap {
+        transform: translate3d(8px, 1px, 0);
+    }
+    .lp-creation-stage.is-primed .lp-hand-right-wrap {
+        transform: translate3d(-8px, -2px, 0);
     }
     .lp-creation-stage.is-converging .lp-hand-left-wrap {
-        transform: translate3d(22px, 1px, 0) scale(1.02);
+        transform: translate3d(20px, 1px, 0) scale(1.02);
     }
     .lp-creation-stage.is-converging .lp-hand-right-wrap {
-        transform: translate3d(-20px, -5px, 0) scale(1.02);
+        transform: translate3d(-18px, -3px, 0) scale(1.02);
     }
 }
 

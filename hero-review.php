@@ -410,31 +410,32 @@ $initConverged = (($_GET['state'] ?? '') === 'converged');
                 max-width: 100%;
             }
             .lp-creation-stage {
-                height: 245px;
-                margin-top: 0.5rem;
-                margin-bottom: 1.5rem;
+                height: clamp(195px, 28vh, 232px);
+                margin-top: 0.45rem;
+                margin-bottom: 1.25rem;
             }
             .lp-hand-wrap {
-                width: 48vw;
-                max-width: 215px;
+                width: clamp(144px, 41vw, 195px);
+                max-width: none;
             }
             .lp-hand-left-wrap {
-                left: -5%;
-                top: 8%;
+                left: -13%;
+                top: 29%;
             }
             .lp-hand-right-wrap {
-                right: -5%;
-                bottom: 4%;
+                right: -13%;
+                bottom: 13%;
+                top: auto;
             }
             .lp-center-relic-wrap {
-                width: 122px;
+                width: clamp(104px, 29vw, 132px);
                 top: 50%;
             }
             .lp-creation-stage.is-converging .lp-hand-left-wrap {
-                transform: translate3d(22px, 1px, 0) scale(1.02);
+                transform: translate3d(20px, 1px, 0) scale(1.02);
             }
             .lp-creation-stage.is-converging .lp-hand-right-wrap {
-                transform: translate3d(-20px, -5px, 0) scale(1.02);
+                transform: translate3d(-18px, -3px, 0) scale(1.02);
             }
             .lp-creation-cta-wrap {
                 gap: 0.5rem;
